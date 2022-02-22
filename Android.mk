@@ -59,6 +59,10 @@ LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 
 LOCAL_JAVA_LIBRARIES += org.apache.http.legacy
 
+LOCAL_OPTIONAL_USES_LIBRARIES := \
+    com.google.android.media.effects \
+    org.apache.http.legacy
+
 LOCAL_JARJAR_RULES := $(LOCAL_PATH)/jarjar-rules.txt
 
 include $(BUILD_PACKAGE)
