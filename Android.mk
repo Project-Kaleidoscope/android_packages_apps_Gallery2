@@ -51,7 +51,9 @@ LOCAL_SHARED_LIBRARIES += \
     libjni_trueportrait \
     libjni_filtergenerator
 
-LOCAL_REQUIRED_MODULES := libts_detected_face_jni libts_face_beautify_jni
+ifeq ($(TARGET_TS_MAKEUP), true)
+    LOCAL_REQUIRED_MODULES := libts_detected_face_jni libts_face_beautify_jni
+endif
 
 LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 
