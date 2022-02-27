@@ -22,7 +22,7 @@
         android:title="@string/switch_to_camera"
         android:showAsAction="ifRoom" />
     <item android:id="@+id/action_select"
-        android:icon="@drawable/ic_selection"
+        android:icon="@drawable/ic_menu_selection"
         android:title="@string/select_album"
         android:showAsAction="ifRoom" />
     <item android:id="@+id/action_manage_offline"

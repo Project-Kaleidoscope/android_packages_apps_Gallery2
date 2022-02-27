@@ -974,7 +974,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
         if (tvEmptyAlbum == null) {
             tvEmptyAlbum = new TextView(mActivity);
             tvEmptyAlbum.setText(R.string.tvEmptyVideos);
-            tvEmptyAlbum.setTextColor(Color.parseColor("#8A000000"));
+            tvEmptyAlbum.setTextColor(mActivity.getColor(R.color.kscope_empty_content_tip_text_color));
             tvEmptyAlbum.setGravity(Gravity.CENTER);
             tvEmptyAlbum.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(

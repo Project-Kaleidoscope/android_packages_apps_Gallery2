@@ -60,7 +60,7 @@
             android:id="@+id/bottom_navigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/primary"
+            android:background="@color/kscope_toolbar_bg_color"
             android:layout_alignParentBottom="true"
             app:menu="@menu/navigation_items"
             app:itemIconTint="@drawable/item_bg"

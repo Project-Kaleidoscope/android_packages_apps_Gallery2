@@ -23,7 +23,7 @@
         android:title="@string/slideshow"
         android:showAsAction="ifRoom" />
     <item android:id="@+id/action_select"
-        android:icon="@drawable/ic_selection"
+        android:icon="@drawable/ic_menu_selection"
         android:title="@string/select_item"
         android:showAsAction="ifRoom" />
 <!--     <item android:id="@+id/action_group_by" -->

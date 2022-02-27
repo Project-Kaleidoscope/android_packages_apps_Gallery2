@@ -19,8 +19,8 @@
     <color name="primaryDark">#000000</color>
     <color name="accent">#33b5e5</color>
 
-    <color name="white">#fafafa</color>
-    <color name="black">#212121</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
 
     <color name="light_black">#424242</color>
 
@@ -36,4 +36,12 @@
     <color name="black_transparent_3">#75000000</color>
     <color name="black_transparent_4">#8A000000</color>
     <color name="black_transparent_5">#C1000000</color>
+
+    <color name="kscope_toolbar_bg_color">#FFFFFFFF</color>
+    <color name="kscope_toolbar_text_icon_color">#FF000000</color>
+
+    <color name="kscope_details_title_text_color">@color/details_text_color</color>
+    <color name="kscope_details_content_text_color">#FF000000</color>
+
+    <color name="kscope_empty_content_tip_text_color">#8A000000</color>
 </resources>

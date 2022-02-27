@@ -281,7 +281,6 @@ public abstract class PhotoPage extends ActivityState implements
     public void onCreate(Bundle data, Bundle restoreState) {
         super.onCreate(data, restoreState);
         mActionBar = mActivity.getGalleryActionBar();
-        mActionBar.setBackGroundTransparent();
         mSelectionManager = new SelectionManager(mActivity, false);
         mMenuExecutor = new MenuExecutor(mActivity, mSelectionManager);
 
@@ -1040,7 +1039,6 @@ public abstract class PhotoPage extends ActivityState implements
                     mMediaSet.setShowAlbumsetTimeTitle(true);
                 }
                 super.onBackPressed();
-                mActionBar.setBackGroundDefault();
                 int count = mActivity.getStateManager().getStateCount();
                 if (mIsFromVideoScreen || count == 1 || mIsFromTimelineScreen) {
                     ((GalleryActivity) mActivity).toggleNavBar(true);

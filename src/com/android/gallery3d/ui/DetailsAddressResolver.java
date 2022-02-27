@@ -51,7 +51,7 @@ public class DetailsAddressResolver {
     }
 
     public interface AddressResolvingListener {
-        public void onAddressAvailable(String address);
+        public void onAddressAvailable(DialogDetailsView.Details addressDetails);
     }
 
     public DetailsAddressResolver(AbstractGalleryActivity context) {
@@ -103,9 +103,9 @@ public class DetailsAddressResolver {
                 }
                 addressText += parts[i];
             }
-            String text = String.format("%s : %s", DetailsHelper.getDetailsName(
-                    context, MediaDetails.INDEX_LOCATION), addressText);
-            mListener.onAddressAvailable(text);
+            mListener.onAddressAvailable(new DialogDetailsView.Details(
+                    DetailsHelper.getDetailsName(context, MediaDetails.INDEX_LOCATION), addressText
+            ));
         }
     }
 

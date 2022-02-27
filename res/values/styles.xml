@@ -320,27 +320,25 @@
     <style name="AppTheme" parent="Theme.AppCompat.DayNight">
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:windowBackground">@android:color/black</item>
-        <item name="android:statusBarColor">#212121</item>
-        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:statusBarColor">@color/kscope_toolbar_bg_color</item>
+        <item name="android:navigationBarColor">@color/kscope_toolbar_bg_color</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:actionModeBackground">@color/multiselect_background</item>
-        <item name="android:actionModeShareDrawable">@drawable/multiselect_share</item>
-        <item name="android:actionOverflowButtonStyle">@style/MyOverFlow</item>
-        <item name="android:homeAsUpIndicator">@drawable/back</item>
-        <item name="android:actionModeCloseDrawable">@drawable/multiselected_back</item>
+        <item name="android:windowLightStatusBar">@bool/kscope_is_light_theme</item>
+        <item name="android:windowLightNavigationBar">@bool/kscope_is_light_theme</item>
+        <item name="android:actionModeBackground">@color/kscope_toolbar_bg_color</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:dialogCornerRadius">@*android:dimen/config_dialogCornerRadius</item>
     </style>
 
     <style name="QueryTheme" parent="android:Theme.Material">
         <item name="android:statusBarColor">#ab5810</item>
     </style>
 
-    <style name="ToolbarTheme" parent="android:Theme.Material" >
-        <item name="android:actionOverflowButtonStyle">@style/WhiteOverflow</item>
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primaryDark</item>
+    <style name="ToolbarTheme" parent="Theme.AppCompat.DayNight" >
+        <item name="colorPrimary">@color/kscope_toolbar_bg_color</item>
+        <item name="colorPrimaryDark">@color/kscope_toolbar_bg_color</item>
+        <item name="colorControlNormal">@color/kscope_toolbar_text_icon_color</item>
     </style>
 
     <style name="ToolbarTitleStyle" parent="android:TextAppearance.Material.Widget.Toolbar.Title">

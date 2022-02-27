@@ -102,8 +102,8 @@ public class DialogDetailsView implements DetailsViewContainer {
         detailsList.setAdapter(mAdapter);
         AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
 
-         builder.setView(detailsList);
-        builder.setTitle(title);
+        builder.setTitle(R.string.details);
+        builder.setView(detailsList);
         builder.setPositiveButton(R.string.close,
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -122,16 +122,8 @@ public class DialogDetailsView implements DetailsViewContainer {
             }
         });
         mDialog.show();
-        Resources r = mActivity.getResources();
-
-        int buttonColor = r.getColor(R.color.dialog_button_color);
-        mDialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                .setTextSize(TypedValue.COMPLEX_UNIT_SP,14);
-        mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(
-                buttonColor);
 
         builder.setView(detailsList);
-        builder.setTitle(title);
         builder.setPositiveButton(R.string.close,
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -141,10 +133,28 @@ public class DialogDetailsView implements DetailsViewContainer {
                 });
     }
 
+    public static class Details {
+
+        private String title;
+        private String details;
+
+        public Details(String title, String details) {
+            this.title = title;
+            this.details = details;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getDetails() {
+            return details;
+        }
+    }
 
     private class DetailsAdapter extends BaseAdapter
         implements AddressResolvingListener, ResolutionResolvingListener {
-        private final ArrayList<String> mItems;
+        private final ArrayList<Details> mItems;
         private int mLocationIndex;
         private final Locale mDefaultLocale = Locale.getDefault();
         private final DecimalFormat mDecimalFormat = new DecimalFormat(".####");
@@ -153,7 +163,7 @@ public class DialogDetailsView implements DetailsViewContainer {
 
         public DetailsAdapter(MediaDetails details) {
             Context context = mActivity.getAndroidContext();
-            mItems = new ArrayList<String>(details.size());
+            mItems = new ArrayList<>(details.size());
             mLocationIndex = -1;
             setDetails(context, details);
         }
@@ -244,8 +254,8 @@ public class DialogDetailsView implements DetailsViewContainer {
                         // as a separate section and interpret it for what it
                         // is, rather than trying to make it RTL (which messes
                         // up the path).
-                        value = "\n" + detail.getValue().toString();
-                        path = detail.getValue().toString();
+                        value = detail.getValue().toString();
+                        path = value;
                         break;
                     case MediaDetails.INDEX_ISO:
                         value = toLocalNumber(Integer.parseInt((String) detail.getValue()));
@@ -275,20 +285,9 @@ public class DialogDetailsView implements DetailsViewContainer {
                 }
                 int key = detail.getKey();
                 if (details.hasUnit(key)) {
-                    value = String.format("%s: %s %s", DetailsHelper.getDetailsName(
-                            context, key), value, context.getString(details.getUnit(key)));
-                } else {
-                    if (View.LAYOUT_DIRECTION_RTL == TextUtils
-                            .getLayoutDirectionFromLocale(Locale.getDefault())
-                            && (key == MediaDetails.INDEX_PATH)) {
-                        value = String.format("%s : \n%s",
-                                DetailsHelper.getDetailsName(context, key), value);
-                    } else {
-                        value = String.format("%s: %s", DetailsHelper.getDetailsName(context, key),
-                                value);
-                    }
+                    value = String.format("%s %s", value, context.getString(details.getUnit(key)));
                 }
-                mItems.add(value);
+                mItems.add(new Details(DetailsHelper.getDetailsName(context, key), value));
                 if (!resolutionIsValid) {
                     DetailsHelper.resolveResolution(path, this);
                 }
@@ -322,20 +321,26 @@ public class DialogDetailsView implements DetailsViewContainer {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            TextView tv;
+            TextView titleTextView;
+            TextView detailsTextView;
+            View view;
             if (convertView == null) {
-                tv = (TextView) LayoutInflater.from(mActivity.getAndroidContext()).inflate(
+                view = LayoutInflater.from(mActivity.getAndroidContext()).inflate(
                         R.layout.details, parent, false);
             } else {
-                tv = (TextView) convertView;
+                view = convertView;
             }
-            tv.setText(mItems.get(position));
-            return tv;
+            titleTextView = view.findViewById(R.id.details_title);
+            detailsTextView = view.findViewById(R.id.details_content);
+            Details details = mItems.get(position);
+            titleTextView.setText(details.getTitle());
+            detailsTextView.setText(details.getDetails());
+            return view;
         }
 
         @Override
-        public void onAddressAvailable(String address) {
-            mItems.set(mLocationIndex, address);
+        public void onAddressAvailable(Details addressDetails) {
+            mItems.set(mLocationIndex, addressDetails);
             notifyDataSetChanged();
         }
 
@@ -344,14 +349,10 @@ public class DialogDetailsView implements DetailsViewContainer {
             if (width == 0 || height == 0) return;
             // Update the resolution with the new width and height
             Context context = mActivity.getAndroidContext();
-            String widthString = String.format(mDefaultLocale, "%s: %d",
-                    DetailsHelper.getDetailsName(
-                            context, MediaDetails.INDEX_WIDTH), width);
-            String heightString = String.format(mDefaultLocale, "%s: %d",
-                    DetailsHelper.getDetailsName(
-                            context, MediaDetails.INDEX_HEIGHT), height);
-            mItems.set(mWidthIndex, String.valueOf(widthString));
-            mItems.set(mHeightIndex, String.valueOf(heightString));
+            mItems.set(mWidthIndex, new Details(
+                    DetailsHelper.getDetailsName(context, MediaDetails.INDEX_WIDTH), String.valueOf(width)));
+            mItems.set(mHeightIndex, new Details(
+                    DetailsHelper.getDetailsName(context, MediaDetails.INDEX_HEIGHT), String.valueOf(height)));
             notifyDataSetChanged();
         }
 

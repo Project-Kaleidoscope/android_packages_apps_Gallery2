@@ -21,9 +21,12 @@
     <color name="albumlist_label_title">@color/primary_text</color>
     <color name="albumset_background">@color/default_background</color>
 
+    <color name="navigation_accent_disabled">#66FFFFFF</color>
+    <color name="navigation_accent_enabled">@color/white</color>
+
     <color name="details_text_color">@color/primary_text</color>
 
-    <color name="multiselect_action_text_color">@color/primary_text</color>
+    <!-- color name="multiselect_action_text_color">@color/kscope_toolbar_text_icon_color</color -->
     <color name="multiselect_background">@color/primary</color>
     <color name="multiselect_icon_color">@color/white</color>
 
