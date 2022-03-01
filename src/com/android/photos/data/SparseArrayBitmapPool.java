@@ -17,10 +17,9 @@
 package com.android.photos.data;
 
 import android.graphics.Bitmap;
-import android.util.SparseArray;
-
 import android.util.Pools.Pool;
 import android.util.Pools.SimplePool;
+import android.util.SparseArray;
 
 /**
  * Bitmap pool backed by a sparse array indexing linked lists of bitmaps
@@ -30,48 +29,24 @@ import android.util.Pools.SimplePool;
 public class SparseArrayBitmapPool {
 
     private int mCapacityBytes;
-    private SparseArray<Node> mStore = new SparseArray<Node>();
+    private final SparseArray<Node> mStore = new SparseArray<>();
     private int mSizeBytes = 0;
 
-    private Pool<Node> mNodePool;
+    private final Pool<Node> mNodePool;
     private Node mPoolNodesHead = null;
     private Node mPoolNodesTail = null;
 
-    protected static class Node {
-        Bitmap bitmap;
-
-        // Each node is part of two doubly linked lists:
-        // - A pool-level list (accessed by mPoolNodesHead and mPoolNodesTail)
-        //   that is used for FIFO eviction of nodes when the pool gets full.
-        // - A bucket-level list for each index of the sparse array, so that
-        //   each index can store more than one item.
-        Node prevInBucket;
-        Node nextInBucket;
-        Node nextInPool;
-        Node prevInPool;
-    }
-
     /**
      * @param capacityBytes Maximum capacity of the pool in bytes.
-     * @param nodePool Shared pool to use for recycling linked list nodes, or null.
+     * @param nodePool      Shared pool to use for recycling linked list nodes, or null.
      */
     public SparseArrayBitmapPool(int capacityBytes, Pool<Node> nodePool) {
         mCapacityBytes = capacityBytes;
         if (nodePool == null) {
-            mNodePool = new SimplePool<Node>(32);
+            mNodePool = new SimplePool<>(32);
         } else {
             mNodePool = nodePool;
         }
-    }
-
-    /**
-     * Set the maximum capacity of the pool, and if necessary trim it down to size.
-     */
-    public synchronized void setCapacity(int capacityBytes) {
-        mCapacityBytes = capacityBytes;
-
-        // No-op unless current size exceeds the new capacity.
-        freeUpCapacity(0);
     }
 
     private void freeUpCapacity(int bytesNeeded) {
@@ -131,6 +106,16 @@ public class SparseArrayBitmapPool {
     }
 
     /**
+     * Set the maximum capacity of the pool, and if necessary trim it down to size.
+     */
+    public synchronized void setCapacity(int capacityBytes) {
+        mCapacityBytes = capacityBytes;
+
+        // No-op unless current size exceeds the new capacity.
+        freeUpCapacity(0);
+    }
+
+    /**
      * @return Total size in bytes of the bitmaps stored in the pool.
      */
     public synchronized int getSize() {
@@ -159,6 +144,7 @@ public class SparseArrayBitmapPool {
 
     /**
      * Adds the given bitmap to the pool.
+     *
      * @return Whether the bitmap was added to the pool.
      */
     public synchronized boolean put(Bitmap b) {
@@ -208,5 +194,19 @@ public class SparseArrayBitmapPool {
     public synchronized void clear() {
         // Clearing is equivalent to ensuring all the capacity is available.
         freeUpCapacity(mCapacityBytes);
+    }
+
+    protected static class Node {
+        Bitmap bitmap;
+
+        // Each node is part of two doubly linked lists:
+        // - A pool-level list (accessed by mPoolNodesHead and mPoolNodesTail)
+        //   that is used for FIFO eviction of nodes when the pool gets full.
+        // - A bucket-level list for each index of the sparse array, so that
+        //   each index can store more than one item.
+        Node prevInBucket;
+        Node nextInBucket;
+        Node nextInPool;
+        Node prevInPool;
     }
 }

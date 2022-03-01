@@ -47,9 +47,11 @@ public class GalleryProvider extends ContentProvider {
     public static final String AUTHORITY = "com.android.gallery3d.provider";
     public static final Uri BASE_URI = Uri.parse("content://" + AUTHORITY);
 
-    public static interface PicasaColumns {
-        public static final String USER_ACCOUNT = "user_account";
-        public static final String PICASA_ID = "picasa_id";
+    public interface PicasaColumns {
+
+        String USER_ACCOUNT = "user_account";
+        String PICASA_ID = "picasa_id";
+
     }
 
     private static final String[] SUPPORTED_PICASA_COLUMNS = {
@@ -112,7 +114,7 @@ public class GalleryProvider extends ContentProvider {
     // TODO: consider concurrent access
     @Override
     public Cursor query(Uri uri, String[] projection,
-            String selection, String[] selectionArgs, String sortOrder) {
+                        String selection, String[] selectionArgs, String sortOrder) {
         long token = Binder.clearCallingIdentity();
         try {
             Path path = Path.fromString(uri.getPath());
@@ -125,7 +127,7 @@ public class GalleryProvider extends ContentProvider {
                 return queryPicasaItem(object,
                         projection, selection, selectionArgs, sortOrder);
             } else {
-                    return null;
+                return null;
             }
         } finally {
             Binder.restoreCallingIdentity(token);
@@ -133,7 +135,7 @@ public class GalleryProvider extends ContentProvider {
     }
 
     private Cursor queryPicasaItem(MediaObject image, String[] projection,
-            String selection, String[] selectionArgs, String sortOrder) {
+                                   String selection, String[] selectionArgs, String sortOrder) {
         if (projection == null) projection = SUPPORTED_PICASA_COLUMNS;
         Object[] columnValues = new Object[projection.length];
         double latitude = PicasaSource.getLatitude(image);
@@ -148,7 +150,7 @@ public class GalleryProvider extends ContentProvider {
                 columnValues[i] = PicasaSource.getPicasaId(image);
             } else if (ImageColumns.DISPLAY_NAME.equals(column)) {
                 columnValues[i] = PicasaSource.getImageTitle(image);
-            } else if (ImageColumns.SIZE.equals(column)){
+            } else if (ImageColumns.SIZE.equals(column)) {
                 columnValues[i] = PicasaSource.getImageSize(image);
             } else if (ImageColumns.MIME_TYPE.equals(column)) {
                 columnValues[i] = PicasaSource.getContentType(image);
@@ -197,7 +199,7 @@ public class GalleryProvider extends ContentProvider {
         throw new UnsupportedOperationException();
     }
 
-    private static interface PipeDataWriter<T> {
+    private interface PipeDataWriter<T> {
         void writeDataToPipe(ParcelFileDescriptor output, T args);
     }
 

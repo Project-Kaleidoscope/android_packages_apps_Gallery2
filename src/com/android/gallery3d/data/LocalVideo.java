@@ -18,12 +18,12 @@ package com.android.gallery3d.data;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
-//import android.drm.DrmHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapRegionDecoder;
 import android.net.Uri;
 import android.provider.MediaStore.Video;
 import android.provider.MediaStore.Video.VideoColumns;
+import android.util.Log;
 
 import com.android.gallery3d.app.GalleryApp;
 import com.android.gallery3d.common.BitmapUtils;
@@ -34,9 +34,23 @@ import com.android.gallery3d.util.UpdateHelper;
 
 // LocalVideo represents a video in the local storage.
 public class LocalVideo extends LocalMediaItem {
-    private static final String TAG = "LocalVideo";
     static final Path ITEM_PATH = Path.fromString("/local/video/item");
-
+    static final String[] PROJECTION = new String[]{
+            VideoColumns._ID,
+            VideoColumns.TITLE,
+            VideoColumns.MIME_TYPE,
+            VideoColumns.LATITUDE,
+            VideoColumns.LONGITUDE,
+            VideoColumns.DATE_TAKEN,
+            VideoColumns.DATE_ADDED,
+            VideoColumns.DATE_MODIFIED,
+            VideoColumns.DATA,
+            VideoColumns.DURATION,
+            VideoColumns.BUCKET_ID,
+            VideoColumns.SIZE,
+            VideoColumns.RESOLUTION,
+    };
+    private static final String TAG = "LocalVideo";
     // Must preserve order between these indices and the order of the terms in
     // the following PROJECTION array.
     private static final int INDEX_ID = 0;
@@ -52,23 +66,6 @@ public class LocalVideo extends LocalMediaItem {
     private static final int INDEX_BUCKET_ID = 10;
     private static final int INDEX_SIZE = 11;
     private static final int INDEX_RESOLUTION = 12;
-
-    static final String[] PROJECTION = new String[] {
-            VideoColumns._ID,
-            VideoColumns.TITLE,
-            VideoColumns.MIME_TYPE,
-            VideoColumns.LATITUDE,
-            VideoColumns.LONGITUDE,
-            VideoColumns.DATE_TAKEN,
-            VideoColumns.DATE_ADDED,
-            VideoColumns.DATE_MODIFIED,
-            VideoColumns.DATA,
-            VideoColumns.DURATION,
-            VideoColumns.BUCKET_ID,
-            VideoColumns.SIZE,
-            VideoColumns.RESOLUTION,
-    };
-
     private final GalleryApp mApplication;
 
     public int durationInSec;
@@ -157,31 +154,6 @@ public class LocalVideo extends LocalMediaItem {
                 type, filePath, mimeType);
     }
 
-    public static class LocalVideoRequest extends ImageCacheRequest {
-        private String mLocalFilePath;
-
-        LocalVideoRequest(GalleryApp application, Path path, long timeModified,
-                int type, String localFilePath) {
-            super(application, path, timeModified, type,
-                    MediaItem.getTargetSize(type));
-            mLocalFilePath = localFilePath;
-        }
-
-        LocalVideoRequest(GalleryApp application, Path path, long timeModified,
-                int type, String localFilePath, String mimeType) {
-            super(application, path, timeModified, type,
-                    MediaItem.getTargetSize(type), localFilePath, mimeType);
-            mLocalFilePath = localFilePath;
-        }
-
-        @Override
-        public Bitmap onDecodeOriginal(JobContext jc, int type) {
-            Bitmap bitmap = BitmapUtils.createVideoThumbnail(mLocalFilePath);
-            if (bitmap == null || jc.isCancelled()) return null;
-            return bitmap;
-        }
-    }
-
     @Override
     public Job<BitmapRegionDecoder> requestLargeImage() {
         throw new UnsupportedOperationException("Cannot regquest a large image"
@@ -260,5 +232,30 @@ public class LocalVideo extends LocalMediaItem {
     @Override
     public String getFilePath() {
         return filePath;
+    }
+
+    public static class LocalVideoRequest extends ImageCacheRequest {
+        private final String mLocalFilePath;
+
+        LocalVideoRequest(GalleryApp application, Path path, long timeModified,
+                          int type, String localFilePath) {
+            super(application, path, timeModified, type,
+                    MediaItem.getTargetSize(type));
+            mLocalFilePath = localFilePath;
+        }
+
+        LocalVideoRequest(GalleryApp application, Path path, long timeModified,
+                          int type, String localFilePath, String mimeType) {
+            super(application, path, timeModified, type,
+                    MediaItem.getTargetSize(type), localFilePath, mimeType);
+            mLocalFilePath = localFilePath;
+        }
+
+        @Override
+        public Bitmap onDecodeOriginal(JobContext jc, int type) {
+            Bitmap bitmap = BitmapUtils.createVideoThumbnail(mLocalFilePath);
+            if (bitmap == null || jc.isCancelled()) return null;
+            return bitmap;
+        }
     }
 }

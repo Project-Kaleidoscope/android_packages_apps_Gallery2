@@ -20,6 +20,8 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.opengl.GLUtils;
 
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.common.Utils;
 
 import java.util.HashMap;
@@ -44,9 +46,9 @@ public abstract class UploadedTexture extends BasicTexture {
 
     // To prevent keeping allocation the borders, we store those used borders here.
     // Since the length will be power of two, it won't use too much memory.
-    private static HashMap<BorderKey, Bitmap> sBorderLines =
-            new HashMap<BorderKey, Bitmap>();
-    private static BorderKey sBorderKey = new BorderKey();
+    private static final HashMap<BorderKey, Bitmap> sBorderLines =
+            new HashMap<>();
+    private static final BorderKey sBorderKey = new BorderKey();
 
     @SuppressWarnings("unused")
     private static final String TAG = "Texture";
@@ -101,6 +103,7 @@ public abstract class UploadedTexture extends BasicTexture {
                     && config == o.config && length == o.length;
         }
 
+        @NonNull
         @Override
         public BorderKey clone() {
             try {
@@ -134,7 +137,7 @@ public abstract class UploadedTexture extends BasicTexture {
     private Bitmap getBitmap() {
         if (mBitmap == null) {
             mBitmap = onGetBitmap();
-            if (mBitmap == null)return null;
+            if (mBitmap == null) return null;
             int w = mBitmap.getWidth() + mBorder * 2;
             int h = mBitmap.getHeight() + mBorder * 2;
             if (mWidth == UNSPECIFIED) {
@@ -182,6 +185,7 @@ public abstract class UploadedTexture extends BasicTexture {
 
     /**
      * Updates the content on GPU's memory.
+     *
      * @param canvas
      */
     public void updateContent(GLCanvas canvas) {
@@ -279,7 +283,7 @@ public abstract class UploadedTexture extends BasicTexture {
             mContentValid = true;
         } else {
             mState = STATE_ERROR;
-            if(bitmap == null) {
+            if (bitmap == null) {
                 throw new RuntimeException("Texture load fail, no bitmap");
             }
         }

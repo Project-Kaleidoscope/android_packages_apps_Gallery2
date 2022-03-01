@@ -21,15 +21,15 @@ import java.util.ArrayList;
  * If MoviePlayer starting activity doesn't set any thing, default OrderBy will be used.
  * Default OrderBy: MediaStore.Video.Media.DATE_TAKEN + " DESC, " + MediaStore.Video.Media._ID + " DESC ";
  */
-public class MovieListLoader implements IMovieListLoader {  
+public class MovieListLoader implements IMovieListLoader {
     private static final String TAG = "MovieListLoader";
     private static final boolean LOG = false;
-    
+
     private MovieListFetcherTask mListTask;
-    
+
     @Override
     public void fillVideoList(Activity activity, Intent intent, final LoaderListener l,
-            IMovieItem currentMovieItem) {
+                              IMovieItem currentMovieItem) {
 
         // determine if a video playlist has been passed in through the intent
         // if a playlist does exist, use that
@@ -38,7 +38,7 @@ public class MovieListLoader implements IMovieListLoader {
             final MovieList movieList = new MovieList();
             ContentResolver cr = activity.getContentResolver();
 
-            for(Uri uri : uris) {
+            for (Uri uri : uris) {
                 // add currentMovieItem in its proper place in the video playlist
                 // 'Next' and 'Previous' functionality in MovieListHooker is dependent on reference
                 // matching currentMovieItem
@@ -79,7 +79,7 @@ public class MovieListLoader implements IMovieListLoader {
             Log.v(TAG, "fillVideoList() fetechAll=" + fetechAll + ", orderBy=" + orderBy);
         }
     }
-    
+
     @Override
     public boolean isEnabledVideoList(Intent intent) {
         boolean enable = true;
@@ -91,7 +91,7 @@ public class MovieListLoader implements IMovieListLoader {
         }
         return enable;
     }
-    
+
     @Override
     public void cancelList() {
         if (mListTask != null) {
@@ -102,16 +102,16 @@ public class MovieListLoader implements IMovieListLoader {
     private class MovieListFetcherTask extends AsyncTask<IMovieItem, Void, IMovieList> {
         private static final String TAG = "MovieListFetcherTask";
         private static final boolean LOG = false;
-        
+
         // TODO comments by sunlei
 //        public static final String COLUMN_STEREO_TYPE = MediaStore.Video.Media.STEREO_TYPE;
 //        public static final String COLUMN_STEREO_TYPE = "STEREO_TYPE";
-        
+
         private final ContentResolver mCr;
         private final LoaderListener mFetecherListener;
         private final boolean mFetechAll;
         private final String mOrderBy;
-        
+
         public MovieListFetcherTask(Context context, boolean fetechAll, LoaderListener l, String orderBy) {
             mCr = context.getContentResolver();
             mFetecherListener = l;
@@ -121,7 +121,7 @@ public class MovieListLoader implements IMovieListLoader {
                 Log.v(TAG, "MovieListFetcherTask() fetechAll=" + fetechAll + ", orderBy=" + orderBy);
             }
         }
-        
+
         @Override
         protected void onPostExecute(IMovieList params) {
             if (LOG) {
@@ -134,7 +134,7 @@ public class MovieListLoader implements IMovieListLoader {
                 mFetecherListener.onListLoaded(params);
             }
         }
-        
+
         @Override
         protected IMovieList doInBackground(IMovieItem... params) {
             if (LOG) {
@@ -206,7 +206,7 @@ public class MovieListLoader implements IMovieListLoader {
             }
             return movieList;
         }
-        
+
         private IMovieList fillUriList(String where, String[] whereArgs, long curId, IMovieItem current) {
             IMovieList movieList = null;
             Cursor cursor = null;
@@ -254,8 +254,8 @@ public class MovieListLoader implements IMovieListLoader {
             String where = "_data LIKE '%" + data.replaceFirst("file:///", "") + "'";
             try {
                 cursor = mCr.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                        new String[] {
-                            "_id"
+                        new String[]{
+                                "_id"
                         }, where, null, null);
 
                 if (cursor != null && cursor.moveToFirst()) {

@@ -48,11 +48,11 @@ public class GalleryBitmapPool {
     private static final int POOL_INDEX_MISC = 2;
 
     private static final Point[] COMMON_PHOTO_ASPECT_RATIOS =
-        { new Point(4, 3), new Point(3, 2), new Point(16, 9) };
-
-    private int mCapacityBytes;
-    private SparseArrayBitmapPool [] mPools;
-    private Pool<Node> mSharedNodePool = new SynchronizedPool<Node>(128);
+            {new Point(4, 3), new Point(3, 2), new Point(16, 9)};
+    private static final GalleryBitmapPool sInstance = new GalleryBitmapPool(CAPACITY_BYTES);
+    private final int mCapacityBytes;
+    private final SparseArrayBitmapPool[] mPools;
+    private final Pool<Node> mSharedNodePool = new SynchronizedPool<>(128);
 
     private GalleryBitmapPool(int capacityBytes) {
         mPools = new SparseArrayBitmapPool[3];
@@ -61,8 +61,6 @@ public class GalleryBitmapPool {
         mPools[POOL_INDEX_MISC] = new SparseArrayBitmapPool(capacityBytes / 3, mSharedNodePool);
         mCapacityBytes = capacityBytes;
     }
-
-    private static GalleryBitmapPool sInstance = new GalleryBitmapPool(CAPACITY_BYTES);
 
     public static GalleryBitmapPool getInstance() {
         return sInstance;
@@ -135,6 +133,7 @@ public class GalleryBitmapPool {
 
     /**
      * Adds the given bitmap to the pool.
+     *
      * @return Whether the bitmap was added to the pool.
      */
     public boolean put(Bitmap b) {

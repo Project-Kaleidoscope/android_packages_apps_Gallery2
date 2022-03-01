@@ -17,5 +17,7 @@
 package com.android.gallery3d.filtershow.pipeline;
 
 public interface RenderingRequestCaller {
-    public void available(RenderingRequest request);
+
+    void available(RenderingRequest request);
+
 }

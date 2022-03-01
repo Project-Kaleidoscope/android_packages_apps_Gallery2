@@ -16,16 +16,6 @@
 
 package com.android.gallery3d.filtershow.tools;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
-
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -46,7 +36,7 @@ import android.provider.MediaStore.Images.ImageColumns;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
+import androidx.heifwriter.HeifWriter;
 
 import com.android.gallery3d.app.GalleryActivity;
 import com.android.gallery3d.common.Utils;
@@ -63,24 +53,41 @@ import com.android.gallery3d.filtershow.pipeline.CachingPipeline;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 import com.android.gallery3d.filtershow.pipeline.ProcessingService;
 import com.android.gallery3d.util.XmpUtilHelper;
-import androidx.heifwriter.HeifWriter;
+
+import org.codeaurora.gallery.R;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Handles saving edited photo
  */
 public class SaveImage {
-    private static final String LOGTAG = "SaveImage";
+    private static final String TAG = "SaveImage";
 
     /**
      * Callback for updates
      */
     public interface Callback {
+
         void onPreviewSaved(Uri uri);
+
         void onProgress(int max, int current);
+
     }
 
     public interface ContentResolverQueryCallback {
+
         void onCursorResult(Cursor cursor);
+
     }
 
     private static final String TIME_STAMP_NAME = "_yyyyMMdd_HHmmss";
@@ -134,17 +141,17 @@ public class SaveImage {
 
     /**
      * @param context
-     * @param sourceUri The Uri for the original image, which can be the hidden
-     *  image under the auxiliary directory or the same as selectedImageUri.
+     * @param sourceUri        The Uri for the original image, which can be the hidden
+     *                         image under the auxiliary directory or the same as selectedImageUri.
      * @param selectedImageUri The Uri for the image selected by the user.
-     *  In most cases, it is a content Uri for local image or remote image.
-     * @param destination Destinaton File, if this is null, a new file will be
-     *  created under the same directory as selectedImageUri.
-     * @param callback Let the caller know the saving has completed.
+     *                         In most cases, it is a content Uri for local image or remote image.
+     * @param destination      Destinaton File, if this is null, a new file will be
+     *                         created under the same directory as selectedImageUri.
+     * @param callback         Let the caller know the saving has completed.
      * @return the newSourceUri
      */
     public SaveImage(Context context, Uri sourceUri, Uri selectedImageUri,
-                     File destination, Bitmap previewImage, Callback callback)  {
+                     File destination, Bitmap previewImage, Callback callback) {
         mContext = context;
         mSourceUri = sourceUri;
         mCallback = callback;
@@ -186,21 +193,17 @@ public class SaveImage {
     /**
      * Remove the files in the auxiliary directory whose names are the same as
      * the source image.
+     *
      * @param contentResolver The application's contentResolver
-     * @param srcContentUri The content Uri for the source image.
+     * @param srcContentUri   The content Uri for the source image.
      */
     public static void deleteAuxFiles(ContentResolver contentResolver,
-            Uri srcContentUri) {
+                                      Uri srcContentUri) {
         final String[] fullPath = new String[1];
-        String[] queryProjection = new String[] { ImageColumns.DATA };
+        String[] queryProjection = new String[]{ImageColumns.DATA};
         querySourceFromContentResolver(contentResolver,
                 srcContentUri, queryProjection,
-                new ContentResolverQueryCallback() {
-            @Override
-            public void onCursorResult(Cursor cursor) {
-                fullPath[0] = cursor.getString(0);
-            }
-        });
+                cursor -> fullPath[0] = cursor.getString(0));
 
         if (fullPath[0] != null) {
             // Construct the auxiliary directory given the source file's path.
@@ -211,19 +214,10 @@ public class SaveImage {
             String filename = currentFile.getName();
             int firstDotPos = filename.indexOf(".");
             final String filenameNoExt = (firstDotPos == -1) ? filename :
-                filename.substring(0, firstDotPos);
+                    filename.substring(0, firstDotPos);
             File auxDir = getLocalAuxDirectory(currentFile);
             if (auxDir.exists()) {
-                FilenameFilter filter = new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        if (name.startsWith(filenameNoExt + ".")) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    }
-                };
+                FilenameFilter filter = (dir, name) -> name.startsWith(filenameNoExt + ".");
 
                 // Delete all auxiliary files whose name is matching the
                 // current local image.
@@ -243,7 +237,7 @@ public class SaveImage {
                 is = mContext.getContentResolver().openInputStream(source);
                 xmp = XmpUtilHelper.extractXMPMeta(is);
             } catch (FileNotFoundException e) {
-                Log.w(LOGTAG, "Failed to get XMP data from image: ", e);
+                Log.w(TAG, "Failed to get XMP data from image: ", e);
             } finally {
                 Utils.closeSilently(is);
             }
@@ -270,11 +264,11 @@ public class SaveImage {
                 inStream = mContext.getContentResolver().openInputStream(source);
                 exif.readExif(inStream);
             } catch (FileNotFoundException e) {
-                Log.w(LOGTAG, "Cannot find file: " + source, e);
+                Log.w(TAG, "Cannot find file: " + source, e);
             } catch (IOException e) {
-                Log.w(LOGTAG, "Cannot read exif for: " + source, e);
+                Log.w(TAG, "Cannot read exif for: " + source, e);
             } catch (NullPointerException e) {
-                Log.w(LOGTAG, "Invalid exif data for: " + source, e);
+                Log.w(TAG, "Invalid exif data for: " + source, e);
             } finally {
                 Utils.closeSilently(inStream);
             }
@@ -283,7 +277,7 @@ public class SaveImage {
     }
 
     public static boolean putExifData(File file, ExifInterface exif, Bitmap image,
-            int jpegCompressQuality) {
+                                      int jpegCompressQuality) {
         boolean ret = false;
         OutputStream s = null;
         try {
@@ -295,9 +289,9 @@ public class SaveImage {
             s = null;
             ret = true;
         } catch (FileNotFoundException e) {
-            Log.w(LOGTAG, "File not found: " + file.getAbsolutePath(), e);
+            Log.w(TAG, "File not found: " + file.getAbsolutePath(), e);
         } catch (IOException e) {
-            Log.w(LOGTAG, "Could not write exif: ", e);
+            Log.w(TAG, "Could not write exif: ", e);
         } finally {
             Utils.closeSilently(s);
         }
@@ -311,7 +305,7 @@ public class SaveImage {
         if (image != null) {
             try {
                 HeifWriter.Builder builder =
-                        new HeifWriter.Builder(path,image.getWidth(), image.getHeight(),
+                        new HeifWriter.Builder(path, image.getWidth(), image.getHeight(),
                                 HeifWriter.INPUT_MODE_BITMAP);
                 builder.setQuality(compressQuality);
                 builder.setMaxImages(1);
@@ -323,7 +317,7 @@ public class SaveImage {
                 heifWriter.stop(3000);
                 heifWriter.close();
                 ret = true;
-            } catch (IOException|IllegalStateException e) {
+            } catch (IOException | IllegalStateException e) {
                 e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -389,7 +383,7 @@ public class SaveImage {
         int num_tries = 0;
         int sampleSize = 1;
 
-        File sourceFile = getLocalFileFromUri(mContext,mSourceUri);
+        File sourceFile = getLocalFileFromUri(mContext, mSourceUri);
         boolean saveHeif = sourceFile.getName().endsWith(POSTFIX_HEIC);
 
         // If necessary, move the source file into the auxiliary directory,
@@ -406,11 +400,11 @@ public class SaveImage {
             // Check for Fusion
             FilterFusionRepresentation fusionRep = findFusionRepresentation(preset);
             boolean hasFusion = (fusionRep != null && fusionRep.hasUnderlay());
-            if(hasFusion) {
+            if (hasFusion) {
                 previewBmp = flattenFusion(mContext, Uri.parse(fusionRep.getUnderlay()), mPreviewImage,
                         Math.max(mPreviewImage.getWidth(), mPreviewImage.getHeight()), 0);
                 // If we fail to flatten, save original image
-                if(previewBmp == null) {
+                if (previewBmp == null) {
                     previewBmp = mPreviewImage;
                     hasFusion = false;
                 }
@@ -450,7 +444,7 @@ public class SaveImage {
                 }
             }
 
-            if(hasFusion) {
+            if (hasFusion) {
                 // recycle bitmap
                 previewBmp.recycle();
                 previewBmp = null;
@@ -490,10 +484,10 @@ public class SaveImage {
                 // Check for Fusion
                 FilterFusionRepresentation fusionRep = findFusionRepresentation(preset);
                 boolean hasFusion = (fusionRep != null && fusionRep.hasUnderlay());
-                if(hasFusion) {
+                if (hasFusion) {
                     Bitmap underlay = flattenFusion(mContext,
                             Uri.parse(fusionRep.getUnderlay()), bitmap, 0, sampleSize);
-                    if(underlay != null) {
+                    if (underlay != null) {
                         bitmap.recycle();
                         bitmap = underlay;
                     }
@@ -510,7 +504,7 @@ public class SaveImage {
                 updateProgress();
 
                 // If we succeed in writing the bitmap as a jpeg, return a uri.
-                boolean success = false;
+                boolean success;
                 if (saveHeif) {
                     success = putHeifData(mDestinationFile, exif, bitmap, quality);
                 } else {
@@ -549,18 +543,19 @@ public class SaveImage {
     }
 
     /**
-     *  Move the source file to auxiliary directory if needed and return the Uri
-     *  pointing to this new source file. If any file error happens, then just
-     *  don't move into the auxiliary directory.
-     * @param srcUri Uri to the source image.
+     * Move the source file to auxiliary directory if needed and return the Uri
+     * pointing to this new source file. If any file error happens, then just
+     * don't move into the auxiliary directory.
+     *
+     * @param srcUri  Uri to the source image.
      * @param dstFile Providing the destination file info to help to build the
-     *  auxiliary directory and new source file's name.
+     *                auxiliary directory and new source file's name.
      * @return the newSourceUri pointing to the new source image.
      */
     private Uri moveSrcToAuxIfNeeded(Uri srcUri, File dstFile) {
         File srcFile = getLocalFileFromUri(mContext, srcUri);
         if (srcFile == null) {
-            Log.d(LOGTAG, "Source file is not a local file, no update.");
+            Log.d(TAG, "Source file is not a local file, no update.");
             return srcUri;
         }
 
@@ -581,7 +576,7 @@ public class SaveImage {
             try {
                 noMedia.createNewFile();
             } catch (IOException e) {
-                Log.e(LOGTAG, "Can't create the nomedia");
+                Log.e(TAG, "Can't create the nomedia");
                 return srcUri;
             }
         }
@@ -613,26 +608,22 @@ public class SaveImage {
 
     private static File getLocalAuxDirectory(File dstFile) {
         File dstDirectory = dstFile.getParentFile();
-        File auxDiretory = new File(dstDirectory + "/" + AUX_DIR_NAME);
-        return auxDiretory;
+        return new File(dstDirectory + "/" + AUX_DIR_NAME);
     }
 
     public static Uri makeAndInsertUri(Context context, Uri sourceUri) {
         long time = System.currentTimeMillis();
-        String filename = new SimpleDateFormat(TIME_STAMP_NAME).format(new Date(time));
+        String filename = new SimpleDateFormat(TIME_STAMP_NAME, Locale.getDefault()).format(new Date(time));
         File saveDirectory = getFinalSaveDirectory(context, sourceUri);
-        File file = new File(saveDirectory, filename  + ".JPG");
+        File file = new File(saveDirectory, filename + ".JPG");
         return linkNewFileToUri(context, sourceUri, file, time, false);
     }
 
     public static void saveImage(ImagePreset preset, final FilterShowActivity filterShowActivity,
-            File destination) {
+                                 File destination) {
         Uri selectedImageUri = filterShowActivity.getSelectedImageUri();
         Uri sourceImageUri = MasterImage.getImage().getUri();
-        boolean flatten = false;
-        if (preset.contains(FilterRepresentation.TYPE_TINYPLANET)){
-            flatten = true;
-        }
+        boolean flatten = preset.contains(FilterRepresentation.TYPE_TINYPLANET);
 
         float scaleFactor = 1f;
 
@@ -652,7 +643,7 @@ public class SaveImage {
     }
 
     public static void querySource(Context context, Uri sourceUri, String[] projection,
-            ContentResolverQueryCallback callback) {
+                                   ContentResolverQueryCallback callback) {
         ContentResolver contentResolver = context.getContentResolver();
         querySourceFromContentResolver(contentResolver, sourceUri, projection, callback);
     }
@@ -660,19 +651,13 @@ public class SaveImage {
     private static void querySourceFromContentResolver(
             ContentResolver contentResolver, Uri sourceUri, String[] projection,
             ContentResolverQueryCallback callback) {
-        Cursor cursor = null;
-        try {
-            cursor = contentResolver.query(sourceUri, projection, null, null,
-                    null);
+        try (Cursor cursor = contentResolver.query(sourceUri, projection, null, null,
+                null)) {
             if ((cursor != null) && cursor.moveToNext()) {
                 callback.onCursorResult(cursor);
             }
         } catch (Exception e) {
             // Ignore error for lacking the data column from the source.
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -687,18 +672,19 @@ public class SaveImage {
 
     /**
      * Construct a File object based on the srcUri.
+     *
      * @return The file object. Return null if srcUri is invalid or not a local
      * file.
      */
     public static File getLocalFileFromUri(Context context, Uri srcUri) {
         if (srcUri == null) {
-            Log.e(LOGTAG, "srcUri is null.");
+            Log.e(TAG, "srcUri is null.");
             return null;
         }
 
         String scheme = srcUri.getScheme();
         if (scheme == null) {
-            Log.e(LOGTAG, "scheme is null.");
+            Log.e(TAG, "scheme is null.");
             return null;
         }
 
@@ -707,16 +693,9 @@ public class SaveImage {
         // differently.
         if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
             if (srcUri.getAuthority().equals(MediaStore.AUTHORITY)) {
-                querySource(context, srcUri, new String[] {
+                querySource(context, srcUri, new String[]{
                         ImageColumns.DATA
-                },
-                new ContentResolverQueryCallback() {
-
-                    @Override
-                    public void onCursorResult(Cursor cursor) {
-                        file[0] = new File(cursor.getString(0));
-                    }
-                });
+                }, cursor -> file[0] = new File(cursor.getString(0)));
             }
         } else if (scheme.equals(ContentResolver.SCHEME_FILE)) {
             file[0] = new File(srcUri.getPath());
@@ -732,14 +711,9 @@ public class SaveImage {
             return null;
         }
         final String[] trueName = new String[1];
-        querySource(context, src, new String[] {
+        querySource(context, src, new String[]{
                 ImageColumns.DATA
-        }, new ContentResolverQueryCallback() {
-            @Override
-            public void onCursorResult(Cursor cursor) {
-                trueName[0] = new File(cursor.getString(0)).getName();
-            }
-        });
+        }, cursor -> trueName[0] = new File(cursor.getString(0)).getName());
         return trueName[0];
     }
 
@@ -752,7 +726,7 @@ public class SaveImage {
     }
 
     private static boolean hasHeifPostfix(Context context, Uri src) {
-        String name = getTrueFilename(context,src);
+        String name = getTrueFilename(context, src);
         return name != null && name.endsWith(POSTFIX_HEIC);
     }
 
@@ -763,10 +737,11 @@ public class SaveImage {
      * will be removed if it is local.
      * If the <code>sourceUri</code> is not a local content Uri, then the
      * <code>file</code> will be inserted as a new content Uri.
+     *
      * @return the final Uri referring to the <code>file</code>.
      */
     public static Uri linkNewFileToUri(Context context, Uri sourceUri,
-            File file, long time, boolean deleteOriginal) {
+                                       File file, long time, boolean deleteOriginal) {
         File oldSelectedFile = getLocalFileFromUri(context, sourceUri);
         final ContentValues values = getContentValues(context, sourceUri, file, time);
 
@@ -798,7 +773,7 @@ public class SaveImage {
     }
 
     private static ContentValues getContentValues(Context context, Uri sourceUri,
-            File file, long time) {
+                                                  File file, long time) {
         final ContentValues values = new ContentValues();
 
         time /= 1000;
@@ -819,26 +794,21 @@ public class SaveImage {
         // thumbnail.
         values.put(Images.Media.MINI_THUMB_MAGIC, 0);
 
-        final String[] projection = new String[] {
+        final String[] projection = new String[]{
                 ImageColumns.DATE_TAKEN,
                 ImageColumns.LATITUDE, ImageColumns.LONGITUDE,
         };
 
-        SaveImage.querySource(context, sourceUri, projection,
-                new ContentResolverQueryCallback() {
+        SaveImage.querySource(context, sourceUri, projection, cursor -> {
+            values.put(Images.Media.DATE_TAKEN, cursor.getLong(0));
 
-            @Override
-            public void onCursorResult(Cursor cursor) {
-                values.put(Images.Media.DATE_TAKEN, cursor.getLong(0));
-
-                double latitude = cursor.getDouble(1);
-                double longitude = cursor.getDouble(2);
-                // TODO: Change || to && after the default location
-                // issue is fixed.
-                if ((latitude != 0f) || (longitude != 0f)) {
-                    values.put(Images.Media.LATITUDE, latitude);
-                    values.put(Images.Media.LONGITUDE, longitude);
-                }
+            double latitude = cursor.getDouble(1);
+            double longitude = cursor.getDouble(2);
+            // TODO: Change || to && after the default location
+            // issue is fixed.
+            if ((latitude != 0f) || (longitude != 0f)) {
+                values.put(Images.Media.LATITUDE, latitude);
+                values.put(Images.Media.LONGITUDE, longitude);
             }
         });
         return values;
@@ -850,26 +820,23 @@ public class SaveImage {
      */
     private static boolean isFileUri(Uri sourceUri) {
         String scheme = sourceUri.getScheme();
-        if (scheme != null && scheme.equals(ContentResolver.SCHEME_FILE)) {
-            return true;
-        }
-        return false;
+        return scheme != null && scheme.equals(ContentResolver.SCHEME_FILE);
     }
 
     private FilterFusionRepresentation findFusionRepresentation(ImagePreset preset) {
         FilterDualCamFusionRepresentation dcRepresentation =
-                (FilterDualCamFusionRepresentation)preset.getFilterWithSerializationName(
+                (FilterDualCamFusionRepresentation) preset.getFilterWithSerializationName(
                         FilterDualCamFusionRepresentation.SERIALIZATION_NAME);
         FilterTruePortraitFusionRepresentation tpRepresentation =
-                (FilterTruePortraitFusionRepresentation)preset.getFilterWithSerializationName(
+                (FilterTruePortraitFusionRepresentation) preset.getFilterWithSerializationName(
                         FilterTruePortraitFusionRepresentation.SERIALIZATION_NAME);
 
         FilterFusionRepresentation fusionRep = null;
 
-        if(dcRepresentation != null)
-            fusionRep = (FilterFusionRepresentation) dcRepresentation;
+        if (dcRepresentation != null)
+            fusionRep = dcRepresentation;
         else if (tpRepresentation != null)
-            fusionRep = (FilterFusionRepresentation) tpRepresentation;
+            fusionRep = tpRepresentation;
 
         return fusionRep;
     }
@@ -879,14 +846,14 @@ public class SaveImage {
 
         Bitmap underlay = null;
 
-        if(sizeConstraint != 0) {
+        if (sizeConstraint != 0) {
             underlay = ImageLoader.loadConstrainedBitmap(underlayUri, context,
                     sizeConstraint, null, false);
         } else if (sampleSize != 0) {
             underlay = ImageLoader.loadBitmapWithBackouts(context, underlayUri, sampleSize);
         }
 
-        if(underlay != null) {
+        if (underlay != null) {
             int ori = ImageLoader.getMetadataOrientation(context, underlayUri);
             if (ori != ImageLoader.ORI_NORMAL) {
                 underlay = ImageLoader.orientBitmap(underlay, ori);
@@ -894,8 +861,8 @@ public class SaveImage {
             RectF destRect = new RectF();
             Rect imageBounds = MasterImage.getImage().getImageBounds();
             Rect underlayBounds = MasterImage.getImage().getFusionBounds();
-            float underlayScaleFactor = (float)underlay.getWidth()
-                    / (float)underlayBounds.width();
+            float underlayScaleFactor = (float) underlay.getWidth()
+                    / (float) underlayBounds.width();
 
             destRect.left = (imageBounds.left - underlayBounds.left) * underlayScaleFactor;
             destRect.right = (imageBounds.right - underlayBounds.left) * underlayScaleFactor;

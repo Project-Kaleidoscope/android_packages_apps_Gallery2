@@ -41,7 +41,6 @@ import android.util.Log;
 import android.util.Size;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.cache.BitmapCache;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
 import com.android.gallery3d.filtershow.imageshow.GeometryMathUtils;
@@ -51,11 +50,13 @@ import com.android.gallery3d.filtershow.pipeline.FilterEnvironment;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 import com.android.gallery3d.filtershow.tools.DualCameraEffect;
 
+import org.codeaurora.gallery.R;
+
 class ImageFilterDualCamera extends ImageFilter {
     private static final String TAG = ImageFilterDualCamera.class.getSimpleName();
-
+    boolean mSupportFusion = false;
     private FilterDualCamBasicRepresentation mParameters;
-    private Paint mPaint = new Paint();
+    private final Paint mPaint = new Paint();
 
     public FilterRepresentation getDefaultRepresentation() {
         return null;
@@ -64,8 +65,6 @@ class ImageFilterDualCamera extends ImageFilter {
     public void useRepresentation(FilterRepresentation representation) {
         mParameters = (FilterDualCamBasicRepresentation) representation;
     }
-
-    boolean mSupportFusion = false;
 
     @Override
     public Bitmap apply(Bitmap bitmap, float scaleFactor, int quality) {
@@ -161,18 +160,30 @@ class ImageFilterDualCamera extends ImageFilter {
 
     private int getEffectType() {
         switch (mParameters.getTextId()) {
-            case R.string.focus: return DualCameraEffect.REFOCUS_CIRCLE;
-            case R.string.halo: return DualCameraEffect.HALO;
-            case R.string.motion: return DualCameraEffect.MOTION_BLUR;
-            case R.string.posterize: return DualCameraEffect.POSTERIZE;
-            case R.string.sketch: return DualCameraEffect.SKETCH;
-            case R.string.zoom: return DualCameraEffect.ZOOM_BLUR;
-            case R.string.bw: return DualCameraEffect.BLACK_WHITE;
-            case R.string.blackboard: return DualCameraEffect.BLACKBOARD;
-            case R.string.whiteboard: return DualCameraEffect.WHITEBOARD;
-            case R.string.fusion: return DualCameraEffect.FUSION_FOREGROUND;
-            case R.string.dc_negative: return DualCameraEffect.NEGATIVE;
-            default: throw new IllegalArgumentException();
+            case R.string.focus:
+                return DualCameraEffect.REFOCUS_CIRCLE;
+            case R.string.halo:
+                return DualCameraEffect.HALO;
+            case R.string.motion:
+                return DualCameraEffect.MOTION_BLUR;
+            case R.string.posterize:
+                return DualCameraEffect.POSTERIZE;
+            case R.string.sketch:
+                return DualCameraEffect.SKETCH;
+            case R.string.zoom:
+                return DualCameraEffect.ZOOM_BLUR;
+            case R.string.bw:
+                return DualCameraEffect.BLACK_WHITE;
+            case R.string.blackboard:
+                return DualCameraEffect.BLACKBOARD;
+            case R.string.whiteboard:
+                return DualCameraEffect.WHITEBOARD;
+            case R.string.fusion:
+                return DualCameraEffect.FUSION_FOREGROUND;
+            case R.string.dc_negative:
+                return DualCameraEffect.NEGATIVE;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 

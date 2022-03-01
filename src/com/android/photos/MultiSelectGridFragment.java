@@ -18,6 +18,7 @@ package com.android.photos;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.SparseBooleanArray;
@@ -66,14 +67,14 @@ public abstract class MultiSelectGridFragment extends Fragment
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         return inflater.inflate(R.layout.multigrid_content, container, false);
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mHost = (MultiChoiceManager.Provider) activity;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mHost = (MultiChoiceManager.Provider) context;
         if (mGrid != null) {
             mGrid.setMultiChoiceModeListener(mHost.getMultiChoiceManager());
         }
@@ -113,10 +114,10 @@ public abstract class MultiSelectGridFragment extends Fragment
      * getGridView().getItemAtPosition(position) if they need to access the data
      * associated with the selected item.
      *
-     * @param g The GridView where the click happened
-     * @param v The view that was clicked within the GridView
+     * @param g        The GridView where the click happened
+     * @param v        The view that was clicked within the GridView
      * @param position The position of the view in the grid
-     * @param id The id of the item that was clicked
+     * @param id       The id of the item that was clicked
      */
     public void onGridItemClick(GridView g, View v, int position, long id) {
     }
@@ -202,7 +203,7 @@ public abstract class MultiSelectGridFragment extends Fragment
      * the hidden state.
      *
      * @param shown If true, the grid view is shown; if false, the progress
-     *            indicator. The initial value is true.
+     *              indicator. The initial value is true.
      */
     public void setGridShown(boolean shown) {
         setGridShown(shown, true);
@@ -221,10 +222,10 @@ public abstract class MultiSelectGridFragment extends Fragment
      * displayed if you are waiting for the initial data to show in it. During
      * this time an indeterminate progress indicator will be shown instead.
      *
-     * @param shown If true, the grid view is shown; if false, the progress
-     *            indicator. The initial value is true.
+     * @param shown   If true, the grid view is shown; if false, the progress
+     *                indicator. The initial value is true.
      * @param animate If true, an animation will be used to transition to the
-     *            new state.
+     *                new state.
      */
     private void setGridShown(boolean shown, boolean animate) {
         ensureGrid();
@@ -235,12 +236,11 @@ public abstract class MultiSelectGridFragment extends Fragment
             return;
         }
         mGridShown = shown;
+        Context context = getContext();
         if (shown) {
             if (animate) {
-                mProgressContainer.startAnimation(AnimationUtils.loadAnimation(
-                        getActivity(), android.R.anim.fade_out));
-                mGridContainer.startAnimation(AnimationUtils.loadAnimation(
-                        getActivity(), android.R.anim.fade_in));
+                mProgressContainer.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_out));
+                mGridContainer.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in));
             } else {
                 mProgressContainer.clearAnimation();
                 mGridContainer.clearAnimation();
@@ -249,10 +249,8 @@ public abstract class MultiSelectGridFragment extends Fragment
             mGridContainer.setVisibility(View.VISIBLE);
         } else {
             if (animate) {
-                mProgressContainer.startAnimation(AnimationUtils.loadAnimation(
-                        getActivity(), android.R.anim.fade_in));
-                mGridContainer.startAnimation(AnimationUtils.loadAnimation(
-                        getActivity(), android.R.anim.fade_out));
+                mProgressContainer.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in));
+                mGridContainer.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_out));
             } else {
                 mProgressContainer.clearAnimation();
                 mGridContainer.clearAnimation();
@@ -281,7 +279,7 @@ public abstract class MultiSelectGridFragment extends Fragment
             mGrid = (GridView) root;
         } else {
             View empty = root.findViewById(android.R.id.empty);
-            if (empty != null && empty instanceof TextView) {
+            if (empty instanceof TextView) {
                 mEmptyView = (TextView) empty;
             }
             mProgressContainer = root.findViewById(R.id.progressContainer);
@@ -293,11 +291,6 @@ public abstract class MultiSelectGridFragment extends Fragment
                                 + "that is not a GridView class");
             }
             mGrid = (GridView) rawGridView;
-            if (mGrid == null) {
-                throw new RuntimeException(
-                        "Your content must have a GridView whose id attribute is " +
-                                "'android.R.id.list'");
-            }
             if (mEmptyView != null) {
                 mGrid.setEmptyView(mEmptyView);
             }

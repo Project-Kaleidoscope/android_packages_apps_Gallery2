@@ -15,15 +15,15 @@ public class AlbumSetLoader {
     public static final int INDEX_SUPPORTED_OPERATIONS = 8;
 
     public static final String[] PROJECTION = {
-        "_id",
-        "title",
-        "timestamp",
-        "thumb_uri",
-        "thumb_width",
-        "thumb_height",
-        "count_pending_upload",
-        "_count",
-        "supported_operations"
+            "_id",
+            "title",
+            "timestamp",
+            "thumb_uri",
+            "thumb_width",
+            "thumb_height",
+            "count_pending_upload",
+            "_count",
+            "supported_operations"
     };
     public static final MatrixCursor MOCK = createRandomCursor(30);
 
@@ -38,17 +38,16 @@ public class AlbumSetLoader {
     private static Object[] createRandomRow() {
         double random = Math.random();
         int id = (int) (500 * random);
-        Object[] row = {
-            id,
-            "Fun times " + id,
-            (long) (System.currentTimeMillis() * random),
-            null,
-            0,
-            0,
-            (random < .3 ? 1 : 0),
-            1,
-            0
+        return new Object[]{
+                id,
+                "Fun times " + id,
+                (long) (System.currentTimeMillis() * random),
+                null,
+                0,
+                0,
+                (random < .3 ? 1 : 0),
+                1,
+                0
         };
-        return row;
     }
 }

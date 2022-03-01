@@ -16,8 +16,9 @@
 
 package com.android.gallery3d.data;
 
+import android.util.Log;
+
 import com.android.gallery3d.common.Utils;
-import com.android.gallery3d.util.ThreadPool.CancelListener;
 import com.android.gallery3d.util.ThreadPool.JobContext;
 
 import java.io.File;
@@ -45,15 +46,10 @@ public class DownloadUtils {
 
     public static void dump(JobContext jc, InputStream is, OutputStream os)
             throws IOException {
-        byte buffer[] = new byte[4096];
+        byte[] buffer = new byte[4096];
         int rc = is.read(buffer, 0, buffer.length);
         final Thread thread = Thread.currentThread();
-        jc.setCancelListener(new CancelListener() {
-            @Override
-            public void onCancel() {
-                thread.interrupt();
-            }
-        });
+        jc.setCancelListener(thread::interrupt);
         while (rc > 0) {
             if (jc.isCancelled()) throw new InterruptedIOException();
             os.write(buffer, 0, rc);

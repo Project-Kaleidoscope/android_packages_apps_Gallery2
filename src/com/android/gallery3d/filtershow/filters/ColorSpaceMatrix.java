@@ -19,10 +19,10 @@ package com.android.gallery3d.filtershow.filters;
 import java.util.Arrays;
 
 public class ColorSpaceMatrix {
-    private final float[] mMatrix = new float[16];
     private static final float RLUM = 0.3086f;
     private static final float GLUM = 0.6094f;
     private static final float BLUM = 0.0820f;
+    private final float[] mMatrix = new float[16];
 
     public ColorSpaceMatrix() {
         identity();
@@ -60,8 +60,7 @@ public class ColorSpaceMatrix {
         mMatrix[8] = mMatrix[9] = mMatrix[10] = 0.0820f;
     }
 
-    private void multiply(float[] a)
-    {
+    private void multiply(float[] a) {
         int x, y;
         float[] temp = new float[16];
 
@@ -74,12 +73,10 @@ public class ColorSpaceMatrix {
                         + mMatrix[y4 + 3] * a[12 + x];
             }
         }
-        for (int i = 0; i < 16; i++)
-            mMatrix[i] = temp[i];
+        System.arraycopy(temp, 0, mMatrix, 0, 16);
     }
 
-    private void xRotateMatrix(float rs, float rc)
-    {
+    private void xRotateMatrix(float rs, float rc) {
         ColorSpaceMatrix c = new ColorSpaceMatrix();
         float[] tmp = c.mMatrix;
 
@@ -91,8 +88,7 @@ public class ColorSpaceMatrix {
         multiply(tmp);
     }
 
-    private void yRotateMatrix(float rs, float rc)
-    {
+    private void yRotateMatrix(float rs, float rc) {
         ColorSpaceMatrix c = new ColorSpaceMatrix();
         float[] tmp = c.mMatrix;
 
@@ -104,8 +100,7 @@ public class ColorSpaceMatrix {
         multiply(tmp);
     }
 
-    private void zRotateMatrix(float rs, float rc)
-    {
+    private void zRotateMatrix(float rs, float rc) {
         ColorSpaceMatrix c = new ColorSpaceMatrix();
         float[] tmp = c.mMatrix;
 
@@ -116,8 +111,7 @@ public class ColorSpaceMatrix {
         multiply(tmp);
     }
 
-    private void zShearMatrix(float dx, float dy)
-    {
+    private void zShearMatrix(float dx, float dy) {
         ColorSpaceMatrix c = new ColorSpaceMatrix();
         float[] tmp = c.mMatrix;
 
@@ -131,8 +125,7 @@ public class ColorSpaceMatrix {
      *
      * @param rot rotation in degrees
      */
-    public void setHue(float rot)
-    {
+    public void setHue(float rot) {
         float mag = (float) Math.sqrt(2.0);
         float xrs = 1 / mag;
         float xrc = 1 / mag;

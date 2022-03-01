@@ -30,7 +30,7 @@ import com.android.gallery3d.filtershow.editors.EditorTinyPlanet;
 import com.android.gallery3d.filtershow.filters.FilterTinyPlanetRepresentation;
 
 public class ImageTinyPlanet extends ImageShow {
-    private static final String LOGTAG = "ImageTinyPlanet";
+    private static final String TAG = "ImageTinyPlanet";
 
     private float mTouchCenterX = 0;
     private float mTouchCenterY = 0;
@@ -41,12 +41,13 @@ public class ImageTinyPlanet extends ImageShow {
     private float mStartAngle = 0;
     private FilterTinyPlanetRepresentation mTinyPlanetRep;
     private EditorTinyPlanet mEditorTinyPlanet;
-    private ScaleGestureDetector mScaleGestureDetector = null;
+    private final ScaleGestureDetector mScaleGestureDetector;
     boolean mInScale = false;
     RectF mDestRect = new RectF();
 
     OnScaleGestureListener mScaleGestureListener = new OnScaleGestureListener() {
         private float mScale = 100;
+
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
             mInScale = false;
@@ -61,7 +62,7 @@ public class ImageTinyPlanet extends ImageShow {
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            int value = mTinyPlanetRep.getValue();
+            int value;
             mScale *= detector.getScaleFactor();
             value = (int) (mScale);
             value = Math.min(mTinyPlanetRep.getMaximum(), value);
@@ -81,7 +82,7 @@ public class ImageTinyPlanet extends ImageShow {
 
     public ImageTinyPlanet(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mScaleGestureDetector = new ScaleGestureDetector(context,mScaleGestureListener );
+        mScaleGestureDetector = new ScaleGestureDetector(context, mScaleGestureListener);
     }
 
     protected static float angleFor(float dx, float dy) {

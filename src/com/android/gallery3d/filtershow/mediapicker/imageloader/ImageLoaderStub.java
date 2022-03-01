@@ -35,7 +35,7 @@ import android.widget.ImageView;
 
 
 public class ImageLoaderStub {
-    private ImageLoaderConfig configuration;
+    private final ImageLoaderConfig configuration;
 
     public ImageLoaderStub(Context context) {
         configuration = new ImageLoaderConfig(context);

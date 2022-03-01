@@ -29,10 +29,11 @@
 package com.android.gallery3d.app;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import java.util.ArrayList;
@@ -60,13 +61,8 @@ public abstract class AbstractPermissionActivity extends FragmentActivity {
     }
 
     protected void requestPermission(String[] permissions, int requestCode) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            permissionGranted = true;
-            return;
-        }
-
         boolean needRequest = false;
-        ArrayList<String> permissionList = new ArrayList<String>();
+        ArrayList<String> permissionList = new ArrayList<>();
         for (String permission : permissions) {
             if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
                 permissionList.add(permission);
@@ -98,16 +94,13 @@ public abstract class AbstractPermissionActivity extends FragmentActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         permissionGranted = checkPermissionGrantResults(grantResults);
-        switch (requestCode) {
-            case PERMISSION_REQUEST_STORAGE: {
-                if (permissionGranted) {
-                    onGetPermissionsSuccess();
-                } else {
-                    onGetPermissionsFailure();
-                }
+        if (requestCode == PERMISSION_REQUEST_STORAGE) {
+            if (permissionGranted) {
+                onGetPermissionsSuccess();
+            } else {
+                onGetPermissionsFailure();
             }
         }
     }

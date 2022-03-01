@@ -46,22 +46,19 @@ public class Profile {
         int wakeTime;
 
         boolean isHolding;
-        ArrayList<String[]> holdingStacks = new ArrayList<String[]>();
+        ArrayList<String[]> holdingStacks = new ArrayList<>();
     }
 
     // This is a watchdog thread which dumps stacks of other threads periodically.
     private static Watchdog sWatchdog = new Watchdog();
 
     private static class Watchdog {
-        private ArrayList<WatchEntry> mList = new ArrayList<WatchEntry>();
+        private ArrayList<WatchEntry> mList = new ArrayList<>();
         private HandlerThread mHandlerThread;
         private Handler mHandler;
-        private Runnable mProcessRunnable = new Runnable() {
-            @Override
-            public void run() {
-                synchronized (Watchdog.this) {
-                    processList();
-                }
+        private Runnable mProcessRunnable = () -> {
+            synchronized (Watchdog.this) {
+                processList();
             }
         };
         private Random mRandom = new Random();

@@ -25,6 +25,8 @@ import com.android.photos.data.PhotoProvider.Metadata;
 import com.android.photos.data.PhotoProvider.Photos;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,64 +34,55 @@ import java.util.List;
  * information about photo and video information stored on the server.
  */
 public class PhotoDatabase extends SQLiteOpenHelper {
+    static final int DB_VERSION = 3;
     @SuppressWarnings("unused")
     private static final String TAG = PhotoDatabase.class.getSimpleName();
-    static final int DB_VERSION = 3;
-
     private static final String SQL_CREATE_TABLE = "CREATE TABLE ";
 
     private static final String[][] CREATE_PHOTO = {
-        { Photos._ID, "INTEGER PRIMARY KEY AUTOINCREMENT" },
-        // Photos.ACCOUNT_ID is a foreign key to Accounts._ID
-        { Photos.ACCOUNT_ID, "INTEGER NOT NULL" },
-        { Photos.WIDTH, "INTEGER NOT NULL" },
-        { Photos.HEIGHT, "INTEGER NOT NULL" },
-        { Photos.DATE_TAKEN, "INTEGER NOT NULL" },
-        // Photos.ALBUM_ID is a foreign key to Albums._ID
-        { Photos.ALBUM_ID, "INTEGER" },
-        { Photos.MIME_TYPE, "TEXT NOT NULL" },
-        { Photos.TITLE, "TEXT" },
-        { Photos.DATE_MODIFIED, "INTEGER" },
-        { Photos.ROTATION, "INTEGER" },
+            {Photos._ID, "INTEGER PRIMARY KEY AUTOINCREMENT"},
+            // Photos.ACCOUNT_ID is a foreign key to Accounts._ID
+            {Photos.ACCOUNT_ID, "INTEGER NOT NULL"},
+            {Photos.WIDTH, "INTEGER NOT NULL"},
+            {Photos.HEIGHT, "INTEGER NOT NULL"},
+            {Photos.DATE_TAKEN, "INTEGER NOT NULL"},
+            // Photos.ALBUM_ID is a foreign key to Albums._ID
+            {Photos.ALBUM_ID, "INTEGER"},
+            {Photos.MIME_TYPE, "TEXT NOT NULL"},
+            {Photos.TITLE, "TEXT"},
+            {Photos.DATE_MODIFIED, "INTEGER"},
+            {Photos.ROTATION, "INTEGER"},
     };
 
     private static final String[][] CREATE_ALBUM = {
-        { Albums._ID, "INTEGER PRIMARY KEY AUTOINCREMENT" },
-        // Albums.ACCOUNT_ID is a foreign key to Accounts._ID
-        { Albums.ACCOUNT_ID, "INTEGER NOT NULL" },
-        // Albums.PARENT_ID is a foreign key to Albums._ID
-        { Albums.PARENT_ID, "INTEGER" },
-        { Albums.ALBUM_TYPE, "TEXT" },
-        { Albums.VISIBILITY, "INTEGER NOT NULL" },
-        { Albums.LOCATION_STRING, "TEXT" },
-        { Albums.TITLE, "TEXT NOT NULL" },
-        { Albums.SUMMARY, "TEXT" },
-        { Albums.DATE_PUBLISHED, "INTEGER" },
-        { Albums.DATE_MODIFIED, "INTEGER" },
-        createUniqueConstraint(Albums.PARENT_ID, Albums.TITLE),
+            {Albums._ID, "INTEGER PRIMARY KEY AUTOINCREMENT"},
+            // Albums.ACCOUNT_ID is a foreign key to Accounts._ID
+            {Albums.ACCOUNT_ID, "INTEGER NOT NULL"},
+            // Albums.PARENT_ID is a foreign key to Albums._ID
+            {Albums.PARENT_ID, "INTEGER"},
+            {Albums.ALBUM_TYPE, "TEXT"},
+            {Albums.VISIBILITY, "INTEGER NOT NULL"},
+            {Albums.LOCATION_STRING, "TEXT"},
+            {Albums.TITLE, "TEXT NOT NULL"},
+            {Albums.SUMMARY, "TEXT"},
+            {Albums.DATE_PUBLISHED, "INTEGER"},
+            {Albums.DATE_MODIFIED, "INTEGER"},
+            createUniqueConstraint(Albums.PARENT_ID, Albums.TITLE),
     };
 
     private static final String[][] CREATE_METADATA = {
-        { Metadata._ID, "INTEGER PRIMARY KEY AUTOINCREMENT" },
-        // Metadata.PHOTO_ID is a foreign key to Photos._ID
-        { Metadata.PHOTO_ID, "INTEGER NOT NULL" },
-        { Metadata.KEY, "TEXT NOT NULL" },
-        { Metadata.VALUE, "TEXT NOT NULL" },
-        createUniqueConstraint(Metadata.PHOTO_ID, Metadata.KEY),
+            {Metadata._ID, "INTEGER PRIMARY KEY AUTOINCREMENT"},
+            // Metadata.PHOTO_ID is a foreign key to Photos._ID
+            {Metadata.PHOTO_ID, "INTEGER NOT NULL"},
+            {Metadata.KEY, "TEXT NOT NULL"},
+            {Metadata.VALUE, "TEXT NOT NULL"},
+            createUniqueConstraint(Metadata.PHOTO_ID, Metadata.KEY),
     };
 
     private static final String[][] CREATE_ACCOUNT = {
-        { Accounts._ID, "INTEGER PRIMARY KEY AUTOINCREMENT" },
-        { Accounts.ACCOUNT_NAME, "TEXT UNIQUE NOT NULL" },
+            {Accounts._ID, "INTEGER PRIMARY KEY AUTOINCREMENT"},
+            {Accounts.ACCOUNT_NAME, "TEXT UNIQUE NOT NULL"},
     };
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        createTable(db, Accounts.TABLE, getAccountTableDefinition());
-        createTable(db, Albums.TABLE, getAlbumTableDefinition());
-        createTable(db, Photos.TABLE, getPhotoTableDefinition());
-        createTable(db, Metadata.TABLE, getMetadataTableDefinition());
-    }
 
     public PhotoDatabase(Context context, String dbName, int dbVersion) {
         super(context, dbName, null, dbVersion);
@@ -97,6 +90,70 @@ public class PhotoDatabase extends SQLiteOpenHelper {
 
     public PhotoDatabase(Context context, String dbName) {
         super(context, dbName, null, DB_VERSION);
+    }
+
+    protected static void createTable(SQLiteDatabase db, String table, List<String[]> columns) {
+        StringBuilder create = new StringBuilder(SQL_CREATE_TABLE);
+        create.append(table).append('(');
+        boolean first = true;
+        for (String[] column : columns) {
+            if (!first) {
+                create.append(',');
+            }
+            first = false;
+            for (String val : column) {
+                create.append(val).append(' ');
+            }
+        }
+        create.append(')');
+        db.beginTransaction();
+        try {
+            db.execSQL(create.toString());
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    protected static String[] createUniqueConstraint(String column1, String column2) {
+        return new String[]{
+                "UNIQUE(", column1, ",", column2, ")"
+        };
+    }
+
+    protected static List<String[]> tableCreationStrings(String[][] createTable) {
+        ArrayList<String[]> create = new ArrayList<>(createTable.length);
+        create.addAll(Arrays.asList(createTable));
+        return create;
+    }
+
+    protected static void addToTable(List<String[]> createTable, String[][] columns, String[][] constraints) {
+        if (columns != null) {
+            for (String[] column : columns) {
+                createTable.add(0, column);
+            }
+        }
+        if (constraints != null) {
+            Collections.addAll(createTable, constraints);
+        }
+    }
+
+    protected static void dropTable(SQLiteDatabase db, String table) {
+        db.beginTransaction();
+        try {
+            db.execSQL("drop table if exists " + table);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        createTable(db, Accounts.TABLE, getAccountTableDefinition());
+        createTable(db, Albums.TABLE, getAlbumTableDefinition());
+        createTable(db, Photos.TABLE, getPhotoTableDefinition());
+        createTable(db, Metadata.TABLE, getMetadataTableDefinition());
     }
 
     @Override
@@ -131,65 +188,5 @@ public class PhotoDatabase extends SQLiteOpenHelper {
 
     protected List<String[]> getAccountTableDefinition() {
         return tableCreationStrings(CREATE_ACCOUNT);
-    }
-
-    protected static void createTable(SQLiteDatabase db, String table, List<String[]> columns) {
-        StringBuilder create = new StringBuilder(SQL_CREATE_TABLE);
-        create.append(table).append('(');
-        boolean first = true;
-        for (String[] column : columns) {
-            if (!first) {
-                create.append(',');
-            }
-            first = false;
-            for (String val: column) {
-                create.append(val).append(' ');
-            }
-        }
-        create.append(')');
-        db.beginTransaction();
-        try {
-            db.execSQL(create.toString());
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    protected static String[] createUniqueConstraint(String column1, String column2) {
-        return new String[] {
-                "UNIQUE(", column1, ",", column2, ")"
-        };
-    }
-
-    protected static List<String[]> tableCreationStrings(String[][] createTable) {
-        ArrayList<String[]> create = new ArrayList<String[]>(createTable.length);
-        for (String[] line: createTable) {
-            create.add(line);
-        }
-        return create;
-    }
-
-    protected static void addToTable(List<String[]> createTable, String[][] columns, String[][] constraints) {
-        if (columns != null) {
-            for (String[] column: columns) {
-                createTable.add(0, column);
-            }
-        }
-        if (constraints != null) {
-            for (String[] constraint: constraints) {
-                createTable.add(constraint);
-            }
-        }
-    }
-
-    protected static void dropTable(SQLiteDatabase db, String table) {
-        db.beginTransaction();
-        try {
-            db.execSQL("drop table if exists " + table);
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
     }
 }

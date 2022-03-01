@@ -37,7 +37,7 @@ public class BitmapTileProvider implements TileImageView.TileSource {
     public BitmapTileProvider(Bitmap bitmap, int maxBackupSize) {
         mImageWidth = bitmap.getWidth();
         mImageHeight = bitmap.getHeight();
-        ArrayList<Bitmap> list = new ArrayList<Bitmap>();
+        ArrayList<Bitmap> list = new ArrayList<>();
         list.add(bitmap);
         while (bitmap.getWidth() > maxBackupSize
                 || bitmap.getHeight() > maxBackupSize) {
@@ -46,7 +46,7 @@ public class BitmapTileProvider implements TileImageView.TileSource {
         }
 
         mScreenNail = new BitmapScreenNail(list.remove(list.size() - 1));
-        mMipmaps = list.toArray(new Bitmap[list.size()]);
+        mMipmaps = list.toArray(new Bitmap[0]);
         mConfig = Config.ARGB_8888;
     }
 

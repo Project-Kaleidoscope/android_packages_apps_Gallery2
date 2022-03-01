@@ -28,20 +28,22 @@ import java.util.HashMap;
 public class ClusterAlbumSet extends MediaSet implements ContentListener {
     @SuppressWarnings("unused")
     private static final String TAG = "ClusterAlbumSet";
-    private GalleryApp mApplication;
-    private MediaSet mBaseSet;
-    private int mKind;
-    private ArrayList<ClusterAlbum> mAlbums = new ArrayList<ClusterAlbum>();
+    private final GalleryApp mApplication;
+    private final MediaSet mBaseSet;
+    private final int mKind;
+    private final ArrayList<ClusterAlbum> mAlbums = new ArrayList<>();
     private boolean mIsLoading;
 
     private int mTotalMediaItemCount;
-    /** mTotalSelectableMediaItemCount is the count of items
-     * exclude not selectable such as Title item in TimeLine. */
+    /**
+     * mTotalSelectableMediaItemCount is the count of items
+     * exclude not selectable such as Title item in TimeLine.
+     */
     private int mTotalSelectableMediaItemCount;
     private ArrayList<Integer> mAlbumItemCountList;
 
     public ClusterAlbumSet(Path path, GalleryApp application,
-            MediaSet baseSet, int kind) {
+                           MediaSet baseSet, int kind) {
         super(path, INVALID_DATA_VERSION);
         mApplication = application;
         mBaseSet = baseSet;
@@ -94,7 +96,7 @@ public class ClusterAlbumSet extends MediaSet implements ContentListener {
 
     private void updateClusters() {
         //save last paths to find the empty albums
-        ArrayList<Path> oldPaths = new ArrayList<Path>();
+        ArrayList<Path> oldPaths = new ArrayList<>();
         for (ClusterAlbum album : mAlbums) {
             oldPaths.add(album.getPath());
         }
@@ -160,19 +162,14 @@ public class ClusterAlbumSet extends MediaSet implements ContentListener {
         for (Path path : oldPaths) {
             ClusterAlbum album = (ClusterAlbum) dataManager.peekMediaObject(path);
             if (album != null) {
-                album.setMediaItems(new ArrayList<Path>());
+                album.setMediaItems(new ArrayList<>());
             }
         }
     }
 
     protected void updateClustersContents() {
-        final HashMap<Path, Integer> existing = new HashMap<Path, Integer>();
-        mBaseSet.enumerateTotalMediaItems(new MediaSet.ItemConsumer() {
-            @Override
-            public void consume(int index, MediaItem item) {
-                existing.put(item.getPath(), item.getMediaType());
-            }
-        });
+        final HashMap<Path, Integer> existing = new HashMap<>();
+        mBaseSet.enumerateTotalMediaItems((index, item) -> existing.put(item.getPath(), item.getMediaType()));
 
         int n = mAlbums.size();
 
@@ -180,11 +177,11 @@ public class ClusterAlbumSet extends MediaSet implements ContentListener {
         // mAlbums.
         for (int i = n - 1; i >= 0; i--) {
             ArrayList<Path> oldPaths = mAlbums.get(i).getMediaItems();
-            ArrayList<Path> newPaths = new ArrayList<Path>();
+            ArrayList<Path> newPaths = new ArrayList<>();
             int m = oldPaths.size();
             int imageCount = 0;
             int videoCount = 0;
-            int mediaType = MEDIA_TYPE_UNKNOWN;
+            int mediaType;
             ClusterAlbum album = mAlbums.get(i);
             for (int j = 0; j < m; j++) {
                 Path p = oldPaths.get(j);
@@ -192,9 +189,9 @@ public class ClusterAlbumSet extends MediaSet implements ContentListener {
                     newPaths.add(p);
                     mediaType = existing.get(p);
                     existing.remove(p);
-                    if(mediaType == MediaObject.MEDIA_TYPE_IMAGE) {
+                    if (mediaType == MediaObject.MEDIA_TYPE_IMAGE) {
                         imageCount++;
-                    } else if(mediaType == MediaObject.MEDIA_TYPE_VIDEO) {
+                    } else if (mediaType == MediaObject.MEDIA_TYPE_VIDEO) {
                         videoCount++;
                     }
                 }
@@ -225,65 +222,65 @@ public class ClusterAlbumSet extends MediaSet implements ContentListener {
         return mTotalSelectableMediaItemCount;
     }
 
-  private void calculateTotalItemsCount() {
-      mTotalMediaItemCount = 0;
-      if( mAlbums != null && mAlbums.size() > 0) {
-          mAlbumItemCountList = new ArrayList<Integer>();
-          for(ClusterAlbum album: mAlbums) {
-              int count = album.getMediaItemCount();
-              mTotalMediaItemCount = mTotalMediaItemCount + count;
-              mAlbumItemCountList.add(mTotalMediaItemCount);
-          }
-      }
-  }
+    private void calculateTotalItemsCount() {
+        mTotalMediaItemCount = 0;
+        if (mAlbums != null && mAlbums.size() > 0) {
+            mAlbumItemCountList = new ArrayList<>();
+            for (ClusterAlbum album : mAlbums) {
+                int count = album.getMediaItemCount();
+                mTotalMediaItemCount = mTotalMediaItemCount + count;
+                mAlbumItemCountList.add(mTotalMediaItemCount);
+            }
+        }
+    }
 
-  @Override
-  public int getMediaItemCount() {
-      return mTotalMediaItemCount;
-  }
+    @Override
+    public int getMediaItemCount() {
+        return mTotalMediaItemCount;
+    }
 
-  @Override
-  public ArrayList<MediaItem> getMediaItem(int start, int count) {
-      if ((start + count) > mTotalMediaItemCount ) {
-          count  = mTotalMediaItemCount - start;
-      }
-      if (count <= 0) return null;
-      ArrayList<MediaItem> mediaItems = new ArrayList<MediaItem>();
-      int startAlbum = findTimelineAlbumIndex(start);
-      int endAlbum = findTimelineAlbumIndex(start + count - 1);
-      int s;
-      int lCount;
-      if (mAlbums.size() > 0 && mAlbumItemCountList.size() > 0) {
-          s = mAlbums.get(startAlbum).getTotalMediaItemCount() -
-                  (mAlbumItemCountList.get(startAlbum) - start);
-          for (int i = startAlbum; i <= endAlbum && i < mAlbums.size(); ++i) {
-              int albumCount = mAlbums.get(i).getTotalMediaItemCount();
-              lCount = Math.min(albumCount - s, count);
-              ArrayList<MediaItem> items = mAlbums.get(i).getMediaItem(s, lCount);
-              if (items != null)
-                  mediaItems.addAll(items);
-              count -= lCount;
-              s = 0;
-          }
-      }
-      return mediaItems;
-  }
+    @Override
+    public ArrayList<MediaItem> getMediaItem(int start, int count) {
+        if ((start + count) > mTotalMediaItemCount) {
+            count = mTotalMediaItemCount - start;
+        }
+        if (count <= 0) return null;
+        ArrayList<MediaItem> mediaItems = new ArrayList<>();
+        int startAlbum = findTimelineAlbumIndex(start);
+        int endAlbum = findTimelineAlbumIndex(start + count - 1);
+        int s;
+        int lCount;
+        if (mAlbums.size() > 0 && mAlbumItemCountList.size() > 0) {
+            s = mAlbums.get(startAlbum).getTotalMediaItemCount() -
+                    (mAlbumItemCountList.get(startAlbum) - start);
+            for (int i = startAlbum; i <= endAlbum && i < mAlbums.size(); ++i) {
+                int albumCount = mAlbums.get(i).getTotalMediaItemCount();
+                lCount = Math.min(albumCount - s, count);
+                ArrayList<MediaItem> items = mAlbums.get(i).getMediaItem(s, lCount);
+                if (items != null)
+                    mediaItems.addAll(items);
+                count -= lCount;
+                s = 0;
+            }
+        }
+        return mediaItems;
+    }
 
-  public int findTimelineAlbumIndex(int itemIndex) {
-      int index = Arrays.binarySearch(mAlbumItemCountList.toArray(new Integer[0]), itemIndex);
-      if (index <  mTotalMediaItemCount && index >=  0)
-          return index + 1;
-      if (index < 0) {
-          index = (index * (-1)) - 1;
-      }
-      return index;
-  }
+    public int findTimelineAlbumIndex(int itemIndex) {
+        int index = Arrays.binarySearch(mAlbumItemCountList.toArray(new Integer[0]), itemIndex);
+        if (index < mTotalMediaItemCount && index >= 0)
+            return index + 1;
+        if (index < 0) {
+            index = (index * (-1)) - 1;
+        }
+        return index;
+    }
 
-  public ClusterAlbum getAlbumFromindex(int index) {
-      int aIndex = findTimelineAlbumIndex(index);
-      if (aIndex < mAlbums.size() && aIndex >= 0) {
-          return mAlbums.get(aIndex);
-      }
-      return null;
-  }
+    public ClusterAlbum getAlbumFromindex(int index) {
+        int aIndex = findTimelineAlbumIndex(index);
+        if (aIndex < mAlbums.size() && aIndex >= 0) {
+            return mAlbums.get(aIndex);
+        }
+        return null;
+    }
 }

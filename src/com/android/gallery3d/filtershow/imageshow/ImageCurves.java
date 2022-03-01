@@ -26,14 +26,12 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.Editor;
 import com.android.gallery3d.filtershow.editors.EditorCurves;
@@ -42,11 +40,13 @@ import com.android.gallery3d.filtershow.filters.FiltersManager;
 import com.android.gallery3d.filtershow.filters.ImageFilterCurves;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 
+import org.codeaurora.gallery.R;
+
 import java.util.HashMap;
 
 public class ImageCurves extends ImageShow {
 
-    private static final String LOGTAG = "ImageCurves";
+    private static final String TAG = "ImageCurves";
     Paint gPaint = new Paint();
     Path gPathSpline = new Path();
     HashMap<Integer, String> mIdStrLut;
@@ -89,13 +89,13 @@ public class ImageCurves extends ImageShow {
     }
 
     private void showPopupMenu(LinearLayout accessoryViewList) {
-        final Button button = (Button) accessoryViewList.findViewById(
+        final Button button = accessoryViewList.findViewById(
                 R.id.applyEffect);
         if (button == null) {
             return;
         }
-        if (mIdStrLut == null){
-            mIdStrLut = new HashMap<Integer, String>();
+        if (mIdStrLut == null) {
+            mIdStrLut = new HashMap<>();
             mIdStrLut.put(R.id.curve_menu_rgb,
                     getContext().getString(R.string.curves_channel_rgb));
             mIdStrLut.put(R.id.curve_menu_red,
@@ -107,36 +107,26 @@ public class ImageCurves extends ImageShow {
         }
         PopupMenu popupMenu = new PopupMenu(getActivity(), button);
         popupMenu.getMenuInflater().inflate(R.menu.filtershow_menu_curves, popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                setChannel(item.getItemId());
-                button.setText(mIdStrLut.get(item.getItemId()));
-                return true;
-            }
+        popupMenu.setOnMenuItemClickListener(item -> {
+            setChannel(item.getItemId());
+            button.setText(mIdStrLut.get(item.getItemId()));
+            return true;
         });
         Editor.hackFixStrings(popupMenu.getMenu());
         popupMenu.show();
-        ((FilterShowActivity)getContext()).onShowMenu(popupMenu);
+        ((FilterShowActivity) getContext()).onShowMenu(popupMenu);
     }
 
     @Override
     public void openUtilityPanel(final LinearLayout accessoryViewList) {
         Context context = accessoryViewList.getContext();
-        Button view = (Button) accessoryViewList.findViewById(R.id.applyEffect);
+        Button view = accessoryViewList.findViewById(R.id.applyEffect);
         view.setText(context.getString(R.string.curves_channel_rgb));
         view.setVisibility(View.VISIBLE);
 
-        view.setOnClickListener(new OnClickListener() {
-                @Override
-            public void onClick(View arg0) {
-                showPopupMenu(accessoryViewList);
-            }
-        });
+        view.setOnClickListener(arg0 -> showPopupMenu(accessoryViewList));
 
-        if (view != null) {
-            view.setVisibility(View.VISIBLE);
-        }
+        view.setVisibility(View.VISIBLE);
     }
 
     public void nextChannel() {
@@ -366,9 +356,9 @@ public class ImageCurves extends ImageShow {
 
     private void drawHistogram(Canvas canvas, int[] histogram, int color, PorterDuff.Mode mode) {
         int max = 0;
-        for (int i = 0; i < histogram.length; i++) {
-            if (histogram[i] > max) {
-                max = histogram[i];
+        for (int j : histogram) {
+            if (j > max) {
+                max = j;
             }
         }
         float w = getWidth() - Spline.curveHandleSize();

@@ -16,10 +16,10 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import org.codeaurora.gallery.R;
-
 import android.graphics.Bitmap;
 import android.graphics.Color;
+
+import org.codeaurora.gallery.R;
 
 
 public class ImageFilterBwFilter extends SimpleImageFilter {
@@ -51,7 +51,7 @@ public class ImageFilterBwFilter extends SimpleImageFilter {
         }
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
-        float[] hsv = new float[] {
+        float[] hsv = new float[]{
                 180 + getParameters().getValue(), 1, 1
         };
         int rgb = Color.HSVToColor(hsv);

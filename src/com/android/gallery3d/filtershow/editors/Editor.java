@@ -16,9 +16,6 @@
 
 package com.android.gallery3d.filtershow.editors;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import android.content.Context;
 import android.content.res.Configuration;
 import android.view.LayoutInflater;
@@ -34,7 +31,6 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.controller.Control;
 import com.android.gallery3d.filtershow.filters.FilterBasicRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
@@ -42,29 +38,38 @@ import com.android.gallery3d.filtershow.imageshow.ImageShow;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 
+import org.codeaurora.gallery.R;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * Base class for Editors Must contain a mImageShow and a top level view
  */
 public class Editor implements OnSeekBarChangeListener, SwapButton.SwapButtonListener {
+    public static byte SHOW_VALUE_UNDEFINED = -1;
+    public static byte SHOW_VALUE_OFF = 0;
+    public static byte SHOW_VALUE_INT = 1;
+    private final String TAG = "Editor";
     protected Context mContext;
     protected View mView;
     protected ImageShow mImageShow;
     protected FrameLayout mFrameLayout;
     protected SeekBar mSeekBar;
-    Button mEditTitle;
     protected Button mFilterTitle;
     protected int mID;
-    private final String LOGTAG = "Editor";
     protected boolean mChangesGeometry = false;
     protected FilterRepresentation mLocalRepresentation = null;
     protected byte mShowParameter = SHOW_VALUE_UNDEFINED;
+    Button mEditTitle;
     private Button mButton;
-    public static byte SHOW_VALUE_UNDEFINED = -1;
-    public static byte SHOW_VALUE_OFF = 0;
-    public static byte SHOW_VALUE_INT = 1;
     private View mActionButton, mEditControl;
     private TextView mBasicFilterText;
     private TextView mBasicFilterValue;
+
+    protected Editor(int id) {
+        mID = id;
+    }
 
     public static void hackFixStrings(Menu menu) {
         int count = menu.size();
@@ -76,10 +81,6 @@ public class Editor implements OnSeekBarChangeListener, SwapButton.SwapButtonLis
 
     public String calculateUserMessage(Context context, String effectName, Object parameterValue) {
         return effectName + " " + parameterValue;
-    }
-
-    protected Editor(int id) {
-        mID = id;
     }
 
     public int getID() {
@@ -126,8 +127,7 @@ public class Editor implements OnSeekBarChangeListener, SwapButton.SwapButtonLis
         mButton = editTitle;
     }
 
-    public void setBasicFilterUI(TextView textFilterName,
-            TextView textFilterValue) {
+    public void setBasicFilterUI(TextView textFilterName, TextView textFilterValue) {
         mBasicFilterText = textFilterName;
         mBasicFilterValue = textFilterValue;
     }
@@ -145,7 +145,7 @@ public class Editor implements OnSeekBarChangeListener, SwapButton.SwapButtonLis
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View lp = inflater.inflate(
                 R.layout.filtershow_seekbar, (ViewGroup) editControl, true);
-        mSeekBar = (SeekBar) lp.findViewById(R.id.primarySeekBar);
+        mSeekBar = lp.findViewById(R.id.primarySeekBar);
         mSeekBar.setOnSeekBarChangeListener(this);
         mSeekBar.setVisibility(View.GONE);
         editControl.setVisibility(View.GONE);
@@ -251,7 +251,7 @@ public class Editor implements OnSeekBarChangeListener, SwapButton.SwapButtonLis
      * This causes the preview bitmap to be regenerated.
      */
     public void commitLocalRepresentation(FilterRepresentation rep) {
-        ArrayList<FilterRepresentation> filter = new ArrayList<FilterRepresentation>(1);
+        ArrayList<FilterRepresentation> filter = new ArrayList<>(1);
         filter.add(rep);
         commitLocalRepresentation(filter);
     }

@@ -18,35 +18,41 @@ import android.view.MenuItem;
  * private static final int MENU_EXAMPLE = 1;
  *
  * @Override public boolean onCreateOptionsMenu(Menu menu) {
- *           super.onCreateOptionsMenu(menu); menu.add(0,
- *           getMenuActivityId(MENU_EXAMPLE), 0, android.R.string.ok); return
- *           true; }
+ * super.onCreateOptionsMenu(menu); menu.add(0,
+ * getMenuActivityId(MENU_EXAMPLE), 0, android.R.string.ok); return
+ * true; }
  * @Override public boolean onOptionsItemSelected(MenuItem item) {
- *           switch(getMenuOriginalId(item.getItemId())) { case MENU_EXAMPLE:
- *           //do something return true; default: return false; } } }
+ * switch(getMenuOriginalId(item.getItemId())) { case MENU_EXAMPLE:
+ * //do something return true; default: return false; } } }
  */
 public interface IActivityHooker {
     /**
      * Will be called in Host Activity.onCreate(Bundle savedInstanceState)
+     *
      * @param savedInstanceState
      */
     void onCreate(Bundle savedInstanceState);
+
     /**
      * Will be called in Host Activity.onStart()
      */
     void onStart();
+
     /**
      * Will be called in Host Activity.onStop()
      */
     void onStop();
+
     /**
      * Will be called in Host Activity.onPause()
      */
     void onPause();
+
     /**
      * Will be called in Host Activity.onResume()
      */
     void onResume();
+
     /**
      * Will be called in Host Activity.onDestroy()
      */

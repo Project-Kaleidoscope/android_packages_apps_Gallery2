@@ -20,9 +20,9 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
-import org.codeaurora.gallery.R;
-import com.android.gallery3d.filtershow.editors.EditorRotate;
 import com.android.gallery3d.filtershow.editors.ImageOnlyEditor;
+
+import org.codeaurora.gallery.R;
 
 import java.io.IOException;
 
@@ -32,34 +32,6 @@ public class FilterRotateRepresentation extends FilterRepresentation {
     private static final String TAG = FilterRotateRepresentation.class.getSimpleName();
 
     Rotation mRotation;
-
-    public enum Rotation {
-        ZERO(0), NINETY(90), ONE_EIGHTY(180), TWO_SEVENTY(270);
-        private final int mValue;
-
-        private Rotation(int value) {
-            mValue = value;
-        }
-
-        public int value() {
-            return mValue;
-        }
-
-        public static Rotation fromValue(int value) {
-            switch (value) {
-                case 0:
-                    return ZERO;
-                case 90:
-                    return NINETY;
-                case 180:
-                    return ONE_EIGHTY;
-                case 270:
-                    return TWO_SEVENTY;
-                default:
-                    return null;
-            }
-        }
-    }
 
     public FilterRotateRepresentation(Rotation rotation) {
         super(SERIALIZATION_NAME);
@@ -82,12 +54,23 @@ public class FilterRotateRepresentation extends FilterRepresentation {
         this(getNil());
     }
 
+    public static Rotation getNil() {
+        return Rotation.ZERO;
+    }
+
     public Rotation getRotation() {
         return mRotation;
     }
 
+    public void setRotation(Rotation rotation) {
+        if (rotation == null) {
+            throw new IllegalArgumentException("Argument to setRotation is null");
+        }
+        mRotation = rotation;
+    }
+
     public void rotateCW() {
-        switch(mRotation) {
+        switch (mRotation) {
             case ZERO:
                 mRotation = Rotation.NINETY;
                 break;
@@ -104,7 +87,7 @@ public class FilterRotateRepresentation extends FilterRepresentation {
     }
 
     public void rotateCCW() {
-        switch(mRotation) {
+        switch (mRotation) {
             case ZERO:
                 mRotation = Rotation.TWO_SEVENTY;
                 break;
@@ -122,13 +105,6 @@ public class FilterRotateRepresentation extends FilterRepresentation {
 
     public void set(FilterRotateRepresentation r) {
         mRotation = r.mRotation;
-    }
-
-    public void setRotation(Rotation rotation) {
-        if (rotation == null) {
-            throw new IllegalArgumentException("Argument to setRotation is null");
-        }
-        mRotation = rotation;
     }
 
     public void resetRotation() {
@@ -167,10 +143,6 @@ public class FilterRotateRepresentation extends FilterRepresentation {
         return mRotation == getNil();
     }
 
-    public static Rotation getNil() {
-        return Rotation.ZERO;
-    }
-
     @Override
     public void serializeRepresentation(JsonWriter writer) throws IOException {
         writer.beginObject();
@@ -184,10 +156,7 @@ public class FilterRotateRepresentation extends FilterRepresentation {
             return false;
         }
         FilterRotateRepresentation rotate = (FilterRotateRepresentation) rep;
-        if (rotate.mRotation.value() != mRotation.value()) {
-            return false;
-        }
-        return true;
+        return rotate.mRotation.value() == mRotation.value();
     }
 
     @Override
@@ -210,5 +179,33 @@ public class FilterRotateRepresentation extends FilterRepresentation {
             Log.w(TAG, "WARNING: bad value when deserializing " + SERIALIZATION_NAME);
         }
         reader.endObject();
+    }
+
+    public enum Rotation {
+        ZERO(0), NINETY(90), ONE_EIGHTY(180), TWO_SEVENTY(270);
+        private final int mValue;
+
+        Rotation(int value) {
+            mValue = value;
+        }
+
+        public static Rotation fromValue(int value) {
+            switch (value) {
+                case 0:
+                    return ZERO;
+                case 90:
+                    return NINETY;
+                case 180:
+                    return ONE_EIGHTY;
+                case 270:
+                    return TWO_SEVENTY;
+                default:
+                    return null;
+            }
+        }
+
+        public int value() {
+            return mValue;
+        }
     }
 }

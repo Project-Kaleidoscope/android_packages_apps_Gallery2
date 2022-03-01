@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SnailAlbum extends SingleItemAlbum {
     @SuppressWarnings("unused")
     private static final String TAG = "SnailAlbum";
-    private AtomicBoolean mDirty = new AtomicBoolean(false);
+    private final AtomicBoolean mDirty = new AtomicBoolean(false);
 
     public SnailAlbum(Path path, SnailItem item) {
         super(path, item);

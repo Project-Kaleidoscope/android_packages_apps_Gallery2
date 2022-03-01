@@ -16,10 +16,11 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import org.codeaurora.gallery.R;
+import android.graphics.Bitmap;
+
 import com.android.gallery3d.filtershow.editors.ImageOnlyEditor;
 
-import android.graphics.Bitmap;
+import org.codeaurora.gallery.R;
 
 public class ImageFilterWBalance extends ImageFilter {
     private static final String SERIALIZATION_NAME = "WBALANCE";

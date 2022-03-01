@@ -20,11 +20,12 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.FrameLayout;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterStraightenRepresentation;
 import com.android.gallery3d.filtershow.imageshow.ImageStraighten;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
+
+import org.codeaurora.gallery.R;
 
 public class EditorStraighten extends Editor implements EditorInfo {
     public static final String TAG = EditorStraighten.class.getSimpleName();

@@ -29,7 +29,7 @@ public class State {
     }
 
     public State(String text) {
-       this(text, StateView.DEFAULT);
+        this(text, StateView.DEFAULT);
     }
 
     public State(String text, int type) {

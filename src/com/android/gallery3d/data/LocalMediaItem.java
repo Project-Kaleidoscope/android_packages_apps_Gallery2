@@ -108,7 +108,7 @@ public abstract class LocalMediaItem extends MediaItem {
         details.addDetail(MediaDetails.INDEX_HEIGHT, height);
 
         if (GalleryUtils.isValidLocation(latitude, longitude)) {
-            details.addDetail(MediaDetails.INDEX_LOCATION, new double[] {latitude, longitude});
+            details.addDetail(MediaDetails.INDEX_LOCATION, new double[]{latitude, longitude});
         }
         if (fileSize > 0) details.addDetail(MediaDetails.INDEX_SIZE, fileSize);
         return details;

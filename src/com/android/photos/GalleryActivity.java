@@ -21,13 +21,14 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
-import androidx.legacy.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.legacy.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import org.codeaurora.gallery.R;
 
@@ -77,17 +78,14 @@ public class GalleryActivity extends Activity implements MultiChoiceManager.Prov
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.menu_camera:
-            // TODO: Call the correct Camera intent.
+        if (item.getItemId() == R.id.menu_camera) {// TODO: Call the correct Camera intent.
             throw new RuntimeException("Not implemented yet.");
 //            Intent intent = new Intent(this, CameraActivity.class);
 //            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //            startActivity(intent);
 //            return true;
-        default:
-            return super.onOptionsItemSelected(item);
         }
+        return super.onOptionsItemSelected(item);
     }
 
     public static class TabsAdapter extends FragmentPagerAdapter implements
@@ -132,6 +130,7 @@ public class GalleryActivity extends Activity implements MultiChoiceManager.Prov
             return mTabs.size();
         }
 
+        @NonNull
         @Override
         public Fragment getItem(int position) {
             TabInfo info = mTabs.get(position);
@@ -150,7 +149,7 @@ public class GalleryActivity extends Activity implements MultiChoiceManager.Prov
         }
 
         @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        public void setPrimaryItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             super.setPrimaryItem(container, position, object);
             mActivity.mMultiChoiceManager.setDelegate((MultiChoiceManager.Delegate) object);
         }

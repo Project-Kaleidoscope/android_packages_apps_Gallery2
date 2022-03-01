@@ -30,7 +30,7 @@ public class TagClustering extends Clustering {
 
     private ArrayList<ArrayList<Path>> mClusters;
     private String[] mNames;
-    private String mUntaggedString;
+    private final String mUntaggedString;
 
     public TagClustering(Context context) {
         mUntaggedString = context.getResources().getString(R.string.untagged);
@@ -39,33 +39,25 @@ public class TagClustering extends Clustering {
     @Override
     public void run(MediaSet baseSet) {
         final TreeMap<String, ArrayList<Path>> map =
-                new TreeMap<String, ArrayList<Path>>();
-        final ArrayList<Path> untagged = new ArrayList<Path>();
+                new TreeMap<>();
+        final ArrayList<Path> untagged = new ArrayList<>();
 
-        baseSet.enumerateTotalMediaItems(new MediaSet.ItemConsumer() {
-            @Override
-            public void consume(int index, MediaItem item) {
-                Path path = item.getPath();
+        baseSet.enumerateTotalMediaItems((index, item) -> {
+            Path path = item.getPath();
 
-                String[] tags = item.getTags();
-                if (tags == null || tags.length == 0) {
-                    untagged.add(path);
-                    return;
-                }
-                for (int j = 0; j < tags.length; j++) {
-                    String key = tags[j];
-                    ArrayList<Path> list = map.get(key);
-                    if (list == null) {
-                        list = new ArrayList<Path>();
-                        map.put(key, list);
-                    }
-                    list.add(path);
-                }
+            String[] tags = item.getTags();
+            if (tags == null || tags.length == 0) {
+                untagged.add(path);
+                return;
+            }
+            for (String key : tags) {
+                ArrayList<Path> list = map.computeIfAbsent(key, k -> new ArrayList<>());
+                list.add(path);
             }
         });
 
         int m = map.size();
-        mClusters = new ArrayList<ArrayList<Path>>();
+        mClusters = new ArrayList<>();
         mNames = new String[m + ((untagged.size() > 0) ? 1 : 0)];
         int i = 0;
         for (Map.Entry<String, ArrayList<Path>> entry : map.entrySet()) {

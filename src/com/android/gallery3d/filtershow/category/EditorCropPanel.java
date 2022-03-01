@@ -29,7 +29,7 @@
 
 package com.android.gallery3d.filtershow.category;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -37,47 +37,42 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.EditorCrop;
 
+import org.codeaurora.gallery.R;
+
 public class EditorCropPanel extends BasicGeometryPanel {
-    private EditorCrop mEditorCrop;
-
-    private int mSelectPosition = 0;
-
     private final int[] mCropAspectIds = {
             R.id.crop_menu_none,
             R.id.crop_menu_original,
             R.id.crop_menu_1to1
     };
-
     private final int[] mCropDrawableIds = {
             R.drawable.crop_free_background,
             R.drawable.crop_original_background,
             R.drawable.crop_one_background
     };
-
     private final int[] mCropTextIds = {
             R.string.aspectNone_effect,
             R.string.aspectOriginal_effect,
             R.string.aspect1to1_effect
     };
-
-    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            int index = (int) v.getTag();
-            changeSelection(index);
-        }
+    private EditorCrop mEditorCrop;
+    private int mSelectPosition = 0;
+    private final View.OnClickListener mOnClickListener = view -> {
+        int index = (int) view.getTag();
+        changeSelection(index);
     };
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        FilterShowActivity filterShowActivity = (FilterShowActivity) activity;
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        FilterShowActivity filterShowActivity = (FilterShowActivity) context;
         if (filterShowActivity.isReloadByConfigurationChanged()) {
             mSelectPosition = filterShowActivity.getEditorCropButtonSelect();
         }
@@ -85,14 +80,13 @@ public class EditorCropPanel extends BasicGeometryPanel {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (!isLandscape()) {
             mEditorName.setText(R.string.crop);
             mBottomPanel.setVisibility(View.VISIBLE);
         }
-        mMainView.setBackgroundColor(getContext().getResources().getColor(
-                R.color.edit_actionbar_background));
+        mMainView.setBackgroundColor(requireContext().getColor(R.color.edit_actionbar_background));
 
         mBottomPanel.setVisibility(View.VISIBLE);
 
@@ -102,24 +96,18 @@ public class EditorCropPanel extends BasicGeometryPanel {
 
         highlightIndex(mSelectPosition);
 
-        final FilterShowActivity activity = (FilterShowActivity) getActivity();
-        mApplyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mEditorCrop != null) {
-                    mEditorCrop.finalApplyCalled();
-                }
-                activity.backToMain();
-                activity.setActionBar();
+        final FilterShowActivity activity = (FilterShowActivity) requireActivity();
+        mApplyButton.setOnClickListener(view1 -> {
+            if (mEditorCrop != null) {
+                mEditorCrop.finalApplyCalled();
             }
+            activity.backToMain();
+            activity.setActionBar();
         });
-        mExitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activity.cancelCurrentFilter();
-                activity.backToMain();
-                activity.setActionBar();
-            }
+        mExitButton.setOnClickListener(view1 -> {
+            activity.cancelCurrentFilter();
+            activity.backToMain();
+            activity.setActionBar();
         });
     }
 
@@ -129,7 +117,7 @@ public class EditorCropPanel extends BasicGeometryPanel {
         int size = mButtons.length;
         for (int i = 0; i < size; i++) {
             ImageButton view = mButtons[i];
-            view.setImageDrawable(getResources().getDrawable(mCropDrawableIds[i]));
+            view.setImageDrawable(ResourcesCompat.getDrawable(getResources(), mCropDrawableIds[i], null));
             // ues tag to store index.
             view.setTag(i);
             view.setOnClickListener(mOnClickListener);
@@ -166,7 +154,7 @@ public class EditorCropPanel extends BasicGeometryPanel {
         for (int i = 0; i < size; i++) {
             TextView view = mTextViews[i];
             view.setTextColor(index == i ?
-                    getResources().getColor(R.color.crop_text_color) :
+                    getResources().getColor(R.color.crop_text_color, null) :
                     Color.WHITE);
         }
     }
@@ -180,9 +168,9 @@ public class EditorCropPanel extends BasicGeometryPanel {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        FilterShowActivity activity = (FilterShowActivity) getActivity();
+        FilterShowActivity activity = (FilterShowActivity) requireActivity();
         activity.saveEditorCropState(mSelectPosition);
     }
 }

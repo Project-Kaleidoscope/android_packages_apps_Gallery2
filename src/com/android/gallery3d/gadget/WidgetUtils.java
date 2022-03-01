@@ -24,9 +24,10 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.Log;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.data.MediaItem;
 import com.android.gallery3d.util.ThreadPool;
+
+import org.codeaurora.gallery.R;
 
 public class WidgetUtils {
 
@@ -46,9 +47,9 @@ public class WidgetUtils {
 
     public static Bitmap createWidgetBitmap(MediaItem image) {
         Bitmap bitmap = image.requestImage(MediaItem.TYPE_THUMBNAIL)
-               .run(ThreadPool.JOB_CONTEXT_STUB);
+                .run(ThreadPool.JOB_CONTEXT_STUB);
         if (bitmap == null) {
-            Log.w(TAG, "fail to get image of " + image.toString());
+            Log.w(TAG, "fail to get image of " + image);
             return null;
         }
         return createWidgetBitmap(bitmap, image.getRotation());

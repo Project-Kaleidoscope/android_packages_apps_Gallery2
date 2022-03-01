@@ -40,7 +40,7 @@ import com.android.gallery3d.filtershow.editors.EditorTruePortraitFusion;
 import com.android.gallery3d.filtershow.filters.FilterTruePortraitFusionRepresentation;
 
 public class ImageTruePortraitFusion extends ImageShow {
-    private static final String LOGTAG = "ImageTruePortraitFusion";
+    private static final String TAG = "ImageTruePortraitFusion";
     protected EditorTruePortraitFusion mEditor;
     protected FilterTruePortraitFusionRepresentation mRepresentation;
     private Bitmap mUnderlay;
@@ -58,7 +58,7 @@ public class ImageTruePortraitFusion extends ImageShow {
     public void setUnderlay(Uri uri) {
         mRepresentation.setUnderlay(uri);
 
-        if(mUnderlay != null) {
+        if (mUnderlay != null) {
             mUnderlay.recycle();
             mUnderlay = null;
             MasterImage.getImage().setFusionUnderlay(null);

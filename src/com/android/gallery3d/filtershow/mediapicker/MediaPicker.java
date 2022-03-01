@@ -29,16 +29,12 @@
 
 package com.android.gallery3d.filtershow.mediapicker;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -63,7 +59,7 @@ public class MediaPicker extends ViewGroup {
     private int mDefaultGridHeight;
     private TouchHandler mTouchHandler;
 
-    static Context mContext;
+    Context mContext;
 
     public MediaPicker(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -71,14 +67,13 @@ public class MediaPicker extends ViewGroup {
         mIsFullScreen = true;
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mSlideStrip = (LinearLayout) findViewById(R.id.mediapicker_slidestrip);
-        mSelStrip = (LinearLayout) findViewById(R.id.mediapicker_tabstrip);
-        mGridView = (HeaderGridView) findViewById(R.id.grid);
-        mArrow = (ImageButton) findViewById(R.id.arrow);
+        mSlideStrip = findViewById(R.id.mediapicker_slidestrip);
+        mSelStrip = findViewById(R.id.mediapicker_tabstrip);
+        mGridView = findViewById(R.id.grid);
+        mArrow = findViewById(R.id.arrow);
         mTouchHandler = new TouchHandler();
         mArrow.setOnTouchListener(mTouchHandler);
 
@@ -87,7 +82,7 @@ public class MediaPicker extends ViewGroup {
 
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                                       int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 final boolean newLandMode = isLandscapeMode();
                 if (mLandMode != newLandMode) {
                     mLandMode = newLandMode;
@@ -103,9 +98,9 @@ public class MediaPicker extends ViewGroup {
                             final int bottom) {
         int y = bottom;
         final int width = right - left;
-        final int selHight = mSelStrip.getMeasuredHeight();
-        mSelStrip.layout(0, y - selHight, width, y);
-        y -= selHight;
+        final int selHeight = mSelStrip.getMeasuredHeight();
+        mSelStrip.layout(0, y - selHeight, width, y);
+        y -= selHeight;
 
         final int gridHeight = mGridView.getMeasuredHeight();
         mGridView.layout(0, y - gridHeight, width, y);
@@ -144,12 +139,7 @@ public class MediaPicker extends ViewGroup {
         }
 
         mIsFullScreen = isFullScreen;
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                setViewHeight(animate);
-            }
-        });
+        mHandler.post(() -> setViewHeight(animate));
     }
 
     private void setViewHeight(boolean animate) {
@@ -164,7 +154,7 @@ public class MediaPicker extends ViewGroup {
             final Animation animation = new Animation() {
                 @Override
                 protected void applyTransformation(final float interpolatedTime,
-                        final Transformation t) {
+                                                   final Transformation t) {
                     mCurrentDesiredHeight = (int) (startHeight + deltaHeight * interpolatedTime);
                     requestLayout();
                 }
@@ -218,11 +208,8 @@ public class MediaPicker extends ViewGroup {
         boolean checkMoved(final MotionEvent mv) {
             final float dx = mDownEvent.getRawX() - mv.getRawX();
             final float dy = mDownEvent.getRawY() - mv.getRawY();
-            if (Math.abs(dy) > TOUCH_SLOP &&
-                    (Math.abs(dy) / Math.abs(dx)) > DIRECTION_RATIO) {
-                return true;
-            }
-            return false;
+            return Math.abs(dy) > TOUCH_SLOP &&
+                    (Math.abs(dy) / Math.abs(dx)) > DIRECTION_RATIO;
         }
 
         @Override

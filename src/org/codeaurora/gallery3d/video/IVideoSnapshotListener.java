@@ -30,6 +30,9 @@
 package org.codeaurora.gallery3d.video;
 
 public interface IVideoSnapshotListener {
+
     void onVideoSnapshot();
+
     boolean canVideoSnapshot();
+
 }

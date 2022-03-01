@@ -19,7 +19,6 @@ package com.android.gallery3d.data;
 import android.graphics.Bitmap;
 import android.graphics.BitmapRegionDecoder;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.ui.ScreenNail;
 import com.android.gallery3d.util.ThreadPool.Job;
 
@@ -40,28 +39,49 @@ public abstract class MediaItem extends MediaObject {
     public static final String MIME_TYPE_HEIF = "image/heif";
     public static final String MIME_TYPE_HEIC = "image/heic";
     public static final String MIME_TYPE_GIF = "image/gif";
-
-    private static final int BYTESBUFFE_POOL_SIZE = 4;
-    private static final int BYTESBUFFER_SIZE = 200 * 1024;
-
-    private static int sMicrothumbnailTargetSize = 200;
-    private static final BytesBufferPool sMicroThumbBufferPool =
-            new BytesBufferPool(BYTESBUFFE_POOL_SIZE, BYTESBUFFER_SIZE);
-
-    private static int sThumbnailTargetSize = 640;
-
     // TODO: fix default value for latlng and change this.
     public static final double INVALID_LATLNG = 0f;
-
-    public abstract Job<Bitmap> requestImage(int type);
-    public abstract Job<BitmapRegionDecoder> requestLargeImage();
+    private static final int BYTESBUFFE_POOL_SIZE = 4;
+    private static final int BYTESBUFFER_SIZE = 200 * 1024;
+    private static final BytesBufferPool sMicroThumbBufferPool =
+            new BytesBufferPool(BYTESBUFFE_POOL_SIZE, BYTESBUFFER_SIZE);
+    private static int sMicrothumbnailTargetSize = 200;
+    private static int sThumbnailTargetSize = 640;
 
     public MediaItem(Path path, long version) {
         super(path, version);
     }
+
     public MediaItem(Path path) {
         super(path);
     }
+
+    public static int getTargetSize(int type) {
+        switch (type) {
+            case TYPE_THUMBNAIL:
+                return sThumbnailTargetSize;
+            case TYPE_MICROTHUMBNAIL:
+                return sMicrothumbnailTargetSize;
+            default:
+                throw new RuntimeException(
+                        "should only request thumb/microthumb from cache");
+        }
+    }
+
+    public static BytesBufferPool getBytesBufferPool() {
+        return sMicroThumbBufferPool;
+    }
+
+    public static void setThumbnailSizes(int size, int microSize) {
+        sThumbnailTargetSize = Math.max(size, sThumbnailTargetSize);
+        if (sMicrothumbnailTargetSize != microSize) {
+            sMicrothumbnailTargetSize = microSize;
+        }
+    }
+
+    public abstract Job<Bitmap> requestImage(int type);
+
+    public abstract Job<BitmapRegionDecoder> requestLargeImage();
 
     public long getDateInMs() {
         return 0;
@@ -107,34 +127,12 @@ public abstract class MediaItem extends MediaObject {
     // Returns width and height of the media item.
     // Returns 0, 0 if the information is not available.
     public abstract int getWidth();
+
     public abstract int getHeight();
 
     // This is an alternative for requestImage() in PhotoPage. If this
     // is implemented, you don't need to implement requestImage().
     public ScreenNail getScreenNail() {
         return null;
-    }
-
-    public static int getTargetSize(int type) {
-        switch (type) {
-            case TYPE_THUMBNAIL:
-                return sThumbnailTargetSize;
-            case TYPE_MICROTHUMBNAIL:
-                return sMicrothumbnailTargetSize;
-            default:
-                throw new RuntimeException(
-                    "should only request thumb/microthumb from cache");
-        }
-    }
-
-    public static BytesBufferPool getBytesBufferPool() {
-        return sMicroThumbBufferPool;
-    }
-
-    public static void setThumbnailSizes(int size, int microSize) {
-        sThumbnailTargetSize = Math.max(size, sThumbnailTargetSize);
-        if (sMicrothumbnailTargetSize != microSize) {
-            sMicrothumbnailTargetSize = microSize;
-        }
     }
 }

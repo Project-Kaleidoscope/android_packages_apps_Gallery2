@@ -28,12 +28,12 @@ import android.widget.ImageButton;
 import org.codeaurora.gallery.R;
 
 public class FramedTextButton extends ImageButton {
-    private static final String LOGTAG = "FramedTextButton";
+    private static final String TAG = "FramedTextButton";
     private String mText = null;
     private static int mTextSize = 24;
     private static int mTextPadding = 20;
-    private static Paint gPaint = new Paint();
-    private static Path gPath = new Path();
+    private static final Paint gPaint = new Paint();
+    private static final Path gPath = new Path();
     private static int mTrianglePadding = 2;
     private static int mTriangleSize = 30;
 
@@ -95,7 +95,7 @@ public class FramedTextButton extends ImageButton {
         mText = a.getString(R.styleable.ImageButtonTitle_android_text);
     }
 
-    public String getText(){
+    public String getText() {
         return mText;
     }
 
@@ -110,11 +110,11 @@ public class FramedTextButton extends ImageButton {
                 h - mTextPadding, gPaint);
         gPath.reset();
         gPath.moveTo(w - mTextPadding - mTrianglePadding - mTriangleSize,
-                     h - mTextPadding - mTrianglePadding);
+                h - mTextPadding - mTrianglePadding);
         gPath.lineTo(w - mTextPadding - mTrianglePadding,
-                     h - mTextPadding - mTrianglePadding - mTriangleSize);
+                h - mTextPadding - mTrianglePadding - mTriangleSize);
         gPath.lineTo(w - mTextPadding - mTrianglePadding,
-                     h - mTextPadding - mTrianglePadding);
+                h - mTextPadding - mTrianglePadding);
         gPath.close();
         gPaint.setARGB(128, 255, 255, 255);
         gPaint.setStrokeWidth(1);

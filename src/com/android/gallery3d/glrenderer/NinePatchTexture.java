@@ -36,8 +36,8 @@ public class NinePatchTexture extends ResourceTexture {
     @SuppressWarnings("unused")
     private static final String TAG = "NinePatchTexture";
     private NinePatchChunk mChunk;
-    private SmallCache<NinePatchInstance> mInstanceCache
-            = new SmallCache<NinePatchInstance>();
+    private final SmallCache<NinePatchInstance> mInstanceCache
+            = new SmallCache<>();
 
     public NinePatchTexture(Context context, int resId) {
         super(context, resId);
@@ -80,8 +80,8 @@ public class NinePatchTexture extends ResourceTexture {
     private static class SmallCache<V> {
         private static final int CACHE_SIZE = 16;
         private static final int CACHE_SIZE_START_MOVE = CACHE_SIZE / 2;
-        private int[] mKey = new int[CACHE_SIZE];
-        private V[] mValue = (V[]) new Object[CACHE_SIZE];
+        private final int[] mKey = new int[CACHE_SIZE];
+        private final V[] mValue = (V[]) new Object[CACHE_SIZE];
         private int mCount;  // number of items in this cache
 
         // Puts a value into the cache. If the cache is full, also returns
@@ -217,10 +217,10 @@ class NinePatchInstance {
             throw new RuntimeException("unsupported nine patch");
         }
 
-        float divX[] = new float[4];
-        float divY[] = new float[4];
-        float divU[] = new float[4];
-        float divV[] = new float[4];
+        float[] divX = new float[4];
+        float[] divY = new float[4];
+        float[] divU = new float[4];
+        float[] divV = new float[4];
 
         int nx = stretch(divX, divU, chunk.mDivX, tex.getWidth(), width);
         int ny = stretch(divY, divV, chunk.mDivY, tex.getHeight(), height);
@@ -251,17 +251,17 @@ class NinePatchInstance {
      * s: stretchy segment
      * </pre>
      *
-     * @param div the stretch parts defined in nine-patch chunk
+     * @param div    the stretch parts defined in nine-patch chunk
      * @param source the length of the texture
      * @param target the length on the drawing plan
-     * @param u output, the positions of these dividers in the texture
-     *        coordinate
-     * @param x output, the corresponding position of these dividers on the
-     *        drawing plan
+     * @param u      output, the positions of these dividers in the texture
+     *               coordinate
+     * @param x      output, the corresponding position of these dividers on the
+     *               drawing plan
      * @return the number of these dividers.
      */
     private static int stretch(
-            float x[], float u[], int div[], int source, int target) {
+            float[] x, float[] u, int[] div, int source, int target) {
         int textureSize = Utils.nextPowerOf2(source);
         float textureBound = (float) source / textureSize;
 
@@ -293,7 +293,7 @@ class NinePatchInstance {
             lastX = x[i + 1] + partX;
             lastU = div[i + 1];
             x[i + 2] = lastX - 0.5f;
-            u[i + 2] = Math.min((lastU - 0.5f)/ textureSize, textureBound);
+            u[i + 2] = Math.min((lastU - 0.5f) / textureSize, textureBound);
         }
         // the last fixed segment
         x[div.length + 1] = target;
@@ -309,8 +309,8 @@ class NinePatchInstance {
         return last + 1;
     }
 
-    private void prepareVertexData(float x[], float y[], float u[], float v[],
-            int nx, int ny, int[] color) {
+    private void prepareVertexData(float[] x, float[] y, float[] u, float[] v,
+                                   int nx, int ny, int[] color) {
         /*
          * Given a 3x3 nine-patch image, the vertex order is defined as the
          * following graph:
@@ -331,8 +331,8 @@ class NinePatchInstance {
          * index: 04152637B6A5948C9DAEBF
          */
         int pntCount = 0;
-        float xy[] = new float[VERTEX_BUFFER_SIZE];
-        float uv[] = new float[VERTEX_BUFFER_SIZE];
+        float[] xy = new float[VERTEX_BUFFER_SIZE];
+        float[] uv = new float[VERTEX_BUFFER_SIZE];
         for (int j = 0; j < ny; ++j) {
             for (int i = 0; i < nx; ++i) {
                 int xIndex = (pntCount++) << 1;
@@ -346,7 +346,7 @@ class NinePatchInstance {
 
         int idxCount = 1;
         boolean isForward = false;
-        byte index[] = new byte[INDEX_BUFFER_SIZE];
+        byte[] index = new byte[INDEX_BUFFER_SIZE];
         for (int row = 0; row < ny - 1; row++) {
             --idxCount;
             isForward = !isForward;

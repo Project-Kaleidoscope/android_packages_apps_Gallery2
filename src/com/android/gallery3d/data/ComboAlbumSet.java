@@ -16,9 +16,10 @@
 
 package com.android.gallery3d.data;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.GalleryApp;
 import com.android.gallery3d.util.Future;
+
+import org.codeaurora.gallery.R;
 
 // ComboAlbumSet combines multiple media sets into one. It lists all sub
 // media sets from the input album sets.
@@ -67,8 +68,8 @@ public class ComboAlbumSet extends MediaSet implements ContentListener {
 
     @Override
     public boolean isLoading() {
-        for (int i = 0, n = mSets.length; i < n; ++i) {
-            if (mSets[i].isLoading()) return true;
+        for (MediaSet mSet : mSets) {
+            if (mSet.isLoading()) return true;
         }
         return false;
     }
@@ -76,8 +77,8 @@ public class ComboAlbumSet extends MediaSet implements ContentListener {
     @Override
     public long reload() {
         boolean changed = false;
-        for (int i = 0, n = mSets.length; i < n; ++i) {
-            long version = mSets[i].reload();
+        for (MediaSet mSet : mSets) {
+            long version = mSet.reload();
             if (version > mDataVersion) changed = true;
         }
         if (changed) mDataVersion = nextVersionNumber();

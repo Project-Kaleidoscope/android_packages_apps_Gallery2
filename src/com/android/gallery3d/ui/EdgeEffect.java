@@ -22,9 +22,10 @@ import android.graphics.Rect;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.glrenderer.ResourceTexture;
+
+import org.codeaurora.gallery.R;
 
 // This is copied from android.widget.EdgeEffect with some small modifications:
 // (1) Copy the images (overscroll_{edge|glow}.png) to local resources.
@@ -131,6 +132,7 @@ public class EdgeEffect {
 
     /**
      * Construct a new EdgeEffect with a theme appropriate for the provided context.
+     *
      * @param context Context used to provide theming and resource information for the EdgeEffect
      */
     public EdgeEffect(Context context) {
@@ -144,7 +146,7 @@ public class EdgeEffect {
     /**
      * Set the size of this edge effect in pixels.
      *
-     * @param width Effect width in pixels
+     * @param width  Effect width in pixels
      * @param height Effect height in pixels
      */
     public void setSize(int width, int height) {
@@ -203,7 +205,7 @@ public class EdgeEffect {
 
         mGlowAlpha = mGlowAlphaStart = Math.min(MAX_ALPHA,
                 mGlowAlpha +
-                (Math.abs(deltaDistance) * PULL_DISTANCE_ALPHA_GLOW_FACTOR));
+                        (Math.abs(deltaDistance) * PULL_DISTANCE_ALPHA_GLOW_FACTOR));
 
         float glowChange = Math.abs(deltaDistance);
         if (deltaDistance > 0 && mPullDistance < 0) {
@@ -303,7 +305,7 @@ public class EdgeEffect {
      *
      * @param canvas Canvas to draw into
      * @return true if drawing should continue beyond this frame to continue the
-     *         animation
+     * animation
      */
     public boolean draw(GLCanvas canvas) {
         update();
@@ -316,11 +318,11 @@ public class EdgeEffect {
         mGlow.setAlpha((int) (Math.max(0, Math.min(mGlowAlpha, 1)) * 255));
 
         int glowBottom = (int) Math.min(
-                glowHeight * mGlowScaleY * glowHeight/ glowWidth * 0.6f,
+                glowHeight * mGlowScaleY * glowHeight / glowWidth * 0.6f,
                 glowHeight * MAX_GLOW_HEIGHT);
         if (mWidth < mMinWidth) {
             // Center the glow and clip it.
-            int glowLeft = (mWidth - mMinWidth)/2;
+            int glowLeft = (mWidth - mMinWidth) / 2;
             mGlow.setBounds(glowLeft, 0, mWidth - glowLeft, glowBottom);
         } else {
             // Stretch the glow to fit.
@@ -334,7 +336,7 @@ public class EdgeEffect {
         int edgeBottom = (int) (edgeHeight * mEdgeScaleY);
         if (mWidth < mMinWidth) {
             // Center the edge and clip it.
-            int edgeLeft = (mWidth - mMinWidth)/2;
+            int edgeLeft = (mWidth - mMinWidth) / 2;
             mEdge.setBounds(edgeLeft, 0, mWidth - edgeLeft, edgeBottom);
         } else {
             // Stretch the edge to fit.
@@ -397,8 +399,8 @@ public class EdgeEffect {
                             / (mGlowScaleYFinish * mGlowScaleYFinish)
                             : Float.MAX_VALUE;
                     mEdgeScaleY = mEdgeScaleYStart +
-                        (mEdgeScaleYFinish - mEdgeScaleYStart) *
-                            interp * factor;
+                            (mEdgeScaleYFinish - mEdgeScaleYStart) *
+                                    interp * factor;
                     mState = STATE_RECEDE;
                     break;
                 case STATE_RECEDE:
@@ -409,7 +411,7 @@ public class EdgeEffect {
     }
 
     private static class Drawable extends ResourceTexture {
-        private Rect mBounds = new Rect();
+        private final Rect mBounds = new Rect();
         private int mAlpha = 255;
 
         public Drawable(Context context, int resId) {

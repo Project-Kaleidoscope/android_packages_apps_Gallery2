@@ -16,20 +16,18 @@
 
 package com.android.gallery3d.gadget;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.GalleryActivity;
 import com.android.gallery3d.app.PhotoPage;
-import com.android.gallery3d.common.ApiHelper;
+
+import org.codeaurora.gallery.R;
 
 public class WidgetClickHandler extends Activity {
     private static final String TAG = "PhotoAppWidgetClickHandler";
@@ -48,31 +46,24 @@ public class WidgetClickHandler extends Activity {
     }
 
     @Override
-    @TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB)
     protected void onCreate(Bundle savedState) {
         super.onCreate(savedState);
         // The behavior is changed in JB, refer to b/6384492 for more details
-        boolean tediousBack = Build.VERSION.SDK_INT >= ApiHelper.VERSION_CODES.JELLY_BEAN;
         Uri uri = getIntent().getData();
         Intent intent;
         if (isValidDataUri(uri)) {
             intent = new Intent(Intent.ACTION_VIEW, uri);
             // Used for checking whether it is from widget
             intent.putExtra(PhotoPage.KEY_IS_FROM_WIDGET, true);
-            if (tediousBack) {
-                intent.putExtra(PhotoPage.KEY_TREAT_BACK_AS_UP, true);
-            }
+            intent.putExtra(PhotoPage.KEY_TREAT_BACK_AS_UP, true);
         } else {
             Toast.makeText(this,
                     R.string.no_such_item, Toast.LENGTH_LONG).show();
             intent = new Intent(this, GalleryActivity.class);
         }
-        if (tediousBack) {
-            intent.setFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK |
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                    Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                Intent.FLAG_ACTIVITY_TASK_ON_HOME);
         startActivity(intent);
         finish();
     }

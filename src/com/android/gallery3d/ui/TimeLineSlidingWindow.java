@@ -40,8 +40,11 @@ public class TimeLineSlidingWindow implements TimeLineDataLoader.DataListener {
     private static final int JOB_LIMIT = 2;
 
     public interface Listener {
+
         void onSizeChanged(int[] size);
+
         void onContentChanged();
+
     }
 
     public static class AlbumEntry {
@@ -58,7 +61,7 @@ public class TimeLineSlidingWindow implements TimeLineDataLoader.DataListener {
     }
 
     private final TimeLineDataLoader mSource;
-    private final AlbumEntry mData[];
+    private final AlbumEntry[] mData;
     private final SynchronizedHandler mHandler;
     private final JobLimiter mThreadPool;
     private final TiledTexture.Uploader mTileUploader;
@@ -76,7 +79,7 @@ public class TimeLineSlidingWindow implements TimeLineDataLoader.DataListener {
     private final TimeLineTitleMaker mTitleMaker;
 
     public TimeLineSlidingWindow(AbstractGalleryActivity activity, TimeLineDataLoader source,
-            int cacheSize, TimeLineSlotRenderer.LabelSpec labelSpec, TimeLineSlotView slotView) {
+                                 int cacheSize, TimeLineSlotRenderer.LabelSpec labelSpec, TimeLineSlotView slotView) {
         source.setDataListener(this);
         mSource = source;
         mData = new AlbumEntry[cacheSize];
@@ -151,7 +154,7 @@ public class TimeLineSlidingWindow implements TimeLineDataLoader.DataListener {
         if (!(start <= end && end - start <= mData.length)) {
             Utils.fail("%s, %s, %s, %s", start, end, mData.length, mSize);
         }
-        AlbumEntry data[] = mData;
+        AlbumEntry[] data = mData;
 
         mActiveStart = start;
         mActiveEnd = end;
@@ -239,7 +242,7 @@ public class TimeLineSlidingWindow implements TimeLineDataLoader.DataListener {
     }
 
     private void freeSlotContent(int slotIndex) {
-        AlbumEntry data[] = mData;
+        AlbumEntry[] data = mData;
         int index = slotIndex % data.length;
         AlbumEntry entry = data[index];
         if (entry != null) {
@@ -305,7 +308,7 @@ public class TimeLineSlidingWindow implements TimeLineDataLoader.DataListener {
             if (mItem.getMediaType() != MediaObject.MEDIA_TYPE_TIMELINE_TITLE) {
                 return mThreadPool.submit(
                         mItem.requestImage(MediaItem.TYPE_MICROTHUMBNAIL), this);
-            } else if( mItem.getMediaType() == MediaObject.MEDIA_TYPE_TIMELINE_TITLE ){
+            } else if (mItem.getMediaType() == MediaObject.MEDIA_TYPE_TIMELINE_TITLE) {
                 return mThreadPool.submit(
                         ((TimeLineTitleMediaItem) mItem).requestTitle(
                                 MediaItem.TYPE_MICROTHUMBNAIL, mTitleMaker), this);
@@ -322,19 +325,19 @@ public class TimeLineSlidingWindow implements TimeLineDataLoader.DataListener {
             Bitmap bitmap = getBitmap();
             if (bitmap == null) return; // error or recycled
 
-                AlbumEntry entry = mData[mSlotIndex % mData.length];
-                if (entry == null)  return;
-                entry.bitmapTexture = new TiledTexture(bitmap);
-                entry.content = entry.bitmapTexture;
+            AlbumEntry entry = mData[mSlotIndex % mData.length];
+            if (entry == null) return;
+            entry.bitmapTexture = new TiledTexture(bitmap);
+            entry.content = entry.bitmapTexture;
 
-                if (isActiveSlot(mSlotIndex)) {
-                    mTileUploader.addTexture(entry.bitmapTexture);
-                    --mActiveRequestCount;
-                    if (mActiveRequestCount == 0) requestNonactiveImages();
-                    if (mListener != null) mListener.onContentChanged();
-                } else {
-                    mTileUploader.addTexture(entry.bitmapTexture);
-                }
+            if (isActiveSlot(mSlotIndex)) {
+                mTileUploader.addTexture(entry.bitmapTexture);
+                --mActiveRequestCount;
+                if (mActiveRequestCount == 0) requestNonactiveImages();
+                if (mListener != null) mListener.onContentChanged();
+            } else {
+                mTileUploader.addTexture(entry.bitmapTexture);
+            }
 
         }
     }

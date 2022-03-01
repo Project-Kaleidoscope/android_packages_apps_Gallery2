@@ -29,7 +29,6 @@
 
 package com.android.gallery3d.filtershow.mediapicker;
 
-import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -38,18 +37,19 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.MediaColumns;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageButton;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageButton;
 
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
@@ -98,8 +98,8 @@ public class MediaPickerFragment extends Fragment implements
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
         mMediaImageLoader = new ImageLoaderStub(appContext);
     }
 
@@ -114,41 +114,30 @@ public class MediaPickerFragment extends Fragment implements
         }
 
         // get the photo size and spacing
-        mPhotoSize = getResources().getDimensionPixelSize(
-                R.dimen.picker_photo_size);
-        mPhotoSpacing = getResources().getDimensionPixelSize(
-                R.dimen.picker_photo_spacing);
+        mPhotoSize = getResources().getDimensionPixelSize(R.dimen.picker_photo_size);
+        mPhotoSpacing = getResources().getDimensionPixelSize(R.dimen.picker_photo_spacing);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mMediaPicker = (MediaPicker) inflater.inflate(
-                R.layout.mediapicker_panel,
-                container,
-                false);
-        mSelDone = (ImageButton) mMediaPicker.findViewById(R.id.btn_yes);
-        mSelCancel = (ImageButton) mMediaPicker.findViewById(R.id.btn_no);
-        mSelDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mMediaSelected != null) {
-                    mActivity.onMediaPickerResult(mMediaSelected);
-                } else {
-                    mActivity.useFilterRepresentation(mOldFp);
-                    mActivity.onBackPressed();
-                }
-            }
-        });
-        mSelCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mOldFp != null)
-                    mActivity.useFilterRepresentation(mOldFp);
-                else
-                    mActivity.setDefaultPreset();
+        mMediaPicker = (MediaPicker) inflater.inflate(R.layout.mediapicker_panel, container, false);
+        mSelDone = mMediaPicker.findViewById(R.id.btn_yes);
+        mSelCancel = mMediaPicker.findViewById(R.id.btn_no);
+        mSelDone.setOnClickListener(v -> {
+            if (mMediaSelected != null) {
+                mActivity.onMediaPickerResult(mMediaSelected);
+            } else {
+                mActivity.useFilterRepresentation(mOldFp);
                 mActivity.onBackPressed();
             }
+        });
+        mSelCancel.setOnClickListener(v -> {
+            if (mOldFp != null)
+                mActivity.useFilterRepresentation(mOldFp);
+            else
+                mActivity.setDefaultPreset();
+            mActivity.onBackPressed();
         });
 
         initView(mMediaPicker);
@@ -157,9 +146,9 @@ public class MediaPickerFragment extends Fragment implements
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mContext = getActivity();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mContext = requireContext();
         mActivity = (FilterShowActivity) mContext;
         mOldFp = mActivity.getCurrentPresentation();
         mIndexPreset = 100;
@@ -179,17 +168,17 @@ public class MediaPickerFragment extends Fragment implements
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mGridView != null) {
-            mSavedInstanceState.putParcelable(KEY_GRID_STATE,
-                    mGridView.onSaveInstanceState());
+            mSavedInstanceState.putParcelable(KEY_GRID_STATE, mGridView.onSaveInstanceState());
         }
         mSavedInstanceState.putParcelable(KEY_MEDIA_SELECTED,
                 mMediaSelected);
         outState.putAll(mSavedInstanceState);
     }
 
+    @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
         Uri uri = Uri.parse(bundle.getString(LOADER_EXTRA_URI));
@@ -210,7 +199,7 @@ public class MediaPickerFragment extends Fragment implements
         }
         if (mMediaAdapter == null) {
             mMediaAdapter = new MediaAdapter(mContext, cursor, 0,
-                     mMediaImageLoader);
+                    mMediaImageLoader);
         } else {
             mMediaAdapter.swapCursor(cursor);
         }
@@ -226,12 +215,12 @@ public class MediaPickerFragment extends Fragment implements
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         attachData(cursor);
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         // Preference:http://developer.android.com/guide/components/loaders.html#callback
         if (mMediaAdapter != null)
             mMediaAdapter.swapCursor(null);
@@ -251,7 +240,7 @@ public class MediaPickerFragment extends Fragment implements
                 mActivity.applyCustomFilterRepresentation(mCntFp, mOldFp);
             }
 
-            SelectedImageView selImageView = (SelectedImageView) view
+            SelectedImageView selImageView = view
                     .findViewById(R.id.thumbnail);
             mMediaSelected = uri;
             mMediaAdapter.updateMediaSelected(uri, selImageView);
@@ -284,26 +273,21 @@ public class MediaPickerFragment extends Fragment implements
     }
 
     private void initView(MediaPicker view) {
-        mGridView = (HeaderGridView) view.findViewById(R.id.grid);
+        mGridView = view.findViewById(R.id.grid);
         mGridView.setOnItemClickListener(this);
 
-        mGridView.getViewTreeObserver().addOnGlobalLayoutListener(
-                new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        if (mMediaAdapter != null
-                                && mMediaAdapter.getNumColumns() == 0) {
-                            final int numColumns = (int) Math.floor(mGridView
-                                    .getWidth() / (mPhotoSize + mPhotoSpacing));
-                            if (numColumns > 0) {
-                                final int columnWidth = (mGridView.getWidth() / numColumns)
-                                        - mPhotoSpacing;
-                                mMediaAdapter.setNumColumns(numColumns);
-                                mMediaAdapter.setItemHeight(columnWidth);
-                            }
-                        }
-                    }
-                });
+        mGridView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            if (mMediaAdapter != null
+                    && mMediaAdapter.getNumColumns() == 0) {
+                final int numColumns = (int) Math.floor(mGridView
+                        .getWidth() / (mPhotoSize + mPhotoSpacing));
+                if (numColumns > 0) {
+                    final int columnWidth = (mGridView.getWidth() / numColumns) - mPhotoSpacing;
+                    mMediaAdapter.setNumColumns(numColumns);
+                    mMediaAdapter.setItemHeight(columnWidth);
+                }
+            }
+        });
     }
 
 }

@@ -69,11 +69,12 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
         public int widgetId;
         public int type;
         public String imageUri;
-        public byte imageData[];
+        public byte[] imageData;
         public String albumPath;
         public String relativePath;
 
-        private Entry() {}
+        private Entry() {
+        }
 
         private Entry(int id, Cursor cursor) {
             widgetId = id;
@@ -110,7 +111,7 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
     private void saveData(SQLiteDatabase db, int oldVersion, ArrayList<Entry> data) {
         if (oldVersion <= 2) {
             Cursor cursor = db.query("photos",
-                    new String[] {FIELD_APPWIDGET_ID, FIELD_PHOTO_BLOB},
+                    new String[]{FIELD_APPWIDGET_ID, FIELD_PHOTO_BLOB},
                     null, null, null, null, null);
             if (cursor == null) return;
             try {
@@ -126,7 +127,7 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
             }
         } else if (oldVersion == 3) {
             Cursor cursor = db.query("photos",
-                    new String[] {FIELD_APPWIDGET_ID, FIELD_PHOTO_BLOB, FIELD_IMAGE_URI},
+                    new String[]{FIELD_APPWIDGET_ID, FIELD_PHOTO_BLOB, FIELD_IMAGE_URI},
                     null, null, null, null, null);
             if (cursor == null) return;
             try {
@@ -166,7 +167,7 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 4) {
             // Table "photos" is renamed to "widget" in version 4
-            ArrayList<Entry> data = new ArrayList<Entry>();
+            ArrayList<Entry> data = new ArrayList<>();
             saveData(db, oldVersion, data);
 
             Log.w(TAG, "destroying all old data.");
@@ -182,7 +183,6 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
                 db.execSQL("ALTER TABLE widgets ADD COLUMN relativePath TEXT");
             } catch (Throwable t) {
                 Log.e(TAG, "Failed to add the column for relative path.");
-                return;
             }
         }
     }
@@ -235,7 +235,7 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
         try {
             SQLiteDatabase db = getReadableDatabase();
             cursor = db.query(TABLE_WIDGETS, PROJECTION,
-                    WHERE_APPWIDGET_ID, new String[] {String.valueOf(appWidgetId)},
+                    WHERE_APPWIDGET_ID, new String[]{String.valueOf(appWidgetId)},
                     null, null, null);
             if (cursor == null || !cursor.moveToNext()) {
                 Log.e(TAG, "query fail: empty cursor: " + cursor + " appWidgetId: "
@@ -256,13 +256,13 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
         try {
             SQLiteDatabase db = getReadableDatabase();
             cursor = db.query(TABLE_WIDGETS, PROJECTION,
-                    WHERE_WIDGET_TYPE, new String[] {String.valueOf(type)},
+                    WHERE_WIDGET_TYPE, new String[]{String.valueOf(type)},
                     null, null, null);
             if (cursor == null) {
                 Log.e(TAG, "query fail: null cursor: " + cursor);
                 return null;
             }
-            ArrayList<Entry> result = new ArrayList<Entry>(cursor.getCount());
+            ArrayList<Entry> result = new ArrayList<>(cursor.getCount());
             while (cursor.moveToNext()) {
                 result.add(new Entry(cursor));
             }
@@ -301,7 +301,7 @@ public class WidgetDatabaseHelper extends SQLiteOpenHelper {
         try {
             SQLiteDatabase db = getWritableDatabase();
             db.delete(TABLE_WIDGETS, WHERE_APPWIDGET_ID,
-                    new String[] {String.valueOf(appWidgetId)});
+                    new String[]{String.valueOf(appWidgetId)});
         } catch (SQLiteException e) {
             Log.e(TAG, "Could not delete photo from database", e);
         }

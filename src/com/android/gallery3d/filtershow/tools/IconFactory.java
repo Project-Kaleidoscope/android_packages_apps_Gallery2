@@ -33,13 +33,13 @@ public class IconFactory {
      * otherwise, the source image is cropped to the proper aspect ratio.
      *
      * @param sourceImage image to create an icon from.
-     * @param iconWidth width of the icon bitmap.
-     * @param iconHeight height of the icon bitmap.
-     * @param scale if true, stretch sourceImage to fit the icon dimensions.
+     * @param iconWidth   width of the icon bitmap.
+     * @param iconHeight  height of the icon bitmap.
+     * @param scale       if true, stretch sourceImage to fit the icon dimensions.
      * @return an icon bitmap with the dimensions iconWidth:iconHeight.
      */
     public static Bitmap createIcon(Bitmap sourceImage, int iconWidth, int iconHeight,
-            boolean scale) {
+                                    boolean scale) {
         if (sourceImage == null) {
             throw new IllegalArgumentException("Null argument to buildIcon");
         }
@@ -62,9 +62,9 @@ public class IconFactory {
      * is stretched to fit within the destination dimensions; otherwise, the
      * source image is cropped to the proper aspect ratio.
      *
-     * @param dest bitmap into which to draw the icon.
+     * @param dest        bitmap into which to draw the icon.
      * @param sourceImage image to create an icon from.
-     * @param scale if true, stretch sourceImage to fit the destination.
+     * @param scale       if true, stretch sourceImage to fit the destination.
      */
     public static void drawIcon(Bitmap dest, Bitmap sourceImage, boolean scale) {
         if (dest == null || sourceImage == null) {
@@ -83,7 +83,7 @@ public class IconFactory {
         Rect destRect = new Rect(0, 0, iconWidth, iconHeight);
         Canvas canvas = new Canvas(dest);
 
-        Rect srcRect = null;
+        Rect srcRect;
         if (scale) {
             // scale image to fit in icon (stretches if aspect isn't the same)
             srcRect = new Rect(0, 0, sourceWidth, sourceHeight);

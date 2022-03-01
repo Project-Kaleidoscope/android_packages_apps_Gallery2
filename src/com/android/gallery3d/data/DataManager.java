@@ -20,6 +20,7 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
+import android.util.Log;
 
 import com.android.gallery3d.app.GalleryApp;
 import com.android.gallery3d.app.StitchingChangeListener;
@@ -64,12 +65,8 @@ public class DataManager implements StitchingChangeListener {
     // Any one who would like to access data should require this lock
     // to prevent concurrency issue.
     public static final Object LOCK = new Object();
-
-    public static DataManager from(Context context) {
-        GalleryApp app = (GalleryApp) context.getApplicationContext();
-        return app.getDataManager();
-    }
-
+    public static final Comparator<MediaItem> sDateTakenComparator =
+            new DateTakenComparator();
     private static final String TAG = "DataManager";
 
     // This is the path for the media set seen by the user at top level.
@@ -85,32 +82,22 @@ public class DataManager implements StitchingChangeListener {
     private static final String TOP_LOCAL_IMAGE_SET_PATH = "/local/image";
 
     private static final String TOP_LOCAL_VIDEO_SET_PATH = "/local/video";
-
-    public static final Comparator<MediaItem> sDateTakenComparator =
-            new DateTakenComparator();
-
-    private static class DateTakenComparator implements Comparator<MediaItem> {
-        @Override
-        public int compare(MediaItem item1, MediaItem item2) {
-            return -Utils.compare(item1.getDateInMs(), item2.getDateInMs());
-        }
-    }
-
     private final Handler mDefaultMainHandler;
-
-    private GalleryApp mApplication;
+    private final GalleryApp mApplication;
     private int mActiveCount = 0;
-
-    private HashMap<Uri, NotifyBroker> mNotifierMap =
-            new HashMap<Uri, NotifyBroker>();
-
-
-    private HashMap<String, MediaSource> mSourceMap =
-            new LinkedHashMap<String, MediaSource>();
+    private final HashMap<Uri, NotifyBroker> mNotifierMap =
+            new HashMap<>();
+    private final HashMap<String, MediaSource> mSourceMap =
+            new LinkedHashMap<>();
 
     public DataManager(GalleryApp application) {
         mApplication = application;
         mDefaultMainHandler = new Handler(application.getMainLooper());
+    }
+
+    public static DataManager from(Context context) {
+        GalleryApp app = (GalleryApp) context.getApplicationContext();
+        return app.getDataManager();
     }
 
     public synchronized void initializeSourceMap() {
@@ -136,13 +123,20 @@ public class DataManager implements StitchingChangeListener {
     public String getTopSetPath(int typeBits) {
 
         switch (typeBits) {
-            case INCLUDE_IMAGE: return TOP_IMAGE_SET_PATH;
-            case INCLUDE_VIDEO: return TOP_VIDEO_SET_PATH;
-            case INCLUDE_ALL: return TOP_SET_PATH;
-            case INCLUDE_LOCAL_IMAGE_ONLY: return TOP_LOCAL_IMAGE_SET_PATH;
-            case INCLUDE_LOCAL_VIDEO_ONLY: return TOP_LOCAL_VIDEO_SET_PATH;
-            case INCLUDE_LOCAL_ALL_ONLY: return TOP_LOCAL_SET_PATH;
-            default: throw new IllegalArgumentException();
+            case INCLUDE_IMAGE:
+                return TOP_IMAGE_SET_PATH;
+            case INCLUDE_VIDEO:
+                return TOP_VIDEO_SET_PATH;
+            case INCLUDE_ALL:
+                return TOP_SET_PATH;
+            case INCLUDE_LOCAL_IMAGE_ONLY:
+                return TOP_LOCAL_IMAGE_SET_PATH;
+            case INCLUDE_LOCAL_VIDEO_ONLY:
+                return TOP_LOCAL_VIDEO_SET_PATH;
+            case INCLUDE_LOCAL_ALL_ONLY:
+                return TOP_LOCAL_SET_PATH;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
@@ -215,20 +209,16 @@ public class DataManager implements StitchingChangeListener {
     // the original position in the input list of the corresponding Path (plus
     // startIndex).
     public void mapMediaItems(ArrayList<Path> list, ItemConsumer consumer,
-            int startIndex) {
+                              int startIndex) {
         HashMap<String, ArrayList<PathId>> map =
-                new HashMap<String, ArrayList<PathId>>();
+                new HashMap<>();
 
         // Group the path by the prefix.
         int n = list.size();
         for (int i = 0; i < n; i++) {
             Path path = list.get(i);
             String prefix = path.getPrefix();
-            ArrayList<PathId> group = map.get(prefix);
-            if (group == null) {
-                group = new ArrayList<PathId>();
-                map.put(prefix, group);
-            }
+            ArrayList<PathId> group = map.computeIfAbsent(prefix, k -> new ArrayList<>());
             group.add(new PathId(path, i + startIndex));
         }
 
@@ -307,7 +297,7 @@ public class DataManager implements StitchingChangeListener {
     }
 
     public void registerChangeNotifier(Uri uri, ChangeNotifier notifier) {
-        NotifyBroker broker = null;
+        NotifyBroker broker;
         synchronized (mNotifierMap) {
             broker = mNotifierMap.get(uri);
             if (broker == null) {
@@ -336,26 +326,6 @@ public class DataManager implements StitchingChangeListener {
         }
     }
 
-    private static class NotifyBroker extends ContentObserver {
-        private WeakHashMap<ChangeNotifier, Object> mNotifiers =
-                new WeakHashMap<ChangeNotifier, Object>();
-
-        public NotifyBroker(Handler handler) {
-            super(handler);
-        }
-
-        public synchronized void registerNotifier(ChangeNotifier notifier) {
-            mNotifiers.put(notifier, null);
-        }
-
-        @Override
-        public synchronized void onChange(boolean selfChange) {
-            for(ChangeNotifier notifier : mNotifiers.keySet()) {
-                notifier.onChange(selfChange);
-            }
-        }
-    }
-
     @Override
     public void onStitchingQueued(Uri uri) {
         // Do nothing.
@@ -375,5 +345,32 @@ public class DataManager implements StitchingChangeListener {
     @Override
     public void onStitchingProgress(Uri uri, int progress) {
         // Do nothing.
+    }
+
+    private static class DateTakenComparator implements Comparator<MediaItem> {
+        @Override
+        public int compare(MediaItem item1, MediaItem item2) {
+            return -Utils.compare(item1.getDateInMs(), item2.getDateInMs());
+        }
+    }
+
+    private static class NotifyBroker extends ContentObserver {
+        private final WeakHashMap<ChangeNotifier, Object> mNotifiers =
+                new WeakHashMap<>();
+
+        public NotifyBroker(Handler handler) {
+            super(handler);
+        }
+
+        public synchronized void registerNotifier(ChangeNotifier notifier) {
+            mNotifiers.put(notifier, null);
+        }
+
+        @Override
+        public synchronized void onChange(boolean selfChange) {
+            for (ChangeNotifier notifier : mNotifiers.keySet()) {
+                notifier.onChange();
+            }
+        }
     }
 }

@@ -11,43 +11,43 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.colorpicker.ColorListener;
 import com.android.gallery3d.filtershow.colorpicker.ColorPickerDialog;
 import com.android.gallery3d.filtershow.editors.Editor;
+
+import org.codeaurora.gallery.R;
 
 import java.util.Arrays;
 import java.util.Vector;
 
 public class ColorChooser implements Control {
-    private final String LOGTAG = "StyleChooser";
+    private static final int OPACITY_OFFSET = 3;
+    private final String TAG = "StyleChooser";
     protected ParameterColor mParameter;
     protected LinearLayout mLinearLayout;
     protected Editor mEditor;
-    private View mTopView;
-    private Vector<Button> mIconButton = new Vector<Button>();
     protected int mLayoutID = R.layout.filtershow_control_color_chooser;
     Context mContext;
+    int mSelectedButton = 0;
+    private View mTopView;
+    private final Vector<Button> mIconButton = new Vector<>();
     private int mTransparent;
     private int mSelected;
-    private static final int OPACITY_OFFSET = 3;
-    private int[] mButtonsID = {
+    private final int[] mButtonsID = {
             R.id.draw_color_button01,
             R.id.draw_color_button02,
             R.id.draw_color_button03,
             R.id.draw_color_button04,
             R.id.draw_color_button05,
     };
-    private Button[] mButton = new Button[mButtonsID.length];
-
-    int mSelectedButton = 0;
+    private final Button[] mButton = new Button[mButtonsID.length];
 
     @Override
     public void setUp(ViewGroup container, Parameter parameter, Editor editor) {
         container.removeAllViews();
         Resources res = container.getContext().getResources();
-        mTransparent  = res.getColor(R.color.color_chooser_unslected_border);
-        mSelected    = res.getColor(R.color.color_chooser_slected_border);
+        mTransparent = res.getColor(R.color.color_chooser_unslected_border);
+        mSelected = res.getColor(R.color.color_chooser_slected_border);
         mEditor = editor;
         mContext = container.getContext();
         int iconDim = res.getDimensionPixelSize(R.dimen.draw_style_icon_dim);
@@ -55,14 +55,14 @@ public class ColorChooser implements Control {
         LayoutInflater inflater =
                 (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mTopView = inflater.inflate(mLayoutID, container, true);
-        mLinearLayout = (LinearLayout) mTopView.findViewById(R.id.listStyles);
+        mLinearLayout = mTopView.findViewById(R.id.listStyles);
         mTopView.setVisibility(View.VISIBLE);
 
         mIconButton.clear();
         LayoutParams lp = new LayoutParams(iconDim, iconDim);
-        int [] palette = mParameter.getColorPalette();
+        int[] palette = mParameter.getColorPalette();
         for (int i = 0; i < mButtonsID.length; i++) {
-            final Button button = (Button) mTopView.findViewById(mButtonsID[i]);
+            final Button button = mTopView.findViewById(mButtonsID[i]);
             mButton[i] = button;
             float[] hsvo = new float[4];
             Color.colorToHSV(palette[i], hsvo);
@@ -77,29 +77,23 @@ public class ColorChooser implements Control {
             }
             GradientDrawable sd = ((GradientDrawable) button.getBackground());
             sd.setColor(palette[i]);
-            sd.setStroke(3, colorSelect? mSelected : mTransparent);
+            sd.setStroke(3, colorSelect ? mSelected : mTransparent);
 
             final int buttonNo = i;
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View arg0) {
-                    selectColor(arg0, buttonNo);
-                }
-            });
+            button.setOnClickListener(view -> selectColor(view, buttonNo));
         }
-        Button button = (Button) mTopView.findViewById(R.id.draw_color_popupbutton);
+        Button button = mTopView.findViewById(R.id.draw_color_popupbutton);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                showColorPicker();
-            }
-        });
+        button.setOnClickListener(arg0 -> showColorPicker());
 
     }
 
+    public int[] getColorSet() {
+        return mParameter.getColorPalette();
+    }
+
     public void setColorSet(int[] basColors) {
-        int []palette = mParameter.getColorPalette();
+        int[] palette = mParameter.getColorPalette();
         for (int i = 0; i < palette.length; i++) {
             palette[i] = basColors[i];
             float[] hsvo = new float[4];
@@ -112,12 +106,8 @@ public class ColorChooser implements Control {
 
     }
 
-    public int[] getColorSet() {
-        return  mParameter.getColorPalette();
-    }
-
     private void resetBorders() {
-        int []palette = mParameter.getColorPalette();
+        int[] palette = mParameter.getColorPalette();
         for (int i = 0; i < mButtonsID.length; i++) {
             final Button button = mButton[i];
             GradientDrawable sd = ((GradientDrawable) button.getBackground());
@@ -153,7 +143,7 @@ public class ColorChooser implements Control {
     }
 
     public void changeSelectedColor(float[] hsvo) {
-        int []palette = mParameter.getColorPalette();
+        int[] palette = mParameter.getColorPalette();
         int c = Color.HSVToColor((int) (hsvo[3] * 255), hsvo);
         final Button button = mButton[mSelectedButton];
         GradientDrawable sd = ((GradientDrawable) button.getBackground());
@@ -171,6 +161,7 @@ public class ColorChooser implements Control {
             public void setColor(float[] hsvo) {
                 changeSelectedColor(hsvo);
             }
+
             @Override
             public void addColorListener(ColorListener l) {
             }

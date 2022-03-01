@@ -16,15 +16,11 @@
 
 package com.android.gallery3d.app;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -32,14 +28,15 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import androidx.print.PrintHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toolbar;
 
-import org.codeaurora.gallery.R;
-import com.android.gallery3d.common.ApiHelper;
+import androidx.annotation.NonNull;
+import androidx.print.PrintHelper;
+
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.MediaItem;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
@@ -49,10 +46,11 @@ import com.android.gallery3d.util.PanoramaViewHelper;
 import com.android.gallery3d.util.ThreadPool;
 import com.android.photos.data.GalleryBitmapPool;
 
+import org.codeaurora.gallery.R;
+
 import java.io.FileNotFoundException;
 
-public abstract class AbstractGalleryActivity extends AbstractPermissionActivity
-        implements GalleryContext {
+public abstract class AbstractGalleryActivity extends AbstractPermissionActivity implements GalleryContext {
     private static final String TAG = "AbstractGalleryActivity";
     private GLRootView mGLRootView;
     private StateManager mStateManager;
@@ -85,7 +83,7 @@ public abstract class AbstractGalleryActivity extends AbstractPermissionActivity
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         mGLRootView.lockRenderThread();
         try {
             super.onSaveInstanceState(outState);
@@ -96,10 +94,9 @@ public abstract class AbstractGalleryActivity extends AbstractPermissionActivity
     }
 
     @Override
-    public void onConfigurationChanged(Configuration config) {
+    public void onConfigurationChanged(@NonNull Configuration config) {
         super.onConfigurationChanged(config);
         mStateManager.onConfigurationChange(config);
-        getGalleryActionBar().onConfigurationChanged();
         invalidateOptionsMenu();
     }
 
@@ -142,7 +139,7 @@ public abstract class AbstractGalleryActivity extends AbstractPermissionActivity
     @Override
     public void setContentView(int resId) {
         super.setContentView(resId);
-        mGLRootView = (GLRootView) findViewById(R.id.gl_root_view);
+        mGLRootView = findViewById(R.id.gl_root_view);
     }
 
     protected void onStorageReady() {
@@ -157,38 +154,18 @@ public abstract class AbstractGalleryActivity extends AbstractPermissionActivity
     protected void onStart() {
         super.onStart();
         if (getCacheDir() == null) {
-            OnCancelListener onCancel = new OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    finish();
-                }
-            };
-            OnClickListener onClick = new OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            };
+            DialogInterface.OnCancelListener onCancel = dialog -> finish();
+            DialogInterface.OnClickListener onClick = (dialog, which) -> dialog.cancel();
             AlertDialog.Builder builder = new AlertDialog.Builder(this)
                     .setTitle(R.string.no_external_storage_title)
                     .setMessage(R.string.no_external_storage)
                     .setNegativeButton(android.R.string.cancel, onClick)
-                    .setOnCancelListener(onCancel);
-            if (ApiHelper.HAS_SET_ICON_ATTRIBUTE) {
-                setAlertDialogIconAttribute(builder);
-            } else {
-                builder.setIcon(android.R.drawable.ic_dialog_alert);
-            }
+                    .setOnCancelListener(onCancel)
+                    .setIconAttribute(android.R.attr.alertDialogIcon);
             mAlertDialog = builder.show();
             registerReceiver(mMountReceiver, mMountFilter);
         }
         mPanoramaViewHelper.onStart();
-    }
-
-    @TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB)
-    private static void setAlertDialogIconAttribute(
-            AlertDialog.Builder builder) {
-        builder.setIconAttribute(android.R.attr.alertDialogIcon);
     }
 
     @Override
@@ -381,7 +358,7 @@ public abstract class AbstractGalleryActivity extends AbstractPermissionActivity
         if (lastPathSegment == null) {
             // use substring to get last path segment.
             int indexOfLastPathSegment = path.lastIndexOf("/") + 1;
-            lastPathSegment = path.substring(indexOfLastPathSegment, path.length());
+            lastPathSegment = path.substring(indexOfLastPathSegment);
         }
         return lastPathSegment;
     }

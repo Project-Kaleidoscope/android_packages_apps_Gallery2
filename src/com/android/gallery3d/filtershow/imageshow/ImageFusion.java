@@ -43,11 +43,11 @@ import com.android.gallery3d.filtershow.editors.EditorDualCamFusion;
 import com.android.gallery3d.filtershow.filters.FilterDualCamFusionRepresentation;
 
 public class ImageFusion extends ImageShow {
-    private static final String LOGTAG = "ImageFusion";
+    private static final String TAG = "ImageFusion";
     protected EditorDualCamFusion mEditor;
     protected FilterDualCamFusionRepresentation mRepresentation;
     private Matrix mToOrig;
-    private float[] mTmpPoint = new float[2];
+    private final float[] mTmpPoint = new float[2];
     private Bitmap mUnderlay;
 
     public ImageFusion(Context context, AttributeSet attrs) {
@@ -62,13 +62,13 @@ public class ImageFusion extends ImageShow {
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
-        Log.d(LOGTAG, "single tap: " + event.getX() + "x" + event.getY());
+        Log.d(TAG, "single tap: " + event.getX() + "x" + event.getY());
         calcScreenMapping();
         mTmpPoint[0] = event.getX();
         mTmpPoint[1] = event.getY();
         mToOrig.mapPoints(mTmpPoint);
 
-        mRepresentation.setPoint((int)mTmpPoint[0], (int)mTmpPoint[1]);
+        mRepresentation.setPoint((int) mTmpPoint[0], (int) mTmpPoint[1]);
         mEditor.commitLocalRepresentation();
         return true;
     }

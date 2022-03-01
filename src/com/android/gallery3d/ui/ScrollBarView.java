@@ -29,15 +29,15 @@ public class ScrollBarView extends GLView {
 
     private int mBarHeight;
 
-    private int mGripHeight;
+    private final int mGripHeight;
     private int mGripPosition;  // left side of the grip
     private int mGripWidth;     // zero if the grip is disabled
-    private int mGivenGripWidth;
+    private final int mGivenGripWidth;
 
     private int mContentPosition;
     private int mContentTotal;
 
-    private NinePatchTexture mScrollBarTexture;
+    private final NinePatchTexture mScrollBarTexture;
 
     public ScrollBarView(Context context, int gripHeight, int gripWidth) {
         TypedValue outValue = new TypedValue();

@@ -16,11 +16,14 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import org.codeaurora.gallery.R;
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.editors.ImageOnlyEditor;
 
+import org.codeaurora.gallery.R;
+
 public class FilterImageBorderRepresentation extends FilterRepresentation {
-    private int mDrawableResource = 0;
+    private int mDrawableResource;
 
     public FilterImageBorderRepresentation(int drawableResource) {
         super("ImageBorder");
@@ -32,6 +35,7 @@ public class FilterImageBorderRepresentation extends FilterRepresentation {
         setShowParameterValue(false);
     }
 
+    @NonNull
     public String toString() {
         return "FilterBorder: " + getName();
     }
@@ -65,9 +69,7 @@ public class FilterImageBorderRepresentation extends FilterRepresentation {
         }
         if (representation instanceof FilterImageBorderRepresentation) {
             FilterImageBorderRepresentation border = (FilterImageBorderRepresentation) representation;
-            if (border.mDrawableResource == mDrawableResource) {
-                return true;
-            }
+            return border.mDrawableResource == mDrawableResource;
         }
         return false;
     }

@@ -29,7 +29,7 @@ import java.util.Arrays;
  */
 public class BoundedRect {
     private float rot;
-    private RectF outer;
+    private final RectF outer;
     private RectF inner;
     private float[] innerRotated;
 
@@ -64,19 +64,6 @@ public class BoundedRect {
     }
 
     /**
-     * Sets inner, and re-constrains it to fit within the rotated bounding rect.
-     */
-    public void setInner(RectF newInner) {
-        if (inner.equals(newInner))
-            return;
-        inner = newInner;
-        innerRotated = CropMath.getCornersFromRect(inner);
-        rotateInner();
-        if (!isConstrained())
-            reconstrain();
-    }
-
-    /**
      * Sets rotation, and re-constrains inner to fit within the rotated bounding rect.
      */
     public void setRotation(float rotation) {
@@ -99,6 +86,19 @@ public class BoundedRect {
 
     public RectF getInner() {
         return new RectF(inner);
+    }
+
+    /**
+     * Sets inner, and re-constrains it to fit within the rotated bounding rect.
+     */
+    public void setInner(RectF newInner) {
+        if (inner.equals(newInner))
+            return;
+        inner = newInner;
+        innerRotated = CropMath.getCornersFromRect(inner);
+        rotateInner();
+        if (!isConstrained())
+            reconstrain();
     }
 
     public RectF getOuter() {
@@ -207,23 +207,23 @@ public class BoundedRect {
                 switch (i) {
                     case 0:
                     case 1:
-                        ret.left = (p[0] > ret.left) ? p[0] : ret.left;
-                        ret.top = (p[1] > ret.top) ? p[1] : ret.top;
+                        ret.left = Math.max(p[0], ret.left);
+                        ret.top = Math.max(p[1], ret.top);
                         break;
                     case 2:
                     case 3:
-                        ret.right = (p[0] < ret.right) ? p[0] : ret.right;
-                        ret.top = (p[1] > ret.top) ? p[1] : ret.top;
+                        ret.right = Math.min(p[0], ret.right);
+                        ret.top = Math.max(p[1], ret.top);
                         break;
                     case 4:
                     case 5:
-                        ret.right = (p[0] < ret.right) ? p[0] : ret.right;
-                        ret.bottom = (p[1] < ret.bottom) ? p[1] : ret.bottom;
+                        ret.right = Math.min(p[0], ret.right);
+                        ret.bottom = Math.min(p[1], ret.bottom);
                         break;
                     case 6:
                     case 7:
-                        ret.left = (p[0] > ret.left) ? p[0] : ret.left;
-                        ret.bottom = (p[1] < ret.bottom) ? p[1] : ret.bottom;
+                        ret.left = Math.max(p[0], ret.left);
+                        ret.bottom = Math.min(p[1], ret.bottom);
                         break;
                     default:
                         break;
@@ -272,7 +272,7 @@ public class BoundedRect {
         if (fixed == -1)
             return;
         float widthSoFar = newInner.width();
-        int moved = -1;
+        int moved;
         for (int i = 0; i < newInnerCorners.length; i += 2) {
             float[] c = {
                     newInnerCorners[i], newInnerCorners[i + 1]

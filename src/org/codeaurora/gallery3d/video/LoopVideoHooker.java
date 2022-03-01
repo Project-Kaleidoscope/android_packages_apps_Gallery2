@@ -9,7 +9,6 @@ import org.codeaurora.gallery3d.ext.MovieUtils;
 public class LoopVideoHooker extends MovieHooker {
 
     private static final String TAG = "LoopVideoHooker";
-    private static final boolean LOG = false;
     private static final int MENU_LOOP = 1;
 
     private MenuItem mMenuLoopButton;
@@ -31,22 +30,16 @@ public class LoopVideoHooker extends MovieHooker {
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         super.onOptionsItemSelected(item);
-        switch (getMenuOriginalId(item.getItemId())) {
-            case MENU_LOOP:
-                getPlayer().setLoop(!getPlayer().getLoop());
-                return true;
-            default:
-                return false;
+        if (getMenuOriginalId(item.getItemId()) == MENU_LOOP) {
+            getPlayer().setLoop(!getPlayer().getLoop());
+            return true;
         }
+        return false;
     }
 
     private void updateLoop() {
         if (mMenuLoopButton != null) {
-            if (MovieUtils.isLocalFile(getMovieItem().getUri(), getMovieItem().getMimeType())) {
-                mMenuLoopButton.setVisible(true);
-            } else {
-                mMenuLoopButton.setVisible(false);
-            }
+            mMenuLoopButton.setVisible(MovieUtils.isLocalFile(getMovieItem().getUri(), getMovieItem().getMimeType()));
             final boolean newLoop = getPlayer().getLoop();
             if (newLoop) {
                 mMenuLoopButton.setTitle(R.string.single);

@@ -18,16 +18,18 @@ package com.android.gallery3d.filtershow.controller;
 
 import android.graphics.Color;
 
+import androidx.annotation.NonNull;
+
 import java.util.Arrays;
 
 public class ParameterColor implements Parameter {
     public static String sParameterType = "ParameterColor";
+    public final int ID;
     protected Control mControl;
     protected FilterView mEditor;
     float[] mHSVO = new float[4];
     String mParameterName;
     int mValue;
-    public final int ID;
     int[] mBasColors = {
             Color.RED & 0x80FFFFFF,
             Color.GREEN & 0x80FFFFFF,
@@ -47,13 +49,13 @@ public class ParameterColor implements Parameter {
         return sParameterType;
     }
 
+    public float[] getColor() {
+        return mHSVO;
+    }
+
     public void setColor(float[] hsvo) {
         mHSVO = hsvo;
         mValue = Color.HSVToColor((int) (hsvo[3] * 255), mHSVO);
-    }
-
-    public float[] getColor() {
-        return mHSVO;
     }
 
     public void copyFrom(Parameter src) {
@@ -91,6 +93,7 @@ public class ParameterColor implements Parameter {
         mHSVO[3] = ((mValue >> 24) & 0xFF) / (float) 255;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return getValueString();
@@ -102,7 +105,7 @@ public class ParameterColor implements Parameter {
     }
 
     public void copyPalletFrom(ParameterColor parameterColor) {
-        System.arraycopy(parameterColor.mBasColors,0,mBasColors,0,mBasColors.length);
+        System.arraycopy(parameterColor.mBasColors, 0, mBasColors, 0, mBasColors.length);
     }
 
     public void setColorpalette(int[] palette) {

@@ -29,24 +29,17 @@
 
 package com.android.gallery3d.filtershow.editors;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
 import android.content.Context;
-import android.content.DialogInterface;
 import android.net.Uri;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import org.codeaurora.gallery.R;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
@@ -55,6 +48,12 @@ import com.android.gallery3d.filtershow.imageshow.ImageTruePortraitFusion;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.ui.DoNotShowAgainDialog;
 import com.android.gallery3d.util.GalleryUtils;
+
+import org.codeaurora.gallery.R;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class EditorTruePortraitFusion extends Editor {
     public static final String TAG = "EditorTruePortraitFusion";
@@ -95,7 +94,7 @@ public class EditorTruePortraitFusion extends Editor {
 
     @Override
     public void setEditPanelUI(View editControl) {
-        ViewGroup controlContainer = (ViewGroup)editControl;
+        ViewGroup controlContainer = (ViewGroup) editControl;
         controlContainer.removeAllViews();
 
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService
@@ -105,24 +104,18 @@ public class EditorTruePortraitFusion extends Editor {
         seekbar.setVisibility(View.GONE);
         View saveButton = controls.findViewById(R.id.slider_save);
         if (saveButton != null) {
-            saveButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    FilterShowActivity activity = (FilterShowActivity) mContext;
-                    finalApplyCalled();
-                    activity.leaveSeekBarPanel();
-                }
+            saveButton.setOnClickListener(view -> {
+                FilterShowActivity activity = (FilterShowActivity) mContext;
+                finalApplyCalled();
+                activity.leaveSeekBarPanel();
             });
         }
         View cancelButton = controls.findViewById(R.id.slider_cancel);
         if (cancelButton != null) {
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    FilterShowActivity activity = (FilterShowActivity) mContext;
-                    activity.cancelCurrentFilter();
-                    activity.leaveSeekBarPanel();
-                }
+            cancelButton.setOnClickListener(view -> {
+                FilterShowActivity activity = (FilterShowActivity) mContext;
+                activity.cancelCurrentFilter();
+                activity.leaveSeekBarPanel();
             });
         }
     }
@@ -136,21 +129,13 @@ public class EditorTruePortraitFusion extends Editor {
         inflater.inflate(R.layout.filtershow_actionbar_trueportrait_fusion, accessoryViewList);
 
         View pickUnderlayBtn = accessoryViewList.findViewById(R.id.pick_underlay);
-        pickUnderlayBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY);
-            }
-        });
+        pickUnderlayBtn.setOnClickListener(view -> MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY));
 
         View editMaskBtn = accessoryViewList.findViewById(R.id.editMask);
-        editMaskBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FilterRepresentation representation = new FilterRepresentation("");
-                representation.setEditorId(EditorTruePortraitMask.ID);
-                ((FilterShowActivity)mContext).loadEditorPanel(representation);
-            }
+        editMaskBtn.setOnClickListener(view -> {
+            FilterRepresentation representation = new FilterRepresentation("");
+            representation.setEditorId(EditorTruePortraitMask.ID);
+            ((FilterShowActivity) mContext).loadEditorPanel(representation);
         });
 
         // Look for previous underlay
@@ -158,9 +143,9 @@ public class EditorTruePortraitFusion extends Editor {
                 mContext.getString(R.string.pref_trueportrait_fusion_underlay_key), null);
         Uri fusionUri = Uri.EMPTY;
 
-        if(fusionUnderlay != null) {
+        if (fusionUnderlay != null) {
             fusionUri = Uri.parse(fusionUnderlay);
-            if(!uriExists(mContext, fusionUri))
+            if (!uriExists(mContext, fusionUri))
                 fusionUri = Uri.EMPTY;
         }
 
@@ -170,32 +155,26 @@ public class EditorTruePortraitFusion extends Editor {
 
     @Override
     public void resume() {
-        if(mUnderlayUri.equals(Uri.EMPTY) && !pickDialogHasShown) {
+        if (mUnderlayUri.equals(Uri.EMPTY) && !pickDialogHasShown) {
             // No underlay set.
             boolean skipIntro = GalleryUtils.getBooleanPref(mContext,
                     mContext.getString(R.string.pref_trueportrait_fusion_intro_show_key), false);
-            if(!skipIntro) {
-                FragmentManager fm = ((FilterShowActivity)mContext).getSupportFragmentManager();
+            if (!skipIntro) {
+                FragmentManager fm = ((FilterShowActivity) mContext).getSupportFragmentManager();
                 DoNotShowAgainDialog dialog =
                         (DoNotShowAgainDialog) fm.findFragmentByTag("trueportrait_fusion_intro");
-                if(dialog == null) {
+                if (dialog == null) {
                     dialog = new DoNotShowAgainDialog(
                             R.string.fusion_pick_background, R.string.trueportrait_fusion_intro,
                             R.string.pref_trueportrait_fusion_intro_show_key);
-                    dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            FilterShowActivity activity = (FilterShowActivity) mContext;
-                            activity.cancelCurrentFilter();
-                            activity.leaveSeekBarPanel();
-                        }
+                    dialog.setOnCancelListener(dialog1 -> {
+                        FilterShowActivity activity = (FilterShowActivity) mContext;
+                        activity.cancelCurrentFilter();
+                        activity.leaveSeekBarPanel();
                     });
-                    dialog.setOnOkButtonClickListener(new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            pickDialogHasShown = true;
-                            MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY);
-                        }
+                    dialog.setOnOkButtonClickListener((dialog2, id) -> {
+                        pickDialogHasShown = true;
+                        MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY);
                     });
                     dialog.setCancelable(true);
                     dialog.show(fm, "trueportrait_fusion_intro");
@@ -215,14 +194,14 @@ public class EditorTruePortraitFusion extends Editor {
     public void setUnderlayImageUri(Uri uri) {
         mUnderlayUri = uri;
         FilterRepresentation filter = getLocalRepresentation();
-        if(filter instanceof FilterTruePortraitFusionRepresentation) {
+        if (filter instanceof FilterTruePortraitFusionRepresentation) {
             mImageFusion.setUnderlay(uri);
             commitLocalRepresentation();
 
             // save fusion underlay uri
             GalleryUtils.setStringPref(mContext,
                     mContext.getString(R.string.pref_trueportrait_fusion_underlay_key),
-                    (uri != null)?uri.toString():null);
+                    (uri != null) ? uri.toString() : null);
         }
     }
 
@@ -230,7 +209,7 @@ public class EditorTruePortraitFusion extends Editor {
     public void reflectCurrentFilter() {
         super.reflectCurrentFilter();
         FilterRepresentation rep = getLocalRepresentation();
-        if (rep != null && rep instanceof FilterTruePortraitFusionRepresentation) {
+        if (rep instanceof FilterTruePortraitFusionRepresentation) {
             FilterTruePortraitFusionRepresentation fusionRep = (FilterTruePortraitFusionRepresentation) rep;
             mImageFusion.setRepresentation(fusionRep);
         }

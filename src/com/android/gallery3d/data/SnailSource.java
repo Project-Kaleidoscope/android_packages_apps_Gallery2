@@ -22,10 +22,9 @@ public class SnailSource extends MediaSource {
     private static final String TAG = "SnailSource";
     private static final int SNAIL_ALBUM = 0;
     private static final int SNAIL_ITEM = 1;
-
-    private GalleryApp mApplication;
-    private PathMatcher mMatcher;
     private static int sNextId;
+    private final GalleryApp mApplication;
+    private final PathMatcher mMatcher;
 
     public SnailSource(GalleryApp application) {
         super("snail");
@@ -33,6 +32,21 @@ public class SnailSource extends MediaSource {
         mMatcher = new PathMatcher();
         mMatcher.add("/snail/set/*", SNAIL_ALBUM);
         mMatcher.add("/snail/item/*", SNAIL_ITEM);
+    }
+
+    // Registers a new SnailAlbum containing a SnailItem and returns the id of
+    // them. You can obtain the Path of the SnailAlbum and SnailItem associated
+    // with the id by getSetPath and getItemPath().
+    public static synchronized int newId() {
+        return sNextId++;
+    }
+
+    public static Path getSetPath(int id) {
+        return Path.fromString("/snail/set").getChild(id);
+    }
+
+    public static Path getItemPath(int id) {
+        return Path.fromString("/snail/item").getChild(id);
     }
 
     // The only path we accept is "/snail/set/id" and "/snail/item/id"
@@ -51,20 +65,5 @@ public class SnailSource extends MediaSource {
             }
         }
         return null;
-    }
-
-    // Registers a new SnailAlbum containing a SnailItem and returns the id of
-    // them. You can obtain the Path of the SnailAlbum and SnailItem associated
-    // with the id by getSetPath and getItemPath().
-    public static synchronized int newId() {
-        return sNextId++;
-    }
-
-    public static Path getSetPath(int id) {
-        return Path.fromString("/snail/set").getChild(id);
-    }
-
-    public static Path getItemPath(int id) {
-        return Path.fromString("/snail/item").getChild(id);
     }
 }

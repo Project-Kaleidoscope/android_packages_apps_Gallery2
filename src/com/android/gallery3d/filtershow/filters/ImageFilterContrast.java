@@ -16,9 +16,9 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import org.codeaurora.gallery.R;
-
 import android.graphics.Bitmap;
+
+import org.codeaurora.gallery.R;
 
 public class ImageFilterContrast extends SimpleImageFilter {
     private static final String SERIALIZATION_NAME = "CONTRAST";

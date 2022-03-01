@@ -37,10 +37,10 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import org.codeaurora.gallery3d.video.IVideoSnapshotListener;
-import org.codeaurora.gallery3d.video.IControllerRewindAndForward;
 
 import org.codeaurora.gallery.R;
+import org.codeaurora.gallery3d.video.IControllerRewindAndForward;
+import org.codeaurora.gallery3d.video.IVideoSnapshotListener;
 
 public class MovieControllerOverlayNew extends MovieControllerOverlay {
     private VideoSnapshotLayout mVideoSnapshotLayout = new VideoSnapshotLayout();
@@ -139,10 +139,7 @@ public class MovieControllerOverlayNew extends MovieControllerOverlay {
     }
 
     private boolean isPrepared() {
-        if ((mState == State.PLAYING || mState == State.BUFFERING || mState == State.LOADING)) {
-            return true;
-        }
-        return false;
+        return mState == State.PLAYING || mState == State.BUFFERING || mState == State.LOADING;
     }
 
     public void setVideoSnapshotListener(IVideoSnapshotListener listener) {

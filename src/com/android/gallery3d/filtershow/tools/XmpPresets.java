@@ -23,7 +23,6 @@ import android.util.Log;
 import com.adobe.xmp.XMPException;
 import com.adobe.xmp.XMPMeta;
 import com.adobe.xmp.XMPMetaFactory;
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
@@ -40,7 +39,7 @@ public class XmpPresets {
     public static final String XMP_SRC_FILE_URI = "SourceFileUri";
     public static final String XMP_FILTERSTACK = "filterstack";
 
-    private static final String LOGTAG = "XmpPresets";
+    private static final String TAG = "XmpPresets";
 
     public static class XMresults {
         public String presetString;
@@ -53,7 +52,7 @@ public class XmpPresets {
             XMPMetaFactory.getSchemaRegistry().registerNamespace(
                     XMP_GOOGLE_FILTER_NAMESPACE, XMP_GOOGLE_FILTER_PREFIX);
         } catch (XMPException e) {
-            Log.e(LOGTAG, "Register XMP name space failed", e);
+            Log.e(TAG, "Register XMP name space failed", e);
         }
     }
 
@@ -64,8 +63,7 @@ public class XmpPresets {
         try {
             is = context.getContentResolver().openInputStream(srcUri);
             xmpMeta = XmpUtilHelper.extractXMPMeta(is);
-        } catch (FileNotFoundException e) {
-
+        } catch (FileNotFoundException ignored) {
         } finally {
             Utils.closeSilently(is);
         }
@@ -79,12 +77,12 @@ public class XmpPresets {
             xmpMeta.setProperty(XMP_GOOGLE_FILTER_NAMESPACE,
                     XMP_FILTERSTACK, preset.getJsonString(ImagePreset.JASON_SAVED));
         } catch (XMPException e) {
-            Log.v(LOGTAG, "Write XMP meta to file failed:" + dstFile.getAbsolutePath());
+            Log.v(TAG, "Write XMP meta to file failed:" + dstFile.getAbsolutePath());
             return;
         }
 
         if (!XmpUtilHelper.writeXMPMeta(dstFile.getAbsolutePath(), xmpMeta)) {
-            Log.v(LOGTAG, "Write XMP meta to file failed:" + dstFile.getAbsolutePath());
+            Log.v(TAG, "Write XMP meta to file failed:" + dstFile.getAbsolutePath());
         }
     }
 
@@ -97,7 +95,7 @@ public class XmpPresets {
         try {
             is = context.getContentResolver().openInputStream(uriToEdit);
             xmpMeta = XmpUtilHelper.extractXMPMeta(is);
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException ignored) {
         } finally {
             Utils.closeSilently(is);
         }
@@ -114,8 +112,7 @@ public class XmpPresets {
                 String filterString = xmpMeta.getPropertyString(XMP_GOOGLE_FILTER_NAMESPACE,
                         XMP_FILTERSTACK);
 
-                Uri srcUri = Uri.parse(strSrcUri);
-                ret.originalimage = srcUri;
+                ret.originalimage = Uri.parse(strSrcUri);
 
                 ret.preset = new ImagePreset();
                 ret.presetString = filterString;

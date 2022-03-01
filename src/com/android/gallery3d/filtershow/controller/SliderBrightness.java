@@ -22,16 +22,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.colorpicker.ColorBrightnessView;
 import com.android.gallery3d.filtershow.colorpicker.ColorListener;
-import com.android.gallery3d.filtershow.colorpicker.ColorOpacityView;
 import com.android.gallery3d.filtershow.editors.Editor;
 
+import org.codeaurora.gallery.R;
+
 public class SliderBrightness implements Control {
+    Editor mEditor;
     private ColorBrightnessView mColorOpacityView;
     private ParameterBrightness mParameter;
-    Editor mEditor;
 
     @Override
     public void setUp(ViewGroup container, Parameter parameter, Editor editor) {
@@ -44,14 +44,15 @@ public class SliderBrightness implements Control {
         LinearLayout lp = (LinearLayout) inflater.inflate(
                 R.layout.filtershow_brightness, container, true);
 
-        mColorOpacityView =   (ColorBrightnessView) lp.findViewById(R.id.brightnessView);
+        mColorOpacityView = lp.findViewById(R.id.brightnessView);
         updateUI();
         mColorOpacityView.addColorListener(new ColorListener() {
             @Override
             public void setColor(float[] hsvo) {
-                mParameter.setValue((int)(255* hsvo[3]));
+                mParameter.setValue((int) (255 * hsvo[3]));
                 mEditor.commitLocalRepresentation();
             }
+
             @Override
             public void addColorListener(ColorListener l) {
             }

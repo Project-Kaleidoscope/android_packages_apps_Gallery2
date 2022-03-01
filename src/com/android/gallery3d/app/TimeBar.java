@@ -28,10 +28,49 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.common.Utils;
 
+import org.codeaurora.gallery.R;
+
 import java.util.Locale;
+
+interface ITimeBarInfoExt {
+
+    void init(float textSizeInPx);
+
+    void setInfo(String info);
+
+    void draw(Canvas canvas, Rect infoBounds);
+
+    void updateVisibleText(View parent, Rect progressBar, Rect timeBounds);
+
+}
+
+interface ITimeBarSecondaryProgressExt {
+    void init();
+
+    void setSecondaryProgress(Rect progressBar, int percent);
+
+    void draw(Canvas canvas, Rect progressBounds);
+}
+
+interface ITimeBarLayoutExt {
+
+    void init(int scrubberPadding, int vPaddingInPx);
+
+    int getPreferredHeight(int originalPreferredHeight, Rect timeBounds);
+
+    int getBarHeight(int originalBarHeight, Rect timeBounds);
+
+    int getProgressMargin(int originalMargin);
+
+    int getProgressOffset(Rect timeBounds);
+
+    int getTimeOffset();
+
+    Rect getInfoBounds(View parent, Rect timeBounds);
+
+}
 
 /**
  * The time bar view, which includes the current and total time, the progress
@@ -39,14 +78,7 @@ import java.util.Locale;
  */
 public class TimeBar extends View {
 
-    public interface Listener {
-        void onScrubbingStart();
-
-        void onScrubbingMove(int time);
-
-        void onScrubbingEnd(int time, int start, int end);
-    }
-
+    public static final int UNKNOWN = -1;
     // Padding around the scrubber to increase its touch target
     private static final int SCRUBBER_PADDING_IN_DP = 3;
 
@@ -57,21 +89,17 @@ public class TimeBar extends View {
 
     private static final String TAG = "Gallery3D/TimeBar";
     private static final boolean LOG = false;
-    public static final int UNKNOWN = -1;
-
     protected final Listener mListener;
-
     // the bars we use for displaying the progress
     protected final Rect mProgressBar;
     protected final Rect mPlayedBar;
-
     protected final Paint mProgressPaint;
     protected final Paint mPlayedPaint;
     protected final Paint mTimeTextPaint;
-
     protected final Bitmap mScrubber;
+    protected final Rect mTimeBounds;
     protected int mScrubberPadding; // adds some touch tolerance around the
-                                    // scrubber
+    // scrubber
 
     protected int mScrubberLeft;
     protected int mScrubberTop;
@@ -79,20 +107,15 @@ public class TimeBar extends View {
     protected boolean mScrubbing;
     protected boolean mShowTimes;
     protected boolean mShowScrubber;
-    private boolean mEnableScrubbing;
-
     protected int mTotalTime;
     protected int mCurrentTime;
-
-    protected final Rect mTimeBounds;
-
     protected int mVPaddingInPx;
+    protected ITimeBarLayoutExt mLayoutExt = new TimeBarLayoutExtImpl();
+    private boolean mEnableScrubbing;
     private int mLastShowTime = UNKNOWN;
 
-    private ITimeBarSecondaryProgressExt mSecondaryProgressExt = new TimeBarSecondaryProgressExtImpl();
-    private ITimeBarInfoExt mInfoExt = new TimeBarInfoExtImpl();
-    protected ITimeBarLayoutExt mLayoutExt = new TimeBarLayoutExtImpl();
-
+    private final ITimeBarSecondaryProgressExt mSecondaryProgressExt = new TimeBarSecondaryProgressExtImpl();
+    private final ITimeBarInfoExt mInfoExt = new TimeBarInfoExtImpl();
     public TimeBar(Context context, Listener listener) {
         super(context);
         mListener = Utils.checkNotNull(listener);
@@ -189,7 +212,7 @@ public class TimeBar extends View {
     }
 
     public void setTime(int currentTime, int totalTime,
-            int trimStartTime, int trimEndTime) {
+                        int trimStartTime, int trimEndTime) {
         if (mCurrentTime == currentTime && mTotalTime == totalTime) {
             return;
         }
@@ -226,7 +249,7 @@ public class TimeBar extends View {
             return (int) ((long) (mScrubberLeft + mScrubber.getWidth() / 2 - mProgressBar.left)
                     * mTotalTime / mProgressBar.width());
         }
-  }
+    }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
@@ -341,9 +364,9 @@ public class TimeBar extends View {
         int minutes = (totalSeconds / 60) % 60;
         int hours = totalSeconds / 3600;
         if (hours > 0) {
-            return String.format("%d:%02d:%02d", hours, minutes, seconds).toString();
+            return String.format("%d:%02d:%02d", hours, minutes, seconds);
         } else {
-            return String.format("%02d:%02d", minutes, seconds).toString();
+            return String.format("%02d:%02d", minutes, seconds);
         }
     }
 
@@ -352,7 +375,7 @@ public class TimeBar extends View {
     }
 
     private void updateBounds() {
-        int showTime = mTotalTime > mCurrentTime ? mTotalTime : mCurrentTime;
+        int showTime = Math.max(mTotalTime, mCurrentTime);
         if (mLastShowTime == showTime) {
             // do not need to recompute the bounds.
             return;
@@ -367,6 +390,13 @@ public class TimeBar extends View {
         }
     }
 
+    public boolean getScrubbing() {
+        if (LOG) {
+            Log.v(TAG, "mEnableScrubbing=" + mEnableScrubbing);
+        }
+        return mEnableScrubbing;
+    }
+
     public void setScrubbing(boolean enable) {
         if (LOG) {
             Log.v(TAG, "setScrubbing(" + enable + ") scrubbing=" + mScrubbing);
@@ -376,13 +406,6 @@ public class TimeBar extends View {
             mListener.onScrubbingEnd(getScrubberTime(), 0, 0);
             mScrubbing = false;
         }
-    }
-
-    public boolean getScrubbing() {
-        if (LOG) {
-            Log.v(TAG, "mEnableScrubbing=" + mEnableScrubbing);
-        }
-        return mEnableScrubbing;
     }
 
     public void setInfo(String info) {
@@ -401,40 +424,14 @@ public class TimeBar extends View {
         mSecondaryProgressExt.setSecondaryProgress(mProgressBar, percent);
         invalidate();
     }
-}
 
-interface ITimeBarInfoExt {
-    void init(float textSizeInPx);
+    public interface Listener {
+        void onScrubbingStart();
 
-    void setInfo(String info);
+        void onScrubbingMove(int time);
 
-    void draw(Canvas canvas, Rect infoBounds);
-
-    void updateVisibleText(View parent, Rect progressBar, Rect timeBounds);
-}
-
-interface ITimeBarSecondaryProgressExt {
-    void init();
-
-    void setSecondaryProgress(Rect progressBar, int percent);
-
-    void draw(Canvas canvas, Rect progressBounds);
-}
-
-interface ITimeBarLayoutExt {
-    void init(int scrubberPadding, int vPaddingInPx);
-
-    int getPreferredHeight(int originalPreferredHeight, Rect timeBounds);
-
-    int getBarHeight(int originalBarHeight, Rect timeBounds);
-
-    int getProgressMargin(int originalMargin);
-
-    int getProgressOffset(Rect timeBounds);
-
-    int getTimeOffset();
-
-    Rect getInfoBounds(View parent, Rect timeBounds);
+        void onScrubbingEnd(int time, int start, int end);
+    }
 }
 
 class TimeBarInfoExtImpl implements ITimeBarInfoExt {
@@ -478,7 +475,7 @@ class TimeBarInfoExtImpl implements ITimeBarInfoExt {
         float tw = mInfoPaint.measureText(mInfoText);
         float space = progressBar.width() - timeBounds.width() * 2 - parent.getPaddingLeft()
                 - parent.getPaddingRight();
-        if (tw > 0 && space > 0 && tw > space) {
+        if (space > 0 && tw > space) {
             // we need to cut the info text for visible
             float originalNum = mInfoText.length();
             int realNum = (int) ((space - mEllipseLength) * originalNum / tw);
@@ -522,7 +519,7 @@ class TimeBarSecondaryProgressExtImpl implements ITimeBarSecondaryProgressExt {
         if (mBufferPercent >= 0) {
             mSecondaryBar.set(progressBounds);
             mSecondaryBar.right = mSecondaryBar.left
-                    + (int) (mBufferPercent * progressBounds.width() / 100);
+                    + (mBufferPercent * progressBounds.width() / 100);
             canvas.drawRect(mSecondaryBar, mSecondaryPaint);
         }
         if (LOG) {
@@ -539,7 +536,6 @@ class TimeBarSecondaryProgressExtImpl implements ITimeBarSecondaryProgressExt {
 
 class TimeBarLayoutExtImpl implements ITimeBarLayoutExt {
     private static final String TAG = "TimeBarLayoutExtensionImpl";
-    private static final boolean LOG = false;
 
     private int mTextPadding;
     private int mVPaddingInPx;
@@ -577,9 +573,8 @@ class TimeBarLayoutExtImpl implements ITimeBarLayoutExt {
 
     @Override
     public Rect getInfoBounds(View parent, Rect timeBounds) {
-        Rect bounds = new Rect(parent.getPaddingLeft(), 0,
+        return new Rect(parent.getPaddingLeft(), 0,
                 parent.getWidth() - parent.getPaddingRight(),
                 (timeBounds.height() + mTextPadding * 3 + 1) * 2);
-        return bounds;
     }
 }

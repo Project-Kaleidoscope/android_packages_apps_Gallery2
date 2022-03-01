@@ -40,7 +40,7 @@ public class ComboAlbum extends MediaSet implements ContentListener {
 
     @Override
     public ArrayList<MediaItem> getMediaItem(int start, int count) {
-        ArrayList<MediaItem> items = new ArrayList<MediaItem>();
+        ArrayList<MediaItem> items = new ArrayList<>();
         for (MediaSet set : mSets) {
             int size = set.getMediaItemCount();
             if (count < 1) break;
@@ -83,8 +83,8 @@ public class ComboAlbum extends MediaSet implements ContentListener {
     @Override
     public long reload() {
         boolean changed = false;
-        for (int i = 0, n = mSets.length; i < n; ++i) {
-            long version = mSets[i].reload();
+        for (MediaSet mSet : mSets) {
+            long version = mSet.reload();
             if (version > mDataVersion) changed = true;
         }
         if (changed) mDataVersion = nextVersionNumber();

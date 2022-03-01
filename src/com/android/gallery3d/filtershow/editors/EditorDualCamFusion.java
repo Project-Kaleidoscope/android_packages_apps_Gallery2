@@ -30,17 +30,16 @@
 package com.android.gallery3d.filtershow.editors;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.net.Uri;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FilterDualCamFusionRepresentation;
@@ -108,24 +107,18 @@ public class EditorDualCamFusion extends Editor {
         seekbar.setVisibility(View.GONE);
         View saveButton = controls.findViewById(R.id.slider_save);
         if (saveButton != null) {
-            saveButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    FilterShowActivity activity = (FilterShowActivity) mContext;
-                    finalApplyCalled();
-                    activity.leaveSeekBarPanel();
-                }
+            saveButton.setOnClickListener(view -> {
+                FilterShowActivity activity = (FilterShowActivity) mContext;
+                finalApplyCalled();
+                activity.leaveSeekBarPanel();
             });
         }
         View cancelButton = controls.findViewById(R.id.slider_cancel);
         if (cancelButton != null) {
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    FilterShowActivity activity = (FilterShowActivity) mContext;
-                    activity.cancelCurrentFilter();
-                    activity.leaveSeekBarPanel();
-                }
+            cancelButton.setOnClickListener(view -> {
+                FilterShowActivity activity = (FilterShowActivity) mContext;
+                activity.cancelCurrentFilter();
+                activity.leaveSeekBarPanel();
             });
         }
     }
@@ -139,12 +132,7 @@ public class EditorDualCamFusion extends Editor {
         inflater.inflate(R.layout.filtershow_actionbar_dualcam_fusion, accessoryViewList);
 
         View pickUnderlayBtn = accessoryViewList.findViewById(R.id.pick_underlay);
-        pickUnderlayBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY);
-            }
-        });
+        pickUnderlayBtn.setOnClickListener(view -> MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY));
 
         // Look for previous underlay
         String fusionUnderlay = GalleryUtils.getStringPref(mContext,
@@ -174,20 +162,12 @@ public class EditorDualCamFusion extends Editor {
                     dialog = new DoNotShowAgainDialog(
                             R.string.fusion_pick_background, R.string.dualcam_fusion_intro,
                             R.string.pref_dualcam_fusion_intro_show_key);
-                    dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            FilterShowActivity activity = (FilterShowActivity) mContext;
-                            activity.cancelCurrentFilter();
-                            activity.leaveSeekBarPanel();
-                        }
+                    dialog.setOnCancelListener(dialog1 -> {
+                        FilterShowActivity activity = (FilterShowActivity) mContext;
+                        activity.cancelCurrentFilter();
+                        activity.leaveSeekBarPanel();
                     });
-                    dialog.setOnOkButtonClickListener(new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY);
-                        }
-                    });
+                    dialog.setOnOkButtonClickListener((dialog2, id) -> MasterImage.getImage().getActivity().pickImage(FilterShowActivity.SELECT_FUSION_UNDERLAY));
                     dialog.setCancelable(true);
                     dialog.show(fm, "dualcam_fusion_intro");
                 } else if (dialog.isDetached()) {
@@ -221,7 +201,7 @@ public class EditorDualCamFusion extends Editor {
     public void reflectCurrentFilter() {
         super.reflectCurrentFilter();
         FilterRepresentation rep = getLocalRepresentation();
-        if (rep != null && rep instanceof FilterDualCamFusionRepresentation) {
+        if (rep instanceof FilterDualCamFusionRepresentation) {
             FilterDualCamFusionRepresentation dualRep = (FilterDualCamFusionRepresentation) rep;
             mImageFusion.setRepresentation(dualRep);
         }

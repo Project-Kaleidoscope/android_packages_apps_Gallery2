@@ -20,18 +20,18 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.EditorStraighten;
+
+import org.codeaurora.gallery.R;
 
 import java.io.IOException;
 
 public class FilterStraightenRepresentation extends FilterRepresentation {
     public static final String SERIALIZATION_NAME = "STRAIGHTEN";
     public static final String SERIALIZATION_STRAIGHTEN_VALUE = "value";
-    private static final String TAG = FilterStraightenRepresentation.class.getSimpleName();
     public static final int MAX_STRAIGHTEN_ANGLE = 45;
     public static final int MIN_STRAIGHTEN_ANGLE = -45;
-
+    private static final String TAG = FilterStraightenRepresentation.class.getSimpleName();
     float mStraighten;
 
     public FilterStraightenRepresentation(float straighten) {
@@ -55,6 +55,10 @@ public class FilterStraightenRepresentation extends FilterRepresentation {
         this(getNil());
     }
 
+    public static float getNil() {
+        return 0;
+    }
+
     public void set(FilterStraightenRepresentation r) {
         mStraighten = r.mStraighten;
     }
@@ -65,10 +69,7 @@ public class FilterStraightenRepresentation extends FilterRepresentation {
             return false;
         }
         FilterStraightenRepresentation straighten = (FilterStraightenRepresentation) rep;
-        if (straighten.mStraighten != mStraighten) {
-            return false;
-        }
-        return true;
+        return straighten.mStraighten == mStraighten;
     }
 
     public float getStraighten() {
@@ -114,10 +115,6 @@ public class FilterStraightenRepresentation extends FilterRepresentation {
         return mStraighten == getNil();
     }
 
-    public static float getNil() {
-        return 0;
-    }
-
     @Override
     public void serializeRepresentation(JsonWriter writer) throws IOException {
         writer.beginObject();
@@ -148,9 +145,6 @@ public class FilterStraightenRepresentation extends FilterRepresentation {
     }
 
     private boolean rangeCheck(double s) {
-        if (s < -45 || s > 45) {
-            return false;
-        }
-        return true;
+        return !(s < -45) && !(s > 45);
     }
 }

@@ -45,7 +45,7 @@ final class ImageLoaderInfo {
     final ReentrantLock loadFromUriLock;
 
     public ImageLoaderInfo(String uri, ImageViewImpl imageView, int height, int width, String memoryCacheKey,
-                            ImageLoaderOptions options, ReentrantLock loadFromUriLock) {
+                           ImageLoaderOptions options, ReentrantLock loadFromUriLock) {
         this.uri = uri;
         this.imageView = imageView;
         this.targetHeight = height;

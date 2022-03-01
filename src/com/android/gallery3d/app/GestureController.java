@@ -168,11 +168,7 @@ public class GestureController {
                 break;
             case MotionEvent.ACTION_UP:
                 if (mGestureControlListener != null) {
-                    if (mType == Type.NONE) {
-                        mGestureControlListener.onGestureDone(true);
-                    } else {
-                        mGestureControlListener.onGestureDone(false);
-                    }
+                    mGestureControlListener.onGestureDone(mType == Type.NONE);
                 }
                 mType = Type.NONE;
                 mStartEvent = null;

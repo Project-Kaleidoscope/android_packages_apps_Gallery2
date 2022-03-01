@@ -17,11 +17,12 @@
 package com.android.gallery3d.filtershow.pipeline;
 
 import android.graphics.Bitmap;
+
 import com.android.gallery3d.filtershow.filters.FiltersManager;
 
 public class RenderingRequestTask extends ProcessingTask {
 
-    private CachingPipeline mPreviewPipeline = null;
+    private final CachingPipeline mPreviewPipeline;
     private boolean mPipelineIsOn = false;
 
     public void setPreviewScaleFactor(float previewScale) {
@@ -37,8 +38,7 @@ public class RenderingRequestTask extends ProcessingTask {
     }
 
     public RenderingRequestTask() {
-        mPreviewPipeline = new CachingPipeline(
-                FiltersManager.getManager(), "Normal");
+        mPreviewPipeline = new CachingPipeline(FiltersManager.getManager(), "Normal");
     }
 
     public void setOriginal(Bitmap bitmap) {
@@ -62,7 +62,7 @@ public class RenderingRequestTask extends ProcessingTask {
     @Override
     public Result doInBackground(Request message) {
         RenderingRequest request = ((Render) message).request;
-        RenderResult result = null;
+        RenderResult result;
         if (request.getType() == RenderingRequest.GEOMETRY_RENDERING) {
             mPreviewPipeline.renderGeometry(request);
         } else if (request.getType() == RenderingRequest.FILTERS_RENDERING) {

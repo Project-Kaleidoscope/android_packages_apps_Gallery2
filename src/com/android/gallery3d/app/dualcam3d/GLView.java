@@ -40,11 +40,14 @@ import android.view.Surface;
 
 public class GLView extends GLSurfaceView {
     private static final String TAG = "GLView";
+    private static final float MOVE_THRESHOLD = 1.0f;
     private final com.android.gallery3d.app.dualcam3d.gl.Renderer mRenderer;
-
     private Bitmap mBitmap;
     private Bitmap mDepthMap;
     private int mRotation;
+    private PointF mLastPoint;
+    private int mLastAction = MotionEvent.ACTION_DOWN;
+    private Listener mListener;
 
     public GLView(Context context) {
         this(context, null);
@@ -117,17 +120,6 @@ public class GLView extends GLSurfaceView {
         mRotation = rotation;
     }
 
-    private static final float MOVE_THRESHOLD = 1.0f;
-    private PointF mLastPoint;
-    private int mLastAction = MotionEvent.ACTION_DOWN;
-    private Listener mListener;
-
-    public interface Listener {
-        void onMove(float deltaX, float deltaY);
-        void onClick(float x, float y);
-        void onLayout(int width, int height);
-    }
-
     public void setListener(Listener listener) {
         mListener = listener;
     }
@@ -182,5 +174,13 @@ public class GLView extends GLSurfaceView {
                 mListener.onLayout(right - left, bottom - top);
             }
         }
+    }
+
+    public interface Listener {
+        void onMove(float deltaX, float deltaY);
+
+        void onClick(float x, float y);
+
+        void onLayout(int width, int height);
     }
 }

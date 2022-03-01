@@ -32,7 +32,6 @@ package com.android.gallery3d.filtershow.imageshow;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -43,12 +42,10 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import com.android.gallery3d.filtershow.crop.CropDrawingUtils;
-import com.android.gallery3d.filtershow.crop.CropMath;
-import com.android.gallery3d.filtershow.crop.CropObject;
+
+import androidx.core.content.res.ResourcesCompat;
+
 import com.android.gallery3d.filtershow.editors.TrueScannerEditor;
-import com.android.gallery3d.filtershow.filters.FilterCropRepresentation;
-import com.android.gallery3d.filtershow.filters.TrueScannerActs;
 
 import org.codeaurora.gallery.R;
 
@@ -58,9 +55,9 @@ public class ImageTrueScanner extends ImageShow {
     private Matrix mDisplayMatrix;
     private GeometryMathUtils.GeometryHolder mGeometry;
     public final static int POINT_NUMS = 4;
-    private static float[] mSegPoints = new float[POINT_NUMS*2+4];
-    private boolean[] isTouched = new boolean[POINT_NUMS];
-    private RectF mBitmapBound = new RectF();
+    private static final float[] mSegPoints = new float[POINT_NUMS * 2 + 4];
+    private final boolean[] isTouched = new boolean[POINT_NUMS];
+    private final RectF mBitmapBound = new RectF();
     private Bitmap mBitmap;
     private Paint mSegmentPaint;
     private Paint mGlareRemovalTextPaint;
@@ -99,7 +96,7 @@ public class ImageTrueScanner extends ImageShow {
     public static int[] getDeterminedPoints() {
         int[] points = new int[mSegPoints.length];
         for (int i = 0; i < mSegPoints.length; i++) {
-            points[i] = (int)mSegPoints[i];
+            points[i] = (int) mSegPoints[i];
         }
         return points;
     }
@@ -111,8 +108,8 @@ public class ImageTrueScanner extends ImageShow {
     private void init() {
         mBitmap = MasterImage.getImage().getHighresImage();
 
-        mMarginalGapX = mBitmap.getWidth()/4;
-        mMarginalGapY = mBitmap.getHeight()/4;
+        mMarginalGapX = mBitmap.getWidth() / 4;
+        mMarginalGapY = mBitmap.getHeight() / 4;
         mGeometry = new GeometryMathUtils.GeometryHolder();
 
         mSegmentPaint = new Paint();
@@ -127,10 +124,10 @@ public class ImageTrueScanner extends ImageShow {
         mGrayPaint.setColor(Color.argb(120, 0, 0, 0)); //Gray
         mIsGlareButtonPressed = false;
 
-
-        Drawable d = getResources().getDrawable(R.drawable.ic_glare_remove_button_on);
+        Resources resources = getResources();
+        Drawable d = ResourcesCompat.getDrawable(resources, R.drawable.ic_glare_remove_button_on, null);
         mGlareButtonOnBitmap = getBitmap(d, 76, 46);
-        d = getResources().getDrawable(R.drawable.ic_glare_remove_button_off);
+        d = ResourcesCompat.getDrawable(resources, R.drawable.ic_glare_remove_button_off, null);
         mGlareButtonOffBitmap = getBitmap(d, 76, 46);
     }
 
@@ -143,60 +140,59 @@ public class ImageTrueScanner extends ImageShow {
     }
 
     private void checkPointTouch(float x, float y) {
-        for(int i=0; i<POINT_NUMS; i++) {
-            if ( x > mSegPoints[i*2] - CHECK_RADIUS && x < mSegPoints[i*2] + CHECK_RADIUS
-                    && y > mSegPoints[i*2+1] - CHECK_RADIUS && y < mSegPoints[i*2+1] + CHECK_RADIUS) {
+        for (int i = 0; i < POINT_NUMS; i++) {
+            if (x > mSegPoints[i * 2] - CHECK_RADIUS && x < mSegPoints[i * 2] + CHECK_RADIUS
+                    && y > mSegPoints[i * 2 + 1] - CHECK_RADIUS && y < mSegPoints[i * 2 + 1] + CHECK_RADIUS) {
                 isTouched[i] = true;
             }
         }
-        if( x > mGlareButtonX - CHECK_RADIUS*2 && x < mGlareButtonX + CHECK_RADIUS*2 &&
-               y > mGlareButtonY - CHECK_RADIUS*2 && y < mGlareButtonY + CHECK_RADIUS*2) {
+        if (x > mGlareButtonX - CHECK_RADIUS * 2 && x < mGlareButtonX + CHECK_RADIUS * 2 &&
+                y > mGlareButtonY - CHECK_RADIUS * 2 && y < mGlareButtonY + CHECK_RADIUS * 2) {
             mIsGlareButtonPressed = !mIsGlareButtonPressed;
         }
     }
 
     private void moveTouch(float x, float y) {
         int i;
-        for(i=0; i<POINT_NUMS; i++) {
-            if(isTouched[i]) {
-                mSegPoints[i*2] = (int) x;
-                mSegPoints[i*2+1] = (int) y;
+        for (i = 0; i < POINT_NUMS; i++) {
+            if (isTouched[i]) {
+                mSegPoints[i * 2] = (int) x;
+                mSegPoints[i * 2 + 1] = (int) y;
                 break;
             }
         }
-        switch(i)
-        {
+        switch (i) {
             case 0:
-                if(mSegPoints[0] >= mSegPoints[2]-mMarginalGapX)
-                    mSegPoints[0] = mSegPoints[2]-mMarginalGapX;
-                if(mSegPoints[1] >= mSegPoints[7]-mMarginalGapY)
-                    mSegPoints[1] = mSegPoints[7]-mMarginalGapY;
-                if(mSegPoints[0] < mBitmapBound.left) mSegPoints[0] = (int)mBitmapBound.left;
-                if(mSegPoints[1] < mBitmapBound.top) mSegPoints[1] = (int)mBitmapBound.top;
+                if (mSegPoints[0] >= mSegPoints[2] - mMarginalGapX)
+                    mSegPoints[0] = mSegPoints[2] - mMarginalGapX;
+                if (mSegPoints[1] >= mSegPoints[7] - mMarginalGapY)
+                    mSegPoints[1] = mSegPoints[7] - mMarginalGapY;
+                if (mSegPoints[0] < mBitmapBound.left) mSegPoints[0] = (int) mBitmapBound.left;
+                if (mSegPoints[1] < mBitmapBound.top) mSegPoints[1] = (int) mBitmapBound.top;
                 break;
             case 1:
-                if(mSegPoints[2] <= mSegPoints[0]+mMarginalGapX)
-                    mSegPoints[2] = mSegPoints[0]+mMarginalGapX;
-                if(mSegPoints[3] >= mSegPoints[5]-mMarginalGapY)
-                    mSegPoints[3] = mSegPoints[5]-mMarginalGapY;
-                if(mSegPoints[2] > mBitmapBound.right) mSegPoints[2] = (int)mBitmapBound.right;
-                if(mSegPoints[3] < mBitmapBound.top) mSegPoints[3] = (int)mBitmapBound.top;
+                if (mSegPoints[2] <= mSegPoints[0] + mMarginalGapX)
+                    mSegPoints[2] = mSegPoints[0] + mMarginalGapX;
+                if (mSegPoints[3] >= mSegPoints[5] - mMarginalGapY)
+                    mSegPoints[3] = mSegPoints[5] - mMarginalGapY;
+                if (mSegPoints[2] > mBitmapBound.right) mSegPoints[2] = (int) mBitmapBound.right;
+                if (mSegPoints[3] < mBitmapBound.top) mSegPoints[3] = (int) mBitmapBound.top;
                 break;
             case 2:
-                if(mSegPoints[4] <= mSegPoints[6]+mMarginalGapX)
-                    mSegPoints[4] = mSegPoints[6]+mMarginalGapX;
-                if(mSegPoints[5] <= mSegPoints[3]+mMarginalGapY)
-                    mSegPoints[5] = mSegPoints[3]+mMarginalGapY;
-                if(mSegPoints[4] > mBitmapBound.right) mSegPoints[4] = (int)mBitmapBound.right;
-                if(mSegPoints[5] > mBitmapBound.bottom) mSegPoints[5] = (int)mBitmapBound.bottom;
+                if (mSegPoints[4] <= mSegPoints[6] + mMarginalGapX)
+                    mSegPoints[4] = mSegPoints[6] + mMarginalGapX;
+                if (mSegPoints[5] <= mSegPoints[3] + mMarginalGapY)
+                    mSegPoints[5] = mSegPoints[3] + mMarginalGapY;
+                if (mSegPoints[4] > mBitmapBound.right) mSegPoints[4] = (int) mBitmapBound.right;
+                if (mSegPoints[5] > mBitmapBound.bottom) mSegPoints[5] = (int) mBitmapBound.bottom;
                 break;
             case 3:
-                if(mSegPoints[6] >= mSegPoints[4]-mMarginalGapX)
-                    mSegPoints[6] = mSegPoints[4]-mMarginalGapX;
-                if(mSegPoints[7] <= mSegPoints[1]+mMarginalGapY)
-                    mSegPoints[7] = mSegPoints[1]+mMarginalGapY;
-                if(mSegPoints[6] < mBitmapBound.left) mSegPoints[6] = (int)mBitmapBound.left;
-                if(mSegPoints[7] > mBitmapBound.bottom) mSegPoints[7] = (int)mBitmapBound.bottom;
+                if (mSegPoints[6] >= mSegPoints[4] - mMarginalGapX)
+                    mSegPoints[6] = mSegPoints[4] - mMarginalGapX;
+                if (mSegPoints[7] <= mSegPoints[1] + mMarginalGapY)
+                    mSegPoints[7] = mSegPoints[1] + mMarginalGapY;
+                if (mSegPoints[6] < mBitmapBound.left) mSegPoints[6] = (int) mBitmapBound.left;
+                if (mSegPoints[7] > mBitmapBound.bottom) mSegPoints[7] = (int) mBitmapBound.bottom;
                 break;
         }
     }
@@ -210,10 +206,10 @@ public class ImageTrueScanner extends ImageShow {
             case (MotionEvent.ACTION_DOWN):
                 checkPointTouch(x, y);
             case (MotionEvent.ACTION_MOVE):
-                moveTouch(x,y);
+                moveTouch(x, y);
                 break;
             case (MotionEvent.ACTION_UP):
-                for(int i=0; i<POINT_NUMS; i++) {
+                for (int i = 0; i < POINT_NUMS; i++) {
                     isTouched[i] = false;
                 }
                 break;
@@ -226,7 +222,7 @@ public class ImageTrueScanner extends ImageShow {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        updateMatrix(w,h,oldw, oldh);
+        updateMatrix(w, h, oldw, oldh);
         mDisplaySegPointsMatrix.mapPoints(mSegPoints);
         getBitmapBound();
         updateGlareRemovalButton = true;
@@ -237,11 +233,11 @@ public class ImageTrueScanner extends ImageShow {
             return;
         }
         Resources res = getContext().getResources();
-        int panelHeight =  res.getDimensionPixelOffset(R.dimen.category_actionbar_panel_height);
+        int panelHeight = res.getDimensionPixelOffset(R.dimen.category_actionbar_panel_height);
         mDisplayMatrix = GeometryMathUtils.getFullGeometryToScreenMatrix(mGeometry,
                 mBitmap.getWidth(), mBitmap.getHeight(), w, h - panelHeight);
         mDisplaySegPointsMatrix = GeometryMathUtils.getSegMatrix(mGeometry, mBitmap.getWidth(),
-                mBitmap.getHeight(), w, h - panelHeight, oldw, oldh- panelHeight);
+                mBitmap.getHeight(), w, h - panelHeight, oldw, oldh - panelHeight);
         mDisplayMatrixInverse = new Matrix();
         mDisplayMatrixInverse.reset();
         if (!mDisplaySegPointsMatrix.invert(mDisplayMatrixInverse)) {
@@ -261,9 +257,7 @@ public class ImageTrueScanner extends ImageShow {
     public void setDetectedPoints(int[] pts, int width, int height) {
         synchronized (this) {
             mDetectedPoints = new int[10];
-            for (int i = 0; i < 8; i++) {
-                mDetectedPoints[i] = pts[i];
-            }
+            System.arraycopy(pts, 0, mDetectedPoints, 0, 8);
             mDetectedPoints[8] = width;
             mDetectedPoints[9] = height;
         }
@@ -280,45 +274,45 @@ public class ImageTrueScanner extends ImageShow {
     private void getInitialInput() {
         int[] points = getDetectedPoints();
         if (points == null) {
-            mSegPoints[0] = (int) (mBitmapBound.centerX() - mBitmapBound.width()/4);
-            mSegPoints[1] = (int) (mBitmapBound.centerY() - mBitmapBound.height()/4);
-            mSegPoints[2] = (int) (mBitmapBound.centerX() + mBitmapBound.width()/4);
-            mSegPoints[3] = (int) (mBitmapBound.centerY() - mBitmapBound.height()/4);
-            mSegPoints[4] = (int) (mBitmapBound.centerX() + mBitmapBound.width()/4);
-            mSegPoints[5] = (int) (mBitmapBound.centerY() + mBitmapBound.height()/4);
-            mSegPoints[6] = (int) (mBitmapBound.centerX() - mBitmapBound.width()/4);
-            mSegPoints[7] = (int) (mBitmapBound.centerY() + mBitmapBound.height()/4);
+            mSegPoints[0] = (int) (mBitmapBound.centerX() - mBitmapBound.width() / 4);
+            mSegPoints[1] = (int) (mBitmapBound.centerY() - mBitmapBound.height() / 4);
+            mSegPoints[2] = (int) (mBitmapBound.centerX() + mBitmapBound.width() / 4);
+            mSegPoints[3] = (int) (mBitmapBound.centerY() - mBitmapBound.height() / 4);
+            mSegPoints[4] = (int) (mBitmapBound.centerX() + mBitmapBound.width() / 4);
+            mSegPoints[5] = (int) (mBitmapBound.centerY() + mBitmapBound.height() / 4);
+            mSegPoints[6] = (int) (mBitmapBound.centerX() - mBitmapBound.width() / 4);
+            mSegPoints[7] = (int) (mBitmapBound.centerY() + mBitmapBound.height() / 4);
         } else {
-            float xScale = mBitmapBound.width()/points[8];
-            float yScale = mBitmapBound.height()/points[9];
-            mSegPoints[0] = (int) (mBitmapBound.left + points[0]*xScale);
-            mSegPoints[1] = (int) (mBitmapBound.top + points[1]*yScale);
-            mSegPoints[2] = (int) (mBitmapBound.left + points[2]*xScale);
-            mSegPoints[3] = (int) (mBitmapBound.top + points[3]*yScale);
-            mSegPoints[4] = (int) (mBitmapBound.left + points[4]*xScale);
-            mSegPoints[5] = (int) (mBitmapBound.top + points[5]*yScale);
-            mSegPoints[6] = (int) (mBitmapBound.left + points[6]*xScale);
-            mSegPoints[7] = (int) (mBitmapBound.top + points[7]*yScale);
+            float xScale = mBitmapBound.width() / points[8];
+            float yScale = mBitmapBound.height() / points[9];
+            mSegPoints[0] = (int) (mBitmapBound.left + points[0] * xScale);
+            mSegPoints[1] = (int) (mBitmapBound.top + points[1] * yScale);
+            mSegPoints[2] = (int) (mBitmapBound.left + points[2] * xScale);
+            mSegPoints[3] = (int) (mBitmapBound.top + points[3] * yScale);
+            mSegPoints[4] = (int) (mBitmapBound.left + points[4] * xScale);
+            mSegPoints[5] = (int) (mBitmapBound.top + points[5] * yScale);
+            mSegPoints[6] = (int) (mBitmapBound.left + points[6] * xScale);
+            mSegPoints[7] = (int) (mBitmapBound.top + points[7] * yScale);
         }
-        mSegPoints[8] = (int)mBitmapBound.width();
-        mSegPoints[9] = (int)mBitmapBound.height();
-        mSegPoints[10] = (int)mBitmapBound.left;
-        mSegPoints[11] = (int)mBitmapBound.top;
+        mSegPoints[8] = (int) mBitmapBound.width();
+        mSegPoints[9] = (int) mBitmapBound.height();
+        mSegPoints[10] = (int) mBitmapBound.left;
+        mSegPoints[11] = (int) mBitmapBound.top;
     }
 
     @Override
     public void onDraw(Canvas canvas) {
-        if(mBitmap == null)
+        if (mBitmap == null)
             return;
         toggleComparisonButtonVisibility();
 
-        if(mDisplayMatrix == null || mDisplaySegPointsMatrix == null
+        if (mDisplayMatrix == null || mDisplaySegPointsMatrix == null
                 || mDisplayMatrixInverse == null) {
             mDisplayMatrix = GeometryMathUtils.getFullGeometryToScreenMatrix(mGeometry,
-                    mBitmap.getWidth(), mBitmap.getHeight(), canvas.getWidth(), canvas.getHeight());
+                    mBitmap.getWidth(), mBitmap.getHeight(), getWidth(), getHeight());
             mDisplaySegPointsMatrix = GeometryMathUtils.getSegMatrix(mGeometry,
-                    mBitmap.getWidth(), mBitmap.getHeight(), canvas.getWidth(),
-                    canvas.getHeight(),canvas.getWidth(), canvas.getHeight());
+                    mBitmap.getWidth(), mBitmap.getHeight(), getWidth(),
+                    getHeight(), getWidth(), getHeight());
             mDisplayMatrixInverse = new Matrix();
             mDisplayMatrixInverse.reset();
             if (!mDisplaySegPointsMatrix.invert(mDisplayMatrixInverse)) {
@@ -328,12 +322,12 @@ public class ImageTrueScanner extends ImageShow {
             }
             getBitmapBound();
         }
-        if(!isDetectedPointsApplied) {
+        if (!isDetectedPointsApplied) {
             getInitialInput();
             isDetectedPointsApplied = true;
         }
         canvas.drawBitmap(mBitmap, mDisplayMatrix, null);
-        if(mIsCordsUIShowing) {
+        if (mIsCordsUIShowing) {
             drawSegments(canvas);
         }
         drawGlareRemovalButton(canvas);
@@ -348,25 +342,25 @@ public class ImageTrueScanner extends ImageShow {
     }
 
     private void drawGlareRemovalButton(Canvas canvas) {
-        if(mGlareButtonX == -1000 && mGlareButtonY == -1000 || updateGlareRemovalButton) {
-            mGlareButtonX = canvas.getWidth()/2;
-            mGlareButtonY = canvas.getHeight()*1/5;
+        if (mGlareButtonX == -1000 && mGlareButtonY == -1000 || updateGlareRemovalButton) {
+            mGlareButtonX = canvas.getWidth() / 2;
+            mGlareButtonY = canvas.getHeight() / 5;
             updateGlareRemovalButton = false;
         }
         RectF rectF = new RectF();
         Bitmap bitmap;
-        if(mIsGlareButtonPressed) {
+        if (mIsGlareButtonPressed) {
             bitmap = mGlareButtonOnBitmap;
         } else {
             bitmap = mGlareButtonOffBitmap;
         }
-        rectF.left = mGlareButtonX - bitmap.getWidth()/2;
-        rectF.right = mGlareButtonX + bitmap.getWidth()/2;
-        rectF.top = mGlareButtonY - bitmap.getHeight()/2;
-        rectF.bottom = mGlareButtonY + bitmap.getHeight()/2;
+        rectF.left = mGlareButtonX - bitmap.getWidth() / 2;
+        rectF.right = mGlareButtonX + bitmap.getWidth() / 2;
+        rectF.top = mGlareButtonY - bitmap.getHeight() / 2;
+        rectF.bottom = mGlareButtonY + bitmap.getHeight() / 2;
         canvas.drawBitmap(bitmap, null, rectF, null);
         canvas.drawText(getResources().getString(R.string.truescanner_remove_glare),
-                mGlareButtonX + bitmap.getWidth()/2+RADIUS, mGlareButtonY + bitmap.getHeight() / 4, mGlareRemovalTextPaint);
+                mGlareButtonX + bitmap.getWidth() / 2 + RADIUS, mGlareButtonY + bitmap.getHeight() / 4, mGlareRemovalTextPaint);
     }
 
     private void drawSegments(Canvas canvas) {

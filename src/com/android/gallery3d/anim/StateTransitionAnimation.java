@@ -16,7 +16,6 @@
 
 package com.android.gallery3d.anim;
 
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 
@@ -27,70 +26,6 @@ import com.android.gallery3d.ui.TiledScreenNail;
 
 public class StateTransitionAnimation extends Animation {
 
-    public static class Spec {
-        public static final Spec OUTGOING;
-        public static final Spec INCOMING;
-        public static final Spec PHOTO_INCOMING;
-
-        private static final Interpolator DEFAULT_INTERPOLATOR =
-                new DecelerateInterpolator();
-
-        public int duration = 330;
-        public float backgroundAlphaFrom = 0;
-        public float backgroundAlphaTo = 0;
-        public float backgroundScaleFrom = 0;
-        public float backgroundScaleTo = 0;
-        public float contentAlphaFrom = 1;
-        public float contentAlphaTo = 1;
-        public float contentScaleFrom = 1;
-        public float contentScaleTo = 1;
-        public float overlayAlphaFrom = 0;
-        public float overlayAlphaTo = 0;
-        public float overlayScaleFrom = 0;
-        public float overlayScaleTo = 0;
-        public Interpolator interpolator = DEFAULT_INTERPOLATOR;
-
-        static {
-            OUTGOING = new Spec();
-            OUTGOING.backgroundAlphaFrom = 0.5f;
-            OUTGOING.backgroundAlphaTo = 0f;
-            OUTGOING.backgroundScaleFrom = 1f;
-            OUTGOING.backgroundScaleTo = 0f;
-            OUTGOING.contentAlphaFrom = 0.5f;
-            OUTGOING.contentAlphaTo = 1f;
-            OUTGOING.contentScaleFrom = 3f;
-            OUTGOING.contentScaleTo = 1f;
-
-            INCOMING = new Spec();
-            INCOMING.overlayAlphaFrom = 1f;
-            INCOMING.overlayAlphaTo = 0f;
-            INCOMING.overlayScaleFrom = 1f;
-            INCOMING.overlayScaleTo = 3f;
-            INCOMING.contentAlphaFrom = 0f;
-            INCOMING.contentAlphaTo = 1f;
-            INCOMING.contentScaleFrom = 0.25f;
-            INCOMING.contentScaleTo = 1f;
-
-            PHOTO_INCOMING = INCOMING;
-        }
-
-        private static Spec specForTransition(Transition t) {
-            switch (t) {
-                case Outgoing:
-                    return Spec.OUTGOING;
-                case Incoming:
-                    return Spec.INCOMING;
-                case PhotoIncoming:
-                    return Spec.PHOTO_INCOMING;
-                case None:
-                default:
-                    return null;
-            }
-        }
-    }
-
-    public static enum Transition { None, Outgoing, Incoming, PhotoIncoming }
-
     private final Spec mTransitionSpec;
     private float mCurrentContentScale;
     private float mCurrentContentAlpha;
@@ -99,11 +34,9 @@ public class StateTransitionAnimation extends Animation {
     private float mCurrentOverlayScale;
     private float mCurrentOverlayAlpha;
     private RawTexture mOldScreenTexture;
-
     public StateTransitionAnimation(Transition t, RawTexture oldScreen) {
         this(Spec.specForTransition(t), oldScreen);
     }
-
     public StateTransitionAnimation(Spec spec, RawTexture oldScreen) {
         mTransitionSpec = spec != null ? spec : Spec.OUTGOING;
         setDuration(mTransitionSpec.duration);
@@ -175,6 +108,75 @@ public class StateTransitionAnimation extends Animation {
     public void applyOverlay(GLView view, GLCanvas canvas) {
         if (mCurrentOverlayAlpha > 0f) {
             applyOldTexture(view, canvas, mCurrentOverlayAlpha, mCurrentOverlayScale, false);
+        }
+    }
+
+    public enum Transition {
+        None,
+        Outgoing,
+        Incoming,
+        PhotoIncoming
+    }
+
+    public static class Spec {
+        public static final Spec OUTGOING;
+        public static final Spec INCOMING;
+        public static final Spec PHOTO_INCOMING;
+
+        private static final Interpolator DEFAULT_INTERPOLATOR =
+                new DecelerateInterpolator();
+
+        static {
+            OUTGOING = new Spec();
+            OUTGOING.backgroundAlphaFrom = 0.5f;
+            OUTGOING.backgroundAlphaTo = 0f;
+            OUTGOING.backgroundScaleFrom = 1f;
+            OUTGOING.backgroundScaleTo = 0f;
+            OUTGOING.contentAlphaFrom = 0.5f;
+            OUTGOING.contentAlphaTo = 1f;
+            OUTGOING.contentScaleFrom = 3f;
+            OUTGOING.contentScaleTo = 1f;
+
+            INCOMING = new Spec();
+            INCOMING.overlayAlphaFrom = 1f;
+            INCOMING.overlayAlphaTo = 0f;
+            INCOMING.overlayScaleFrom = 1f;
+            INCOMING.overlayScaleTo = 3f;
+            INCOMING.contentAlphaFrom = 0f;
+            INCOMING.contentAlphaTo = 1f;
+            INCOMING.contentScaleFrom = 0.25f;
+            INCOMING.contentScaleTo = 1f;
+
+            PHOTO_INCOMING = INCOMING;
+        }
+
+        public int duration = 330;
+        public float backgroundAlphaFrom = 0;
+        public float backgroundAlphaTo = 0;
+        public float backgroundScaleFrom = 0;
+        public float backgroundScaleTo = 0;
+        public float contentAlphaFrom = 1;
+        public float contentAlphaTo = 1;
+        public float contentScaleFrom = 1;
+        public float contentScaleTo = 1;
+        public float overlayAlphaFrom = 0;
+        public float overlayAlphaTo = 0;
+        public float overlayScaleFrom = 0;
+        public float overlayScaleTo = 0;
+        public Interpolator interpolator = DEFAULT_INTERPOLATOR;
+
+        private static Spec specForTransition(Transition t) {
+            switch (t) {
+                case Outgoing:
+                    return Spec.OUTGOING;
+                case Incoming:
+                    return Spec.INCOMING;
+                case PhotoIncoming:
+                    return Spec.PHOTO_INCOMING;
+                case None:
+                default:
+                    return null;
+            }
         }
     }
 }

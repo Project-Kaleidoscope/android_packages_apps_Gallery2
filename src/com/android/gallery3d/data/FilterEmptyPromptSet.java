@@ -22,12 +22,12 @@ public class FilterEmptyPromptSet extends MediaSet implements ContentListener {
     @SuppressWarnings("unused")
     private static final String TAG = "FilterEmptyPromptSet";
 
-    private ArrayList<MediaItem> mEmptyItem;
-    private MediaSet mBaseSet;
+    private final ArrayList<MediaItem> mEmptyItem;
+    private final MediaSet mBaseSet;
 
     public FilterEmptyPromptSet(Path path, MediaSet baseSet, MediaItem emptyItem) {
         super(path, INVALID_DATA_VERSION);
-        mEmptyItem = new ArrayList<MediaItem>(1);
+        mEmptyItem = new ArrayList<>(1);
         mEmptyItem.add(emptyItem);
         mBaseSet = baseSet;
         mBaseSet.addContentListener(this);

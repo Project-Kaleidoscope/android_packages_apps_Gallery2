@@ -20,8 +20,10 @@ import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,7 +47,7 @@ class ExifData {
 
     private final IfdData[] mIfdDatas = new IfdData[IfdId.TYPE_IFD_COUNT];
     private byte[] mThumbnail;
-    private ArrayList<byte[]> mStripBytes = new ArrayList<byte[]>();
+    private ArrayList<byte[]> mStripBytes = new ArrayList<>();
     private final ByteOrder mByteOrder;
 
     ExifData(ByteOrder order) {
@@ -234,11 +236,11 @@ class ExifData {
 
         try {
             if (Arrays.equals(code, USER_COMMENT_ASCII)) {
-                return new String(buf, 8, buf.length - 8, "US-ASCII");
+                return new String(buf, 8, buf.length - 8, StandardCharsets.US_ASCII);
             } else if (Arrays.equals(code, USER_COMMENT_JIS)) {
                 return new String(buf, 8, buf.length - 8, "EUC-JP");
             } else if (Arrays.equals(code, USER_COMMENT_UNICODE)) {
-                return new String(buf, 8, buf.length - 8, "UTF-16");
+                return new String(buf, 8, buf.length - 8, StandardCharsets.UTF_16);
             } else {
                 return null;
             }
@@ -253,14 +255,12 @@ class ExifData {
      * are none.
      */
     protected List<ExifTag> getAllTags() {
-        ArrayList<ExifTag> ret = new ArrayList<ExifTag>();
+        ArrayList<ExifTag> ret = new ArrayList<>();
         for (IfdData d : mIfdDatas) {
             if (d != null) {
                 ExifTag[] tags = d.getAllTags();
                 if (tags != null) {
-                    for (ExifTag t : tags) {
-                        ret.add(t);
-                    }
+                    Collections.addAll(ret, tags);
                 }
             }
         }
@@ -283,10 +283,8 @@ class ExifData {
         if (tags == null) {
             return null;
         }
-        ArrayList<ExifTag> ret = new ArrayList<ExifTag>(tags.length);
-        for (ExifTag t : tags) {
-            ret.add(t);
-        }
+        ArrayList<ExifTag> ret = new ArrayList<>(tags.length);
+        Collections.addAll(ret, tags);
         if (ret.size() == 0) {
             return null;
         }
@@ -298,7 +296,7 @@ class ExifData {
      * are none.
      */
     protected List<ExifTag> getAllTagsForTagId(short tag) {
-        ArrayList<ExifTag> ret = new ArrayList<ExifTag>();
+        ArrayList<ExifTag> ret = new ArrayList<>();
         for (IfdData d : mIfdDatas) {
             if (d != null) {
                 ExifTag t = d.getTag(tag);

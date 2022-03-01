@@ -30,39 +30,38 @@ package com.android.gallery3d.filtershow.category;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
-import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
+
 import org.codeaurora.gallery.R;
 
 public class WaterMarkTimeView extends WaterMarkView {
+
     public WaterMarkTimeView(Context context) {
         super(context);
     }
+
     public WaterMarkTimeView(Context context, Drawable drawable, int type) {
         super(context);
-        init(context, drawable, type);
+        init(context, drawable);
     }
 
-    private void init(Context context, Drawable drawable, int type) {
+    private void init(Context context, Drawable drawable) {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         widthScreen = dm.widthPixels;
         heightScreen = dm.heightPixels;
-        initView(context, drawable, type);
+        initView(context, drawable);
     }
 
-    private void initView(Context context, Drawable drawable, int type) {
-        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    private void initView(Context context, Drawable drawable) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        FrameLayout layout = (FrameLayout)inflater.inflate(R.layout.filtershow_watermark, this, true);
-        mImageView = (ImageView) layout.findViewById(R.id.image);
+        FrameLayout layout = (FrameLayout) inflater.inflate(R.layout.filtershow_watermark, this, true);
+        mImageView = layout.findViewById(R.id.image);
         mMarkDrawable = drawable;
         mImageView.setBackground(drawable);
-        markLayout = (FrameLayout) layout.findViewById(R.id.root_layout);
+        markLayout = layout.findViewById(R.id.root_layout);
 
     }
 }

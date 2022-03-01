@@ -19,8 +19,8 @@ package com.android.gallery3d.filtershow.filters;
 import java.util.Vector;
 
 public abstract class FilterPointRepresentation extends FilterRepresentation {
-    private static final String LOGTAG = "FilterPointRepresentation";
-    private Vector<FilterPoint> mCandidates = new Vector<FilterPoint>();
+    private static final String TAG = "FilterPointRepresentation";
+    private final Vector<FilterPoint> mCandidates = new Vector<>();
 
     public FilterPointRepresentation(String type, int textid, int editorID) {
         super(type);
@@ -49,10 +49,7 @@ public abstract class FilterPointRepresentation extends FilterRepresentation {
 
     @Override
     public boolean isNil() {
-        if (getCandidates() != null && getCandidates().size() > 0) {
-            return false;
-        }
-        return true;
+        return getCandidates() == null || getCandidates().size() <= 0;
     }
 
     public Object getCandidate(int index) {
@@ -68,9 +65,7 @@ public abstract class FilterPointRepresentation extends FilterRepresentation {
         if (a instanceof FilterPointRepresentation) {
             FilterPointRepresentation representation = (FilterPointRepresentation) a;
             mCandidates.clear();
-            for (FilterPoint redEyeCandidate : representation.mCandidates) {
-                mCandidates.add(redEyeCandidate);
-            }
+            mCandidates.addAll(representation.mCandidates);
         }
     }
 

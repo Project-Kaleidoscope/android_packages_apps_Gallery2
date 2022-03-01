@@ -37,7 +37,7 @@ public class ImageCacheService {
     private static final int IMAGE_CACHE_MAX_BYTES = 200 * 1024 * 1024;
     private static final int IMAGE_CACHE_VERSION = 7;
 
-    private BlobCache mCache;
+    private final BlobCache mCache;
 
     public ImageCacheService(Context context) {
         mCache = CacheManager.getCache(context, IMAGE_CACHE_FILE,
@@ -45,10 +45,27 @@ public class ImageCacheService {
                 IMAGE_CACHE_VERSION);
     }
 
+    private static byte[] makeKey(Path path, long timeModified, int type) {
+        return GalleryUtils.getBytes(path.toString() + "+" + timeModified + "+" + type);
+    }
+
+    private static boolean isSameKey(byte[] key, byte[] buffer) {
+        int n = key.length;
+        if (buffer.length < n) {
+            return false;
+        }
+        for (int i = 0; i < n; ++i) {
+            if (key[i] != buffer[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Gets the cached image data for the given <code>path</code>,
-     *  <code>timeModified</code> and <code>type</code>.
-     *
+     * <code>timeModified</code> and <code>type</code>.
+     * <p>
      * The image data will be stored in <code>buffer.data</code>, started from
      * <code>buffer.offset</code> for <code>buffer.length</code> bytes. If the
      * buffer.data is not big enough, a new byte array will be allocated and returned.
@@ -117,22 +134,5 @@ public class ImageCacheService {
                 // ignore.
             }
         }
-    }
-
-    private static byte[] makeKey(Path path, long timeModified, int type) {
-        return GalleryUtils.getBytes(path.toString() + "+" + timeModified + "+" + type);
-    }
-
-    private static boolean isSameKey(byte[] key, byte[] buffer) {
-        int n = key.length;
-        if (buffer.length < n) {
-            return false;
-        }
-        for (int i = 0; i < n; ++i) {
-            if (key[i] != buffer[i]) {
-                return false;
-            }
-        }
-        return true;
     }
 }

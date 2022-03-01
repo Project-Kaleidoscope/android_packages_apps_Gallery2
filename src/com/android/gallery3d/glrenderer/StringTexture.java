@@ -34,7 +34,7 @@ public class StringTexture extends CanvasTexture {
     private final FontMetricsInt mMetrics;
 
     private StringTexture(String text, TextPaint paint,
-            FontMetricsInt metrics, int width, int height) {
+                          FontMetricsInt metrics, int width, int height) {
         super(width, height);
         mText = text;
         mPaint = paint;
@@ -55,16 +55,14 @@ public class StringTexture extends CanvasTexture {
         return newInstance(text, getDefaultPaint(textSize, color));
     }
 
-    public static StringTexture newInstance(
-            String text, float textSize, int color,
-            float lengthLimit, boolean isBold) {
+    public static StringTexture newInstance(String text, float textSize, int color,
+                                            float lengthLimit, boolean isBold) {
         TextPaint paint = getDefaultPaint(textSize, color);
         if (isBold) {
             paint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
         }
         if (lengthLimit > 0) {
-            text = TextUtils.ellipsize(
-                    text, paint, lengthLimit, TextUtils.TruncateAt.END).toString();
+            text = TextUtils.ellipsize(text, paint, lengthLimit, TextUtils.TruncateAt.END).toString();
         }
         return newInstance(text, paint);
     }

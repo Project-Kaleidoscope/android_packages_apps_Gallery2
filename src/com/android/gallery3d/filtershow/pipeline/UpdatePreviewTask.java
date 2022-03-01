@@ -22,14 +22,13 @@ import com.android.gallery3d.filtershow.filters.FiltersManager;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 
 public class UpdatePreviewTask extends ProcessingTask {
-    private static final String LOGTAG = "UpdatePreviewTask";
+    private static final String TAG = "UpdatePreviewTask";
     private CachingPipeline mPreviewPipeline = null;
     private boolean mHasUnhandledPreviewRequest = false;
     private boolean mPipelineIsOn = false;
 
     public UpdatePreviewTask() {
-        mPreviewPipeline = new CachingPipeline(
-                FiltersManager.getPreviewManager(), "Preview");
+        mPreviewPipeline = new CachingPipeline(FiltersManager.getPreviewManager(), "Preview");
     }
 
     public void setOriginal(Bitmap bitmap) {
@@ -41,10 +40,7 @@ public class UpdatePreviewTask extends ProcessingTask {
         if (!mPipelineIsOn) {
             return;
         }
-        mHasUnhandledPreviewRequest = true;
-        if (postRequest(null)) {
-            mHasUnhandledPreviewRequest = false;
-        }
+        mHasUnhandledPreviewRequest = !postRequest(null);
     }
 
     @Override

@@ -31,9 +31,7 @@ package com.android.gallery3d.filtershow.filters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -53,14 +51,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 public class SaveWaterMark {
-    private static final String LOGTAG = "SaveWaterMark";
     public static final int MARK_SAVE_COMPLETE = 1;
+    private static final String TAG = "SaveWaterMark";
+    private static final ExifInterface mExif = new ExifInterface();
     private FilterWatermarkRepresentation waterMarkRp;
     private Context mContext;
-    private static ExifInterface mExif = new ExifInterface();;
 
     public void useRepresentation(FilterRepresentation representation) {
         waterMarkRp = (FilterWatermarkRepresentation) representation;
@@ -87,7 +84,7 @@ public class SaveWaterMark {
                 if (hasFusion) {
                     fusionBmp = SaveImage.flattenFusion(mContext, Uri.parse(fusionRep.getUnderlay()), destinationBitmap,
                             sizeConstraint, sampleSize);
-                    if(fusionBmp != null) {
+                    if (fusionBmp != null) {
                         destinationBitmap.recycle();
                         destinationBitmap = fusionBmp;
                     }
@@ -151,7 +148,7 @@ public class SaveWaterMark {
         Rect r = MasterImage.getImage().getImageBounds();
         int rw = r.width();
         int rh = r.height();
-        Bitmap resizeSrc = Bitmap.createScaledBitmap(src,rw, rh,false);
+        Bitmap resizeSrc = Bitmap.createScaledBitmap(src, rw, rh, false);
         //create the new blank bitmap
         Bitmap newb = Bitmap.createBitmap(rw, rh, Bitmap.Config.ARGB_8888);
         Canvas cv = new Canvas(newb);
@@ -170,18 +167,18 @@ public class SaveWaterMark {
 
     private FilterFusionRepresentation findFusionRepresentation(ImagePreset preset) {
         FilterDualCamFusionRepresentation dcRepresentation =
-                (FilterDualCamFusionRepresentation)preset.getFilterWithSerializationName(
+                (FilterDualCamFusionRepresentation) preset.getFilterWithSerializationName(
                         FilterDualCamFusionRepresentation.SERIALIZATION_NAME);
         FilterTruePortraitFusionRepresentation tpRepresentation =
-                (FilterTruePortraitFusionRepresentation)preset.getFilterWithSerializationName(
+                (FilterTruePortraitFusionRepresentation) preset.getFilterWithSerializationName(
                         FilterTruePortraitFusionRepresentation.SERIALIZATION_NAME);
 
         FilterFusionRepresentation fusionRep = null;
 
-        if(dcRepresentation != null)
-            fusionRep = (FilterFusionRepresentation) dcRepresentation;
+        if (dcRepresentation != null)
+            fusionRep = dcRepresentation;
         else if (tpRepresentation != null)
-            fusionRep = (FilterFusionRepresentation) tpRepresentation;
+            fusionRep = tpRepresentation;
 
         return fusionRep;
     }
@@ -198,11 +195,11 @@ public class SaveWaterMark {
                 inStream = context.getContentResolver().openInputStream(source);
                 mExif.readExif(inStream);
             } catch (FileNotFoundException e) {
-                Log.w(LOGTAG, "Cannot find file: " + source, e);
+                Log.w(TAG, "Cannot find file: " + source, e);
             } catch (IOException e) {
-                Log.w(LOGTAG, "Cannot read exif for: " + source, e);
+                Log.w(TAG, "Cannot read exif for: " + source, e);
             } catch (NullPointerException e) {
-                Log.w(LOGTAG, "Invalid exif data for: " + source, e);
+                Log.w(TAG, "Invalid exif data for: " + source, e);
             } finally {
                 Utils.closeSilently(inStream);
             }

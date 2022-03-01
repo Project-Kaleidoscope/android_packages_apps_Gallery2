@@ -28,16 +28,15 @@ import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.pipeline.FilterEnvironment;
 
 public abstract class ImageFilter implements Cloneable {
-    private FilterEnvironment mEnvironment = null;
-
-    protected String mName = "Original";
-    private final String LOGTAG = "ImageFilter";
     protected static final boolean SIMPLE_ICONS = true;
     // TODO: Temporary, for dogfood note memory issues with toasts for better
     // feedback. Remove this when filters actually work in low memory
     // situations.
     protected static Activity sActivity = null;
     private static Toast sToast = null;
+    private final String TAG = "ImageFilter";
+    protected String mName = "Original";
+    private FilterEnvironment mEnvironment = null;
     private String lastMsg;
 
     public static void setActivityForMemoryToasts(Activity activity) {
@@ -54,16 +53,13 @@ public abstract class ImageFilter implements Cloneable {
 
     void showToast(String msg, int duration) {
         if (sActivity != null) {
-            sActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (sActivity != null && (!msg.equals(lastMsg) || sToast == null)) {
-                        sToast = Toast.makeText(GalleryAppImpl.getContext(), msg, duration);
-                        lastMsg = msg;
-                    }
-                    if (sToast != null) {
-                        sToast.show();
-                    }
+            sActivity.runOnUiThread(() -> {
+                if (sActivity != null && (!msg.equals(lastMsg) || sToast == null)) {
+                    sToast = Toast.makeText(GalleryAppImpl.getContext(), msg, duration);
+                    lastMsg = msg;
+                }
+                if (sToast != null) {
+                    sToast.show();
                 }
             });
         }
@@ -73,22 +69,25 @@ public abstract class ImageFilter implements Cloneable {
         showToast(GalleryAppImpl.getContext().getString(resID), duration);
     }
 
-    public void freeResources() {}
+    public void freeResources() {
+    }
 
     public void displayLowMemoryToast() {
         showToast("Memory too low for filter " + getName() +
                 ", please file a bug report", Toast.LENGTH_SHORT);
     }
 
-    public void setName(String name) {
-        mName = name;
-    }
-
     public String getName() {
         return mName;
     }
 
-    public boolean supportsAllocationInput() { return false; }
+    public void setName(String name) {
+        mName = name;
+    }
+
+    public boolean supportsAllocationInput() {
+        return false;
+    }
 
     public void apply(Allocation in, Allocation out) {
         setGeneralParameters();
@@ -103,7 +102,7 @@ public abstract class ImageFilter implements Cloneable {
     public abstract void useRepresentation(FilterRepresentation representation);
 
     native protected void nativeApplyGradientFilter(Bitmap bitmap, int w, int h,
-            int[] redGradient, int[] greenGradient, int[] blueGradient);
+                                                    int[] redGradient, int[] greenGradient, int[] blueGradient);
 
     public FilterRepresentation getDefaultRepresentation() {
         return null;
@@ -114,12 +113,12 @@ public abstract class ImageFilter implements Cloneable {
                 .getGeometryFilters(), true, MasterImage.getImage().getOriginalBounds(), w, h);
     }
 
-    public void setEnvironment(FilterEnvironment environment) {
-        mEnvironment = environment;
-    }
-
     public FilterEnvironment getEnvironment() {
         return mEnvironment;
+    }
+
+    public void setEnvironment(FilterEnvironment environment) {
+        mEnvironment = environment;
     }
 
     public void setGeneralParameters() {

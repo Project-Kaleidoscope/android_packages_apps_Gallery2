@@ -1,11 +1,7 @@
 package com.android.gallery3d.util;
 
-import org.codeaurora.gallery.R;
-
-import android.content.Context;
 import android.content.ContentResolver;
-import android.content.res.AssetManager;
-import android.database.Cursor;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -14,25 +10,23 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class GIFView extends ImageView implements GifAction {
 
-    private static final String  TAG            = "GIFView";
-    private static final float   SCALE_LIMIT    = 4;
-    private static final long    FRAME_DELAY    = 200; //milliseconds
+    private static final String TAG = "GIFView";
+    private static final float SCALE_LIMIT = 4;
+    private static final long FRAME_DELAY = 200; //milliseconds
 
-    private GifDecoder           mGifDecoder    = null;
-    private Bitmap               mCurrentImage  = null;
-    private DrawThread           mDrawThread    = null;
+    private GifDecoder mGifDecoder = null;
+    private Bitmap mCurrentImage = null;
+    private DrawThread mDrawThread = null;
 
-    private Uri                  mUri;
-    private Context              mContext;
+    private Uri mUri;
+    private final Context mContext;
 
     public GIFView(Context context) {
         super(context);
@@ -46,15 +40,15 @@ public class GIFView extends ImageView implements GifAction {
         mUri = uri;
 
         InputStream is = getInputStream(uri);
-        if (is == null || (getFileSize (is) == 0)) {
+        if (is == null || (getFileSize(is) == 0)) {
             return false;
         }
         startDecode(is);
         return true;
     }
 
-    private int getFileSize (InputStream is) {
-        if(is == null) return 0;
+    private int getFileSize(InputStream is) {
+        if (is == null) return 0;
 
         int size = 0;
         try {
@@ -75,7 +69,7 @@ public class GIFView extends ImageView implements GifAction {
 
     }
 
-    private InputStream getInputStream (Uri uri) {
+    private InputStream getInputStream(Uri uri) {
         ContentResolver cr = mContext.getContentResolver();
         InputStream input = null;
         try {
@@ -111,7 +105,7 @@ public class GIFView extends ImageView implements GifAction {
         canvas.save();
         canvas.translate(getPaddingLeft(), getPaddingTop());
         Rect sRect = null;
-        Rect dRect = null;
+        Rect dRect;
 
         int imageHeight = mCurrentImage.getHeight();
         int imageWidth = mCurrentImage.getWidth();
@@ -158,7 +152,7 @@ public class GIFView extends ImageView implements GifAction {
         }
     }
 
-    private Handler mRedrawHandler = new Handler() {
+    private final Handler mRedrawHandler = new Handler() {
         public void handleMessage(Message msg) {
             invalidate();
         }
@@ -166,10 +160,7 @@ public class GIFView extends ImageView implements GifAction {
 
     private class DrawThread extends Thread {
         public void run() {
-            while (true) {
-                if (mGifDecoder == null || !isShown() || mRedrawHandler == null) {
-                    break;
-                }
+            while (mGifDecoder != null && isShown() && mRedrawHandler != null) {
                 GifFrame frame = mGifDecoder.next();
                 mCurrentImage = frame.mImage;
 
@@ -185,12 +176,12 @@ public class GIFView extends ImageView implements GifAction {
 
     }
 
-    private long getDelay (GifFrame frame) {
+    private long getDelay(GifFrame frame) {
         //in milliseconds
         return frame.mDelayInMs == 0 ? FRAME_DELAY : frame.mDelayInMs;
     }
 
-    private void freeGifDecoder () {
+    private void freeGifDecoder() {
         if (mGifDecoder != null) {
             mGifDecoder.free();
             mGifDecoder = null;

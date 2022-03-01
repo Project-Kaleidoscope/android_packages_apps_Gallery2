@@ -39,23 +39,20 @@ public abstract class SQLiteContentProvider extends ContentProvider {
 
     @SuppressWarnings("unused")
     private static final String TAG = "SQLiteContentProvider";
-
-    private SQLiteOpenHelper mOpenHelper;
-    private Set<Uri> mChangedUris;
-
-    private final ThreadLocal<Boolean> mApplyingBatch = new ThreadLocal<Boolean>();
     private static final int SLEEP_AFTER_YIELD_DELAY = 4000;
-
     /**
      * Maximum number of operations allowed in a batch between yield points.
      */
     private static final int MAX_OPERATIONS_PER_YIELD_POINT = 500;
+    private final ThreadLocal<Boolean> mApplyingBatch = new ThreadLocal<>();
+    private SQLiteOpenHelper mOpenHelper;
+    private Set<Uri> mChangedUris;
 
     @Override
     public boolean onCreate() {
         Context context = getContext();
         mOpenHelper = getDatabaseHelper(context);
-        mChangedUris = new HashSet<Uri>();
+        mChangedUris = new HashSet<>();
         return true;
     }
 
@@ -74,21 +71,21 @@ public abstract class SQLiteContentProvider extends ContentProvider {
      * transaction.
      */
     public abstract Uri insertInTransaction(Uri uri, ContentValues values,
-            boolean callerIsSyncAdapter);
+                                            boolean callerIsSyncAdapter);
 
     /**
      * The equivalent of the {@link #update} method, but invoked within a
      * transaction.
      */
     public abstract int updateInTransaction(Uri uri, ContentValues values, String selection,
-            String[] selectionArgs, boolean callerIsSyncAdapter);
+                                            String[] selectionArgs, boolean callerIsSyncAdapter);
 
     /**
      * The equivalent of the {@link #delete} method, but invoked within a
      * transaction.
      */
     public abstract int deleteInTransaction(Uri uri, String selection, String[] selectionArgs,
-            boolean callerIsSyncAdapter);
+                                            boolean callerIsSyncAdapter);
 
     /**
      * Call this to add a URI to the list of URIs to be notified when the
@@ -109,12 +106,12 @@ public abstract class SQLiteContentProvider extends ContentProvider {
     }
 
     private boolean applyingBatch() {
-        return mApplyingBatch.get() != null && mApplyingBatch.get();
+        return mApplyingBatch.get() != null && Boolean.TRUE.equals(mApplyingBatch.get());
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        Uri result = null;
+        Uri result;
         boolean callerIsSyncAdapter = isCallerSyncAdapter(uri);
         boolean applyingBatch = applyingBatch();
         if (!applyingBatch) {
@@ -141,9 +138,9 @@ public abstract class SQLiteContentProvider extends ContentProvider {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         db.beginTransaction();
         try {
-            for (int i = 0; i < numValues; i++) {
+            for (ContentValues value : values) {
                 @SuppressWarnings("unused")
-                Uri result = insertInTransaction(uri, values[i], callerIsSyncAdapter);
+                Uri result = insertInTransaction(uri, value, callerIsSyncAdapter);
                 db.yieldIfContendedSafely();
             }
             db.setTransactionSuccessful();
@@ -157,7 +154,7 @@ public abstract class SQLiteContentProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        int count = 0;
+        int count;
         boolean callerIsSyncAdapter = isCallerSyncAdapter(uri);
         boolean applyingBatch = applyingBatch();
         if (!applyingBatch) {
@@ -181,7 +178,7 @@ public abstract class SQLiteContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        int count = 0;
+        int count;
         boolean callerIsSyncAdapter = isCallerSyncAdapter(uri);
         boolean applyingBatch = applyingBatch();
         if (!applyingBatch) {
@@ -244,7 +241,7 @@ public abstract class SQLiteContentProvider extends ContentProvider {
     protected Set<Uri> onEndTransaction(boolean callerIsSyncAdapter) {
         Set<Uri> changed;
         synchronized (mChangedUris) {
-            changed = new HashSet<Uri>(mChangedUris);
+            changed = new HashSet<>(mChangedUris);
             mChangedUris.clear();
         }
         ContentResolver resolver = getContext().getContentResolver();

@@ -41,7 +41,7 @@ public class EdgeView extends GLView {
     private static final int RIGHT_M = RIGHT * 16;
 
     private EdgeEffect[] mEffect = new EdgeEffect[4];
-    private float[] mMatrix = new float[4 * 16];
+    private final float[] mMatrix = new float[4 * 16];
 
     public EdgeView(Context context) {
         for (int i = 0; i < 4; i++) {
@@ -49,7 +49,7 @@ public class EdgeView extends GLView {
         }
     }
 
-    public void release () {
+    public void release() {
         mEffect = null;
     }
 
@@ -106,7 +106,7 @@ public class EdgeView extends GLView {
     // offset is in pixels. direction is one of {TOP, LEFT, BOTTOM, RIGHT}.
     public void onPull(int offset, int direction) {
         int fullLength = ((direction & 1) == 0) ? getWidth() : getHeight();
-        mEffect[direction].onPull((float)offset / fullLength);
+        mEffect[direction].onPull((float) offset / fullLength);
         if (!mEffect[direction].isFinished()) {
             invalidate();
         }

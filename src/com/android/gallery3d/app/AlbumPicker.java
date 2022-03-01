@@ -19,8 +19,9 @@ package com.android.gallery3d.app;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.data.DataManager;
+
+import org.codeaurora.gallery.R;
 
 public class AlbumPicker extends PickerActivity {
 

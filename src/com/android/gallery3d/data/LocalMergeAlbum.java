@@ -19,12 +19,9 @@ package com.android.gallery3d.data;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-import com.android.gallery3d.common.ApiHelper;
-
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -43,10 +40,10 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
 
     private FetchCache[] mFetcher;
     private int mSupportedOperation;
-    private int mBucketId;
+    private final int mBucketId;
 
     // mIndex maps global position to the position of each underlying media sets.
-    private TreeMap<Integer, int[]> mIndex = new TreeMap<Integer, int[]>();
+    private final TreeMap<Integer, int[]> mIndex = new TreeMap<>();
 
     public LocalMergeAlbum(
             Path path, Comparator<MediaItem> comparator, MediaSet[] sources, int bucketId) {
@@ -63,14 +60,14 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
     @Override
     public boolean isCameraRoll() {
         if (mSources.length == 0) return false;
-        for(MediaSet set : mSources) {
+        for (MediaSet set : mSources) {
             if (!set.isCameraRoll()) return false;
         }
         return true;
     }
 
     private void updateData() {
-        ArrayList<MediaSet> matches = new ArrayList<MediaSet>();
+        ArrayList<MediaSet> matches = new ArrayList<>();
         int supported = mSources.length == 0 ? 0 : MediaItem.SUPPORT_ALL;
         mFetcher = new FetchCache[mSources.length];
         for (int i = 0, n = mSources.length; i < n; ++i) {
@@ -93,17 +90,9 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
     @Override
     public Uri getContentUri() {
         String bucketId = String.valueOf(mBucketId);
-        if (ApiHelper.HAS_MEDIA_PROVIDER_FILES_TABLE) {
-            return MediaStore.Files.getContentUri("external").buildUpon()
-                    .appendQueryParameter(LocalSource.KEY_BUCKET_ID, bucketId)
-                    .build();
-        } else {
-            // We don't have a single URL for a merged image before ICS
-            // So we used the image's URL as a substitute.
-            return MediaStore.Images.Media.EXTERNAL_CONTENT_URI.buildUpon()
-                    .appendQueryParameter(LocalSource.KEY_BUCKET_ID, bucketId)
-                    .build();
-        }
+        return MediaStore.Files.getContentUri("external").buildUpon()
+                .appendQueryParameter(LocalSource.KEY_BUCKET_ID, bucketId)
+                .build();
     }
 
     @Override
@@ -132,7 +121,7 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
             slot[i] = mFetcher[i].getItem(subPos[i]);
         }
 
-        ArrayList<MediaItem> result = new ArrayList<MediaItem>();
+        ArrayList<MediaItem> result = new ArrayList<>();
 
         for (int i = markPos; i < start + count; i++) {
             int k = -1;  // k points to the best slot up to now.
@@ -175,8 +164,8 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
     @Override
     public long reload() {
         boolean changed = false;
-        for (int i = 0, n = mSources.length; i < n; ++i) {
-            if (mSources[i].reload() > mDataVersion) changed = true;
+        for (MediaSet mSource : mSources) {
+            if (mSource.reload() > mDataVersion) changed = true;
         }
         if (changed) {
             mDataVersion = nextVersionNumber();
@@ -210,8 +199,13 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
         }
     }
 
+    @Override
+    public boolean isLeafAlbum() {
+        return true;
+    }
+
     private static class FetchCache {
-        private MediaSet mBaseSet;
+        private final MediaSet mBaseSet;
         private SoftReference<ArrayList<MediaItem>> mCacheRef;
         private int mStartPos;
 
@@ -238,7 +232,7 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
 
             if (needLoading) {
                 cache = mBaseSet.getMediaItem(index, PAGE_SIZE);
-                mCacheRef = new SoftReference<ArrayList<MediaItem>>(cache);
+                mCacheRef = new SoftReference<>(cache);
                 mStartPos = index;
             }
 
@@ -248,10 +242,5 @@ public class LocalMergeAlbum extends MediaSet implements ContentListener {
 
             return cache.get(index - mStartPos);
         }
-    }
-
-    @Override
-    public boolean isLeafAlbum() {
-        return true;
     }
 }

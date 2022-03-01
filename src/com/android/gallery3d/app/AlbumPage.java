@@ -19,7 +19,6 @@ package com.android.gallery3d.app;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-//import android.drm.DrmHelper;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -28,6 +27,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -40,7 +40,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.MediaDetails;
@@ -53,10 +52,8 @@ import com.android.gallery3d.filtershow.crop.CropExtras;
 import com.android.gallery3d.glrenderer.FadeTexture;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.ui.ActionModeHandler;
-import com.android.gallery3d.ui.ActionModeHandler.ActionModeListener;
 import com.android.gallery3d.ui.AlbumSlotRenderer;
 import com.android.gallery3d.ui.DetailsHelper;
-import com.android.gallery3d.ui.DetailsHelper.CloseListener;
 import com.android.gallery3d.ui.GLRoot;
 import com.android.gallery3d.ui.GLView;
 import com.android.gallery3d.ui.PhotoFallbackEffect;
@@ -66,7 +63,8 @@ import com.android.gallery3d.ui.SlotView;
 import com.android.gallery3d.ui.SynchronizedHandler;
 import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.GalleryUtils;
-import com.android.gallery3d.util.MediaSetUtils;
+
+import org.codeaurora.gallery.R;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -152,26 +150,26 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
     private boolean mShowedEmptyToastForSelf;
     private PhotoFallbackEffect.PositionProvider mPositionProvider =
             new PhotoFallbackEffect.PositionProvider() {
-        @Override
-        public Rect getPosition(int index) {
-            Rect rect = mSlotView.getSlotRect(index);
-            Rect bounds = mSlotView.bounds();
-            rect.offset(bounds.left - mSlotView.getScrollX(),
-                    bounds.top - mSlotView.getScrollY());
-            return rect;
-        }
+                @Override
+                public Rect getPosition(int index) {
+                    Rect rect = mSlotView.getSlotRect(index);
+                    Rect bounds = mSlotView.bounds();
+                    rect.offset(bounds.left - mSlotView.getScrollX(),
+                            bounds.top - mSlotView.getScrollY());
+                    return rect;
+                }
 
-        @Override
-        public int getItemIndex(Path path) {
-            int start = mSlotView.getVisibleStart();
-            int end = mSlotView.getVisibleEnd();
-            for (int i = start; i < end; ++i) {
-                MediaItem item = mAlbumDataAdapter.get(i);
-                if (item != null && item.getPath() == path) return i;
-            }
-            return -1;
-        }
-    };
+                @Override
+                public int getItemIndex(Path path) {
+                    int start = mSlotView.getVisibleStart();
+                    int end = mSlotView.getVisibleEnd();
+                    for (int i = start; i < end; ++i) {
+                        MediaItem item = mAlbumDataAdapter.get(i);
+                        if (item != null && item.getPath() == path) return i;
+                    }
+                    return -1;
+                }
+            };
 
     @Override
     protected int getBackgroundColorId() {
@@ -179,7 +177,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
     }
 
     private final GLView mRootPane = new GLView() {
-        private final float mMatrix[] = new float[16];
+        private final float[] mMatrix = new float[16];
 
         @Override
         protected void onLayout(
@@ -266,7 +264,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
         } else if (mIsVideoScreen) {
             super.onBackPressed();
         } else {
-            if(mLaunchedFromPhotoPage) {
+            if (mLaunchedFromPhotoPage) {
                 mActivity.getTransitionStore().putIfNotPresent(
                         PhotoPage.KEY_ALBUMPAGE_TRANSITION,
                         PhotoPage.MSG_ALBUMPAGE_RESUMED);
@@ -343,8 +341,8 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
         MediaItem item = mAlbumDataAdapter.get(slotIndex);
 
         // Checking it is RTL or not
-        boolean isLayoutRtl = (View.LAYOUT_DIRECTION_RTL == TextUtils
-                .getLayoutDirectionFromLocale(Locale.getDefault())) ? true : false;
+        boolean isLayoutRtl = View.LAYOUT_DIRECTION_RTL == TextUtils
+                .getLayoutDirectionFromLocale(Locale.getDefault());
 
         // When not RTL, return directly to ignore the click
         if (!isLayoutRtl && item == null) {
@@ -397,7 +395,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
                 mActivity.getStateManager().switchState(this, FilmstripPage.class, data);
             } else {
                 mActivity.getStateManager().startStateForResult(
-                            SinglePhotoPage.class, REQUEST_PHOTO, data);
+                        SinglePhotoPage.class, REQUEST_PHOTO, data);
             }
         }
     }
@@ -417,7 +415,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
             activity.finish();
         } else {
             Intent intent = new Intent(null, item.getContentUri())
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             activity.setResult(Activity.RESULT_OK, intent);
             activity.finish();
         }
@@ -577,12 +575,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
             }
         });
         mActionModeHandler = new ActionModeHandler(mActivity, mSelectionManager);
-        mActionModeHandler.setActionModeListener(new ActionModeListener() {
-            @Override
-            public boolean onActionItemClicked(MenuItem item) {
-                return onItemSelected(item);
-            }
-        });
+        mActionModeHandler.setActionModeListener(item -> onItemSelected(item));
     }
 
     private void initializeData(Bundle data) {
@@ -602,12 +595,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
         mShowDetails = true;
         if (mDetailsHelper == null) {
             mDetailsHelper = new DetailsHelper(mActivity, mRootPane, mDetailsSource);
-            mDetailsHelper.setCloseListener(new CloseListener() {
-                @Override
-                public void onClose() {
-                    hideDetails();
-                }
-            });
+            mDetailsHelper.setCloseListener(() -> hideDetails());
         }
         mDetailsHelper.show();
     }
@@ -636,7 +624,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
             FilterUtils.setupMenuItems(mActionBar, mMediaSetPath, true);
 
             menu.findItem(R.id.action_camera).setVisible(
-                   GalleryUtils.isAnyCameraAvailable(mActivity));
+                    GalleryUtils.isAnyCameraAvailable(mActivity));
             menu.findItem(R.id.action_slideshow).setVisible(!mIsVideoScreen);
             MenuItem item = menu.findItem(R.id.action_view_type);
             updateMenuTitle(item);
@@ -645,7 +633,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
         }
         //actionBar.setSubtitle(null);
         // remove slideshow if all are videos
-        if (allVideoFiles() && !mGetContent){
+        if (allVideoFiles() && !mGetContent) {
             menu.findItem(R.id.action_slideshow).setVisible(false);
         }
         return true;
@@ -698,7 +686,7 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
             targetPhoto = mAlbumDataAdapter.size() - targetPhoto - 1;
         }
         prepareAnimationBackToFilmstrip(targetPhoto);
-        if(mLaunchedFromPhotoPage) {
+        if (mLaunchedFromPhotoPage) {
             onBackPressed();
         } else {
             pickPhoto(targetPhoto, true);
@@ -742,8 +730,8 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
                 return true;
             }
             case R.id.action_view_type: {
-            switchView();
-            return true;
+                switchView();
+                return true;
             }
             default:
                 return false;
@@ -833,21 +821,18 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
     public void onSyncDone(final MediaSet mediaSet, final int resultCode) {
         Log.d(TAG, "onSyncDone: " + Utils.maskDebugInfo(mediaSet.getName()) + " result="
                 + resultCode);
-        ((Activity) mActivity).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                GLRoot root = mActivity.getGLRoot();
-                root.lockRenderThread();
-                mSyncResult = resultCode;
-                try {
-                    if (resultCode == MediaSet.SYNC_RESULT_SUCCESS) {
-                        mInitialSynced = true;
-                    }
-                    clearLoadingBit(BIT_LOADING_SYNC);
-                    showSyncErrorIfNecessary(mLoadingFailed);
-                } finally {
-                    root.unlockRenderThread();
+        mActivity.runOnUiThread(() -> {
+            GLRoot root = mActivity.getGLRoot();
+            root.lockRenderThread();
+            mSyncResult = resultCode;
+            try {
+                if (resultCode == MediaSet.SYNC_RESULT_SUCCESS) {
+                    mInitialSynced = true;
                 }
+                clearLoadingBit(BIT_LOADING_SYNC);
+                showSyncErrorIfNecessary(mLoadingFailed);
+            } finally {
+                root.unlockRenderThread();
             }
         });
     }
@@ -957,19 +942,19 @@ public class AlbumPage extends ActivityState implements GalleryActionBar.Cluster
             mCurrentView = LIST_VIEW;
             GalleryUtils.setIntPref(mActivity, PREF_VIEWTYPE, mCurrentView);
             mActivity.getStateManager().switchState(this,
-            AlbumListViewPage.class, mData);
+                    AlbumListViewPage.class, mData);
         } else {
             mCurrentView = GRID_VIEW;
             GalleryUtils.setIntPref(mActivity, PREF_VIEWTYPE, mCurrentView);
             mActivity.getStateManager().switchState(this, AlbumPage.class,
-            mData);
-       }
+                    mData);
+        }
 
     }
 
 
     private void showEmptyAlbumToast(int toastLength) {
-        RelativeLayout galleryRoot = (RelativeLayout) mActivity.findViewById(R.id.gallery_root);
+        RelativeLayout galleryRoot = mActivity.findViewById(R.id.gallery_root);
         if (galleryRoot == null) return;
         if (tvEmptyAlbum == null) {
             tvEmptyAlbum = new TextView(mActivity);

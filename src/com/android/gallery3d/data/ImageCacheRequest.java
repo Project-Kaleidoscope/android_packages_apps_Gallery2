@@ -17,9 +17,10 @@
 package com.android.gallery3d.data;
 
 //import android.drm.DrmHelper;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.gallery3d.app.GalleryApp;
 import com.android.gallery3d.common.BitmapUtils;
@@ -31,15 +32,15 @@ abstract class ImageCacheRequest implements Job<Bitmap> {
     private static final String TAG = "ImageCacheRequest";
 
     protected GalleryApp mApplication;
-    private Path mPath;
-    private int mType;
-    private int mTargetSize;
+    private final Path mPath;
+    private final int mType;
+    private final int mTargetSize;
     private String mFilePath;
     private String mMimeType;
-    private long mTimeModified;
+    private final long mTimeModified;
 
     public ImageCacheRequest(GalleryApp application,
-            Path path, long timeModified, int type, int targetSize) {
+                             Path path, long timeModified, int type, int targetSize) {
         mApplication = application;
         mPath = path;
         mType = type;
@@ -48,7 +49,7 @@ abstract class ImageCacheRequest implements Job<Bitmap> {
     }
 
     public ImageCacheRequest(GalleryApp application,
-            Path path, long timeModified, int type, int targetSize, String filepath, String mimeType) {
+                             Path path, long timeModified, int type, int targetSize, String filepath, String mimeType) {
         this(application, path, timeModified, type,
                 targetSize);
         mFilePath = filepath;
@@ -58,7 +59,7 @@ abstract class ImageCacheRequest implements Job<Bitmap> {
     private String debugTag() {
         return mPath + "," + mTimeModified + "," +
                 ((mType == MediaItem.TYPE_THUMBNAIL) ? "THUMB" :
-                (mType == MediaItem.TYPE_MICROTHUMBNAIL) ? "MICROTHUMB" : "?");
+                        (mType == MediaItem.TYPE_MICROTHUMBNAIL) ? "MICROTHUMB" : "?");
     }
 
     @Override

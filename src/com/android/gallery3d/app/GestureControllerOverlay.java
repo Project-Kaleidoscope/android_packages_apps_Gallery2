@@ -42,6 +42,9 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import android.widget.TextView;
+
+import androidx.core.content.res.ResourcesCompat;
+
 import org.codeaurora.gallery.R;
 import com.android.gallery3d.util.GalleryUtils;
 
@@ -94,22 +97,24 @@ public class GestureControllerOverlay extends FrameLayout implements
     private void init(Context context) {
         mGestureController = new GestureController(context, this);
 
-        mBrightnessDrawable = getResources().getDrawable(R.drawable.ic_controller_brightness, null);
+        Resources resources = getResources();
+
+        mBrightnessDrawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_controller_brightness, null);
         if (mBrightnessDrawable != null) {
             mBrightnessDrawable.setBounds(0, 0, mIndicatorIconSize, mIndicatorIconSize);
         }
 
-        mVolumeDrawable = getResources().getDrawable(R.drawable.ic_controller_volume, null);
+        mVolumeDrawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_controller_volume, null);
         if (mVolumeDrawable != null) {
             mVolumeDrawable.setBounds(0, 0, mIndicatorIconSize, mIndicatorIconSize);
         }
 
-        mRewindDrawable = getResources().getDrawable(R.drawable.ic_menu_rewind, null);
+        mRewindDrawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_menu_rewind, null);
         if (mRewindDrawable != null) {
             mRewindDrawable.setBounds(0, 0, mIndicatorIconSize, mIndicatorIconSize);
         }
 
-        mForwardDrawable = getResources().getDrawable(R.drawable.ic_menu_forward, null);
+        mForwardDrawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_menu_forward, null);
         if (mForwardDrawable != null) {
             mForwardDrawable.setBounds(0, 0, mIndicatorIconSize, mIndicatorIconSize);
         }
@@ -229,7 +234,7 @@ public class GestureControllerOverlay extends FrameLayout implements
 
         if (mCurrentIndicator != null) {
             mCurrentIndicator.setCompoundDrawables(null, mBrightnessDrawable, null, null);
-            mCurrentIndicator.setText((int) (targetBrightness * MAX_BRIGHTNESS) + "%");
+            mCurrentIndicator.setText(targetBrightness * MAX_BRIGHTNESS + "%");
         }
         showIndicator();
     }

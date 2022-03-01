@@ -17,14 +17,9 @@
 package com.android.gallery3d.ui;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
-import android.content.res.Resources;
-import android.text.TextUtils;
 import android.text.format.Formatter;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,9 +27,7 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.AbstractGalleryActivity;
-import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.MediaDetails;
 import com.android.gallery3d.exif.ExifInterface;
 import com.android.gallery3d.ui.DetailsAddressResolver.AddressResolvingListener;
@@ -42,6 +35,8 @@ import com.android.gallery3d.ui.DetailsHelper.CloseListener;
 import com.android.gallery3d.ui.DetailsHelper.DetailsSource;
 import com.android.gallery3d.ui.DetailsHelper.DetailsViewContainer;
 import com.android.gallery3d.ui.DetailsHelper.ResolutionResolvingListener;
+
+import org.codeaurora.gallery.R;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -94,9 +89,6 @@ public class DialogDetailsView implements DetailsViewContainer {
 
     private void setDetails(MediaDetails details) {
         mAdapter = new DetailsAdapter(details);
-        String title = String.format(
-                mActivity.getAndroidContext().getString(R.string.details_title),
-                mIndex + 1, mSource.size());
         ListView detailsList = (ListView) LayoutInflater.from(mActivity.getAndroidContext()).inflate(
                 R.layout.details_list, null, false);
         detailsList.setAdapter(mAdapter);
@@ -104,39 +96,25 @@ public class DialogDetailsView implements DetailsViewContainer {
 
         builder.setTitle(R.string.details);
         builder.setView(detailsList);
-        builder.setPositiveButton(R.string.close,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        mDialog.dismiss();
-                    }
-                });
+        builder.setPositiveButton(R.string.close, (dialog, whichButton) -> mDialog.dismiss());
 
         mDialog = builder.create();
-        mDialog.setOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (mListener != null) {
-                    mListener.onClose();
-                }
+        mDialog.setOnDismissListener(dialog -> {
+            if (mListener != null) {
+                mListener.onClose();
             }
         });
         mDialog.show();
 
         builder.setView(detailsList);
         builder.setPositiveButton(R.string.close,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        mDialog.dismiss();
-                    }
-                });
+                (DialogInterface.OnClickListener) (dialog, whichButton) -> mDialog.dismiss());
     }
 
     public static class Details {
 
-        private String title;
-        private String details;
+        private final String title;
+        private final String details;
 
         public Details(String title, String details) {
             this.title = title;
@@ -153,7 +131,7 @@ public class DialogDetailsView implements DetailsViewContainer {
     }
 
     private class DetailsAdapter extends BaseAdapter
-        implements AddressResolvingListener, ResolutionResolvingListener {
+            implements AddressResolvingListener, ResolutionResolvingListener {
         private final ArrayList<Details> mItems;
         private int mLocationIndex;
         private final Locale mDefaultLocale = Locale.getDefault();
@@ -214,14 +192,14 @@ public class DialogDetailsView implements DetailsViewContainer {
                     }
                     case MediaDetails.INDEX_EXPOSURE_TIME: {
                         value = (String) detail.getValue();
-                        double time = Double.valueOf(value);
+                        double time = Double.parseDouble(value);
                         if (time < 1.0f) {
                             value = String.format(mDefaultLocale, "%d/%d", 1,
                                     (int) (0.5f + 1 / time));
                         } else {
                             int integer = (int) time;
                             time -= integer;
-                            value = String.valueOf(integer) + "''";
+                            value = integer + "''";
                             if (time > 0.0001) {
                                 value += String.format(mDefaultLocale, " %d/%d", 1,
                                         (int) (0.5f + 1 / time));
@@ -375,12 +353,16 @@ public class DialogDetailsView implements DetailsViewContainer {
             }
         }
 
-        /** Converts the given integer to a localized String version. */
+        /**
+         * Converts the given integer to a localized String version.
+         */
         private String toLocalNumber(int n) {
             return String.format(mDefaultLocale, "%d", n);
         }
 
-        /** Converts the given double to a localized String version. */
+        /**
+         * Converts the given double to a localized String version.
+         */
         private String toLocalNumber(double n) {
             return mDecimalFormat.format(n);
         }

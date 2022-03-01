@@ -23,7 +23,7 @@ import android.graphics.RectF;
 import java.util.Vector;
 
 public class ImageFilterRedEye extends ImageFilter {
-    private static final String LOGTAG = "ImageFilterRedEye";
+    private static final String TAG = "ImageFilterRedEye";
     FilterRedEyeRepresentation mParameters = new FilterRedEyeRepresentation();
 
     public ImageFilterRedEye() {
@@ -51,8 +51,7 @@ public class ImageFilterRedEye extends ImageFilter {
 
     @Override
     public void useRepresentation(FilterRepresentation representation) {
-        FilterRedEyeRepresentation parameters = (FilterRedEyeRepresentation) representation;
-        mParameters = parameters;
+        mParameters = (FilterRedEyeRepresentation) representation;
     }
 
     @Override

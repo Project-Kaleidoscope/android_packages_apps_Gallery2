@@ -21,7 +21,6 @@ package com.android.gallery3d.ui;
 
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.app.AlbumDataLoader;
-import com.android.gallery3d.app.AlbumPage;
 import com.android.gallery3d.data.MediaObject;
 import com.android.gallery3d.data.Path;
 import com.android.gallery3d.glrenderer.ColorTexture;
@@ -35,7 +34,7 @@ import com.android.gallery3d.ui.AlbumSlidingWindow.AlbumEntry;
 public class AlbumSlotRenderer extends AbstractSlotRenderer {
     @SuppressWarnings("unused")
     private static final String TAG = "AlbumView";
-    private boolean mIsGridViewShown;
+    private final boolean mIsGridViewShown;
 
     public static class LabelSpec {
         public int labelBackgroundHeight;
@@ -49,7 +48,9 @@ public class AlbumSlotRenderer extends AbstractSlotRenderer {
     }
 
     public interface SlotFilter {
-        public boolean acceptSlot(int index);
+
+        boolean acceptSlot(int index);
+
     }
 
     private final int mPlaceholderColor;
@@ -58,7 +59,7 @@ public class AlbumSlotRenderer extends AbstractSlotRenderer {
     private AlbumSlidingWindow mDataWindow;
     private final AbstractGalleryActivity mActivity;
     private final ColorTexture mWaitLoadingTexture;
-    private SlotView mSlotView;
+    private final SlotView mSlotView;
     private final SelectionManager mSelectionManager;
 
     private int mPressedIndex = -1;
@@ -70,9 +71,9 @@ public class AlbumSlotRenderer extends AbstractSlotRenderer {
     protected final LabelSpec mLabelSpec;
 
     public AlbumSlotRenderer(AbstractGalleryActivity activity,
-            SlotView slotView, LabelSpec labelSpec,
-            SelectionManager selectionManager, int placeholderColor,
-            boolean viewType) {
+                             SlotView slotView, LabelSpec labelSpec,
+                             SelectionManager selectionManager, int placeholderColor,
+                             boolean viewType) {
         super(activity);
         mActivity = activity;
         mSlotView = slotView;
@@ -127,7 +128,7 @@ public class AlbumSlotRenderer extends AbstractSlotRenderer {
 
     @Override
     public int renderSlot(GLCanvas canvas, int index, int pass, int width,
-            int height) {
+                          int height) {
         int thumbSize = 0;
         if (!mIsGridViewShown) {
             thumbSize = mLabelSpec.iconSize;
@@ -183,7 +184,7 @@ public class AlbumSlotRenderer extends AbstractSlotRenderer {
     }
 
     protected int renderLabel(GLCanvas canvas, AlbumEntry entry, int width,
-            int height) {
+                              int height) {
         Texture content = checkLabelTexture(entry.labelTexture);
         if (content == null) {
             content = mWaitLoadingTexture;
@@ -196,7 +197,7 @@ public class AlbumSlotRenderer extends AbstractSlotRenderer {
     }
 
     private int renderOverlay(GLCanvas canvas, int index,
-            AlbumSlidingWindow.AlbumEntry entry, int width, int height) {
+                              AlbumSlidingWindow.AlbumEntry entry, int width, int height) {
         int renderRequestFlags = 0;
         if (mPressedIndex == index) {
             if (mAnimatePressedUp) {

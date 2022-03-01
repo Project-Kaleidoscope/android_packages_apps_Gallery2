@@ -126,8 +126,8 @@ public class MediaSetSource implements WidgetSource, ContentListener {
         @SuppressWarnings("unused")
         private static final String TAG = "CheckedMediaSetSource";
 
-        private MediaSet mSource;
-        private MediaItem mCache[] = new MediaItem[CACHE_SIZE];
+        private final MediaSet mSource;
+        private final MediaItem[] mCache = new MediaItem[CACHE_SIZE];
         private int mCacheStart;
         private int mCacheEnd;
         private long mSourceVersion = MediaObject.INVALID_DATA_VERSION;
@@ -222,12 +222,15 @@ public class MediaSetSource implements WidgetSource, ContentListener {
         }
 
         @Override
-        public void setContentListener(ContentListener listener) {}
+        public void setContentListener(ContentListener listener) {
+        }
 
         @Override
-        public void reload() {}
+        public void reload() {
+        }
 
         @Override
-        public void close() {}
+        public void close() {
+        }
     }
 }

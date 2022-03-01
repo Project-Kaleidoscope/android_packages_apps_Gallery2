@@ -37,30 +37,30 @@ import java.util.ArrayList;
 
 public class ColorOpacityView extends View implements ColorListener {
 
+    public final static float BORDER_SIZE = 20;
+    private final static float DOT_SIZE = ColorHueView.DOT_SIZE;
+    private final Paint mBarPaint1;
+    private final Paint mLinePaint1;
+    private final Paint mLinePaint2;
+    private final Paint mDotPaint;
+    private final int mBgcolor = 0;
+    private final float mDotRadius;
+    private final float[] mHSVO = new float[4];
+    private final int mSliderColor;
+    ArrayList<ColorListener> mColorListeners = new ArrayList<>();
     private float mRadius;
     private float mWidth;
-    private Paint mBarPaint1;
-    private Paint mLinePaint1;
-    private Paint mLinePaint2;
     private Paint mCheckPaint;
-
     private float mHeight;
-    private Paint mDotPaint;
-    private int mBgcolor = 0;
-
-    private float mDotRadius;
     private float mBorder;
-
-    private float[] mHSVO = new float[4];
-    private int mSliderColor;
     private float mDotX = mBorder;
     private float mDotY = mBorder;
-    private final static float DOT_SIZE = ColorHueView.DOT_SIZE;
-    public final static float BORDER_SIZE = 20;;
-    private  int mCheckDim = 8;
-    public ColorOpacityView(Context ctx, AttributeSet attrs) {
-        super(ctx, attrs);
-        DisplayMetrics metrics = ctx.getResources().getDisplayMetrics();
+    private final int mCheckDim;
+
+    public ColorOpacityView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        Resources res = context.getResources();
+        DisplayMetrics metrics = res.getDisplayMetrics();
         float mDpToPix = metrics.density;
         mDotRadius = DOT_SIZE * mDpToPix;
         mBorder = BORDER_SIZE * mDpToPix;
@@ -69,10 +69,9 @@ public class ColorOpacityView extends View implements ColorListener {
         mDotPaint = new Paint();
 
         mDotPaint.setStyle(Paint.Style.FILL);
-        Resources res = ctx.getResources();
         mCheckDim = res.getDimensionPixelSize(R.dimen.draw_color_check_dim);
-        mDotPaint.setColor(res.getColor(R.color.slider_dot_color));
-        mSliderColor = res.getColor(R.color.slider_line_color);
+        mDotPaint.setColor(context.getColor(R.color.slider_dot_color));
+        mSliderColor = context.getColor(R.color.slider_line_color);
 
         mBarPaint1.setStyle(Paint.Style.FILL);
 
@@ -85,8 +84,8 @@ public class ColorOpacityView extends View implements ColorListener {
         makeCheckPaint();
     }
 
-    private void makeCheckPaint(){
-        int imgdim = mCheckDim*2;
+    private void makeCheckPaint() {
+        int imgdim = mCheckDim * 2;
         int[] colors = new int[imgdim * imgdim];
         for (int i = 0; i < colors.length; i++) {
             int y = i / (imgdim * mCheckDim);
@@ -136,10 +135,9 @@ public class ColorOpacityView extends View implements ColorListener {
         float pos = mHSVO[3] * (mWidth - mBorder * 2);
         mDotX = pos + mBorder;
 
-        int[] colors3 = new int[] {
-                mSliderColor, mSliderColor, 0x66000000, 0 };
-        RadialGradient g = new RadialGradient(mDotX, mDotY, mDotRadius, colors3, new float[] {
-                0, .3f, .31f, 1 }, Shader.TileMode.CLAMP);
+        int[] colors3 = new int[]{mSliderColor, mSliderColor, 0x66000000, 0};
+        RadialGradient g = new RadialGradient(mDotX, mDotY, mDotRadius, colors3,
+                new float[]{0, .3f, .31f, 1}, Shader.TileMode.CLAMP);
         mDotPaint.setShader(g);
     }
 
@@ -184,8 +182,6 @@ public class ColorOpacityView extends View implements ColorListener {
         setupButton();
         invalidate();
     }
-
-    ArrayList<ColorListener> mColorListeners = new ArrayList<ColorListener>();
 
     public void notifyColorListeners(float[] hsvo) {
         for (ColorListener l : mColorListeners) {

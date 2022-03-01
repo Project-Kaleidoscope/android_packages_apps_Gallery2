@@ -16,15 +16,15 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import org.codeaurora.gallery.R;
-
 import android.graphics.Bitmap;
+
+import org.codeaurora.gallery.R;
 
 public class ImageFilterShadows extends SimpleImageFilter {
     private static final String SERIALIZATION_NAME = "SHADOWS";
+
     public ImageFilterShadows() {
         mName = "Shadows";
-
     }
 
     public FilterRepresentation getDefaultRepresentation() {
@@ -41,7 +41,7 @@ public class ImageFilterShadows extends SimpleImageFilter {
         return representation;
     }
 
-    native protected void nativeApplyFilter(Bitmap bitmap, int w, int h, float  factor);
+    native protected void nativeApplyFilter(Bitmap bitmap, int w, int h, float factor);
 
     @Override
     public Bitmap apply(Bitmap bitmap, float scaleFactor, int quality) {

@@ -20,10 +20,11 @@ import android.content.Context;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.filters.FilterCurvesRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.ImageCurves;
+
+import org.codeaurora.gallery.R;
 
 public class EditorCurves extends Editor {
     public static final int ID = R.id.imageCurves;
@@ -31,7 +32,6 @@ public class EditorCurves extends Editor {
 
     public EditorCurves() {
         super(ID);
-        int k =R.menu.filtershow_menu_curves;
     }
 
     @Override
@@ -60,6 +60,7 @@ public class EditorCurves extends Editor {
             mImageCurves.setFilterDrawRepresentation(drawRep);
         }
     }
+
     @Override
     public void setEditPanelUI(View editControl) {
         super.setEditPanelUI(editControl);

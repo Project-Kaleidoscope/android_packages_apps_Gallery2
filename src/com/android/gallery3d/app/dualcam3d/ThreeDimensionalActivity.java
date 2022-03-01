@@ -37,7 +37,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
-import android.widget.LinearLayout;
 
 import com.android.gallery3d.app.dualcam3d.threed.Controller;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
@@ -77,9 +76,9 @@ public class ThreeDimensionalActivity extends Activity {
 
 
     private void init() {
-        mImageView = (GLView) findViewById(R.id.image);
+        mImageView = findViewById(R.id.image);
         mImageView.setRotation(getWindowManager().getDefaultDisplay().getRotation());
-        mController = new Controller(mImageView, (LinearLayout) findViewById(R.id.mode_3d));
+        mController = new Controller(mImageView, findViewById(R.id.mode_3d));
         mImageView.setListener(new GLView.Listener() {
             @Override
             public void onMove(float deltaX, float deltaY) {
@@ -87,7 +86,8 @@ public class ThreeDimensionalActivity extends Activity {
             }
 
             @Override
-            public void onClick(float x, float y) {}
+            public void onClick(float x, float y) {
+            }
 
             @Override
             public void onLayout(int width, int height) {
@@ -138,10 +138,10 @@ public class ThreeDimensionalActivity extends Activity {
         if (mBitmap == null) return;
         int width = mBitmap.getWidth();
         int height = mBitmap.getHeight();
-        if (mWidth*height/width > mHeight) {
-            int scaledWidth = width*mHeight/height;
-            int move = (mWidth - scaledWidth)/2;
-            mImageView.layout(move, 0, mWidth-move, mHeight);
+        if (mWidth * height / width > mHeight) {
+            int scaledWidth = width * mHeight / height;
+            int move = (mWidth - scaledWidth) / 2;
+            mImageView.layout(move, 0, mWidth - move, mHeight);
         }
     }
 

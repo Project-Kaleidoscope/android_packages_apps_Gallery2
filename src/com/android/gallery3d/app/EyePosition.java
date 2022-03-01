@@ -34,7 +34,9 @@ public class EyePosition {
     private static final String TAG = "EyePosition";
 
     public interface EyePositionListener {
-        public void onEyePositionChanged(float x, float y, float z);
+
+        void onEyePositionChanged(float x, float y, float z);
+
     }
 
     private static final float GYROSCOPE_THRESHOLD = 0.15f;
@@ -63,6 +65,7 @@ public class EyePosition {
     private final float mLimit;
     private long mStartTime = NOT_STARTED;
     private Sensor mSensor;
+    private SensorManager mSensorManager;
     private PositionListener mPositionListener = new PositionListener();
 
     private int mGyroscopeCountdown = 0;
@@ -73,15 +76,13 @@ public class EyePosition {
         mUserDistance = GalleryUtils.meterToPixel(USER_DISTANCE_METER);
         mLimit = mUserDistance * MAX_VIEW_RANGE;
 
-        WindowManager wManager = (WindowManager) mContext
-                .getSystemService(Context.WINDOW_SERVICE);
-        mDisplay = wManager.getDefaultDisplay();
-
+        WindowManager windowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        mDisplay = windowManager.getDefaultDisplay();
+        mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
         // The 3D effect where the photo albums fan out in 3D based on angle
         // of device tilt is currently disabled.
 /*
-        SensorManager sManager = (SensorManager) mContext
-                .getSystemService(Context.SENSOR_SERVICE);
+
         mSensor = sManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         if (mSensor == null) {
             Log.w(TAG, "no gyroscope, use accelerometer instead");
@@ -112,12 +113,26 @@ public class EyePosition {
      */
     private void onAccelerometerChanged(float gx, float gy, float gz) {
 
-        float x = gx, y = gy, z = gz;
+        float x, y, z = gz;
 
         switch (mDisplay.getRotation()) {
-            case Surface.ROTATION_90: x = -gy; y= gx; break;
-            case Surface.ROTATION_180: x = -gx; y = -gy; break;
-            case Surface.ROTATION_270: x = gy; y = -gx; break;
+            case Surface.ROTATION_90:
+                x = -gy;
+                y = gx;
+                break;
+            case Surface.ROTATION_180:
+                x = -gx;
+                y = -gy;
+                break;
+            case Surface.ROTATION_270:
+                x = gy;
+                y = -gx;
+                break;
+            case Surface.ROTATION_0:
+            default:
+                x = gx;
+                y = gy;
+                break;
         }
 
         float temp = x * x + y * y + z * z;
@@ -130,30 +145,25 @@ public class EyePosition {
         float length = (float) Math.sqrt(tx * tx + ty * ty + tz * tz);
         float glength = (float) Math.sqrt(temp);
 
-        mX = Utils.clamp((x * USER_ANGEL_COS / glength
-                + tx * USER_ANGEL_SIN / length) * mUserDistance,
+        mX = Utils.clamp((x * USER_ANGEL_COS / glength + tx * USER_ANGEL_SIN / length) * mUserDistance,
                 -mLimit, mLimit);
-        mY = -Utils.clamp((y * USER_ANGEL_COS / glength
-                + ty * USER_ANGEL_SIN / length) * mUserDistance,
+        mY = -Utils.clamp((y * USER_ANGEL_COS / glength + ty * USER_ANGEL_SIN / length) * mUserDistance,
                 -mLimit, mLimit);
-        mZ = (float) -Math.sqrt(
-                mUserDistance * mUserDistance - mX * mX - mY * mY);
+        mZ = (float) -Math.sqrt(mUserDistance * mUserDistance - mX * mX - mY * mY);
         mListener.onEyePositionChanged(mX, mY, mZ);
     }
 
     private void onGyroscopeChanged(float gx, float gy, float gz) {
         long now = SystemClock.elapsedRealtime();
         float distance = (gx > 0 ? gx : -gx) + (gy > 0 ? gy : - gy);
-        if (distance < GYROSCOPE_THRESHOLD
-                || distance > GYROSCOPE_LIMIT || mGyroscopeCountdown > 0) {
+        if (distance < GYROSCOPE_THRESHOLD || distance > GYROSCOPE_LIMIT || mGyroscopeCountdown > 0) {
             --mGyroscopeCountdown;
             mStartTime = now;
             float limit = mUserDistance / 20f;
             if (mX > limit || mX < -limit || mY > limit || mY < -limit) {
                 mX *= GYROSCOPE_RESTORE_FACTOR;
                 mY *= GYROSCOPE_RESTORE_FACTOR;
-                mZ = (float) -Math.sqrt(
-                        mUserDistance * mUserDistance - mX * mX - mY * mY);
+                mZ = (float) -Math.sqrt(mUserDistance * mUserDistance - mX * mX - mY * mY);
                 mListener.onEyePositionChanged(mX, mY, mZ);
             }
             return;
@@ -162,20 +172,31 @@ public class EyePosition {
         float t = (now - mStartTime) / 1000f * mUserDistance * (-mZ);
         mStartTime = now;
 
-        float x = -gy, y = -gx;
+        float x, y;
         switch (mDisplay.getRotation()) {
-            case Surface.ROTATION_90: x = -gx; y= gy; break;
-            case Surface.ROTATION_180: x = gy; y = gx; break;
-            case Surface.ROTATION_270: x = gx; y = -gy; break;
+            case Surface.ROTATION_90:
+                x = -gx;
+                y = gy;
+                break;
+            case Surface.ROTATION_180:
+                x = gy;
+                y = gx;
+                break;
+            case Surface.ROTATION_270:
+                x = gx;
+                y = -gy;
+                break;
+            case Surface.ROTATION_0:
+            default:
+                x = -gy;
+                y = -gx;
+                break;
         }
 
-        mX = Utils.clamp((float) (mX + x * t / Math.hypot(mZ, mX)),
-                -mLimit, mLimit) * GYROSCOPE_RESTORE_FACTOR;
-        mY = Utils.clamp((float) (mY + y * t / Math.hypot(mZ, mY)),
-                -mLimit, mLimit) * GYROSCOPE_RESTORE_FACTOR;
+        mX = Utils.clamp((float) (mX + x * t / Math.hypot(mZ, mX)), -mLimit, mLimit) * GYROSCOPE_RESTORE_FACTOR;
+        mY = Utils.clamp((float) (mY + y * t / Math.hypot(mZ, mY)), -mLimit, mLimit) * GYROSCOPE_RESTORE_FACTOR;
 
-        mZ = (float) -Math.sqrt(
-                mUserDistance * mUserDistance - mX * mX - mY * mY);
+        mZ = (float) -Math.sqrt(mUserDistance * mUserDistance - mX * mX - mY * mY);
         mListener.onEyePositionChanged(mX, mY, mZ);
     }
 
@@ -188,13 +209,12 @@ public class EyePosition {
         public void onSensorChanged(SensorEvent event) {
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_GYROSCOPE: {
-                    onGyroscopeChanged(
-                            event.values[0], event.values[1], event.values[2]);
+                    onGyroscopeChanged(event.values[0], event.values[1], event.values[2]);
                     break;
                 }
                 case Sensor.TYPE_ACCELEROMETER: {
-                    onAccelerometerChanged(
-                            event.values[0], event.values[1], event.values[2]);
+                    onAccelerometerChanged(event.values[0], event.values[1], event.values[2]);
+                    break;
                 }
             }
         }
@@ -202,18 +222,13 @@ public class EyePosition {
 
     public void pause() {
         if (mSensor != null) {
-            SensorManager sManager = (SensorManager) mContext
-                    .getSystemService(Context.SENSOR_SERVICE);
-            sManager.unregisterListener(mPositionListener);
+            mSensorManager.unregisterListener(mPositionListener);
         }
     }
 
     public void resume() {
         if (mSensor != null) {
-            SensorManager sManager = (SensorManager) mContext
-                    .getSystemService(Context.SENSOR_SERVICE);
-            sManager.registerListener(mPositionListener,
-                    mSensor, SensorManager.SENSOR_DELAY_GAME);
+            mSensorManager.registerListener(mPositionListener, mSensor, SensorManager.SENSOR_DELAY_GAME);
         }
 
         mStartTime = NOT_STARTED;

@@ -41,10 +41,12 @@ import android.widget.RelativeLayout;
 import org.codeaurora.gallery.R;
 
 public class ThreeDButton implements OnClickListener {
-    interface Delegate {
-        boolean canDisplay3DButton();
 
+    interface Delegate {
+
+        boolean canDisplay3DButton();
         void on3DButtonClicked();
+
     }
 
     private Delegate mDelegate;

@@ -31,7 +31,7 @@ import com.android.gallery3d.filtershow.filters.ImageFilterRedEye;
 
 public abstract class ImagePoint extends ImageShow {
 
-    private static final String LOGTAG = "ImageRedEyes";
+    private static final String TAG = "ImageRedEyes";
     protected EditorRedEye mEditorRedEye;
     protected FilterRedEyeRepresentation mRedEyeRep;
     protected static float mTouchPadding = 80;

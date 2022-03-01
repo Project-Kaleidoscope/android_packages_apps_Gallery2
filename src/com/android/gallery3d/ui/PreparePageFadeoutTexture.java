@@ -12,7 +12,7 @@ public class PreparePageFadeoutTexture implements OnGLIdleListener {
     public static final String KEY_FADE_TEXTURE = "fade_texture";
 
     private RawTexture mTexture;
-    private ConditionVariable mResultReady = new ConditionVariable(false);
+    private final ConditionVariable mResultReady = new ConditionVariable(false);
     private boolean mCancelled = false;
     private GLView mRootPane;
 
@@ -28,7 +28,7 @@ public class PreparePageFadeoutTexture implements OnGLIdleListener {
             return;
         }
         mTexture = new RawTexture(w, h, true);
-        mRootPane =  rootPane;
+        mRootPane = rootPane;
     }
 
     public boolean isCancelled() {
@@ -64,11 +64,11 @@ public class PreparePageFadeoutTexture implements OnGLIdleListener {
     }
 
     public static void prepareFadeOutTexture(AbstractGalleryActivity activity,
-            GLView rootPane) {
+                                             GLView rootPane) {
         PreparePageFadeoutTexture task = new PreparePageFadeoutTexture(rootPane);
         if (task.isCancelled()) return;
         GLRoot root = activity.getGLRoot();
-        RawTexture texture = null;
+        RawTexture texture;
         root.lockRenderThread();
         try {
             root.addOnGLIdleListener(task);

@@ -30,8 +30,10 @@
 package com.android.gallery3d.filtershow.filters;
 
 import android.graphics.Bitmap;
-import org.codeaurora.gallery.R;
+
 import com.android.gallery3d.filtershow.editors.TrueScannerEditor;
+
+import org.codeaurora.gallery.R;
 
 public class TrueScannerWhiteBoardActs extends TrueScannerActs {
     public static final String SERIALIZATION_NAME = "TrueScannerWhiteBoardActs";

@@ -25,23 +25,23 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import org.codeaurora.gallery.R;
+
 import com.android.gallery3d.filtershow.category.Action;
 import com.android.gallery3d.filtershow.category.CategoryView;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterUserPresetRepresentation;
 
+import org.codeaurora.gallery.R;
+
 import java.util.ArrayList;
 
 public class UserPresetsAdapter extends ArrayAdapter<Action>
         implements View.OnClickListener, View.OnFocusChangeListener {
-    private static final String LOGTAG = "UserPresetsAdapter";
-    private LayoutInflater mInflater;
-    private int mIconSize = 160;
-    private ArrayList<FilterUserPresetRepresentation> mDeletedRepresentations =
-            new ArrayList<FilterUserPresetRepresentation>();
-    private ArrayList<FilterUserPresetRepresentation> mChangedRepresentations =
-            new ArrayList<FilterUserPresetRepresentation>();
+    private static final String TAG = "UserPresetsAdapter";
+    private final LayoutInflater mInflater;
+    private final int mIconSize;
+    private final ArrayList<FilterUserPresetRepresentation> mDeletedRepresentations = new ArrayList<>();
+    private final ArrayList<FilterUserPresetRepresentation> mChangedRepresentations = new ArrayList<>();
     private EditText mCurrentEditText;
 
     public UserPresetsAdapter(Context context, int textViewResourceId) {
@@ -95,9 +95,9 @@ public class UserPresetsAdapter extends ArrayAdapter<Action>
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.filtershow_presets_management_row, null);
             viewHolder = new UserPresetViewHolder();
-            viewHolder.imageView = (ImageView) convertView.findViewById(R.id.imageView);
-            viewHolder.editText = (EditText) convertView.findViewById(R.id.editView);
-            viewHolder.deleteButton = (ImageButton) convertView.findViewById(R.id.deleteUserPreset);
+            viewHolder.imageView = convertView.findViewById(R.id.imageView);
+            viewHolder.editText = convertView.findViewById(R.id.editView);
+            viewHolder.deleteButton = convertView.findViewById(R.id.deleteUserPreset);
             viewHolder.editText.setOnClickListener(this);
             viewHolder.editText.setOnFocusChangeListener(this);
             viewHolder.deleteButton.setOnClickListener(this);

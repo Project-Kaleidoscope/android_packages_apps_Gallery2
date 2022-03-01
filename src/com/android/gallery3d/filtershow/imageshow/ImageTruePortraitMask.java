@@ -19,9 +19,6 @@
 
 package com.android.gallery3d.filtershow.imageshow;
 
-import java.util.Arrays;
-import java.util.Stack;
-
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -29,7 +26,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
-import android.graphics.LightingColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
@@ -47,25 +43,28 @@ import com.android.gallery3d.filtershow.editors.EditorTruePortraitMask;
 import com.android.gallery3d.filtershow.filters.FilterDrawRepresentation.StrokeData;
 import com.android.gallery3d.filtershow.tools.TruePortraitNativeEngine;
 
+import java.util.Arrays;
+import java.util.Stack;
+
 public class ImageTruePortraitMask extends ImageShow {
 
-    private static final String LOGTAG = "ImageTruePortraitMask";
+    private static final String TAG = "ImageTruePortraitMask";
 
     private boolean mZoomIn = false;
-    private Point mScaleTranslation = new Point();
+    private final Point mScaleTranslation = new Point();
     private float mScaleStartFocusX, mScaleStartFocusY;
 
-    private Point mTranslation = new Point();
-    private Point mOriginalTranslation = new Point();
+    private final Point mTranslation = new Point();
+    private final Point mOriginalTranslation = new Point();
     private float mScaleFactor = 1f;
-    private float mMaxScaleFactor = 3f;
+    private final float mMaxScaleFactor = 3f;
 
-    private Paint mMaskPaintForeground = new Paint();
-    private Paint mMaskPaintBackground = new Paint();
-    private Paint mMaskEditPaint = new Paint();
+    private final Paint mMaskPaintForeground = new Paint();
+    private final Paint mMaskPaintBackground = new Paint();
+    private final Paint mMaskEditPaint = new Paint();
 
     private StrokeData mCurrent;
-    private Stack<StrokeData> mDrawing = new Stack<StrokeData>();
+    private final Stack<StrokeData> mDrawing = new Stack<>();
 
     private EditorTruePortraitMask mEditor;
     private Bitmap mPreview;
@@ -73,6 +72,7 @@ public class ImageTruePortraitMask extends ImageShow {
     private Bitmap mMask;
 
     private Mode mMode = Mode.MODE_NONE;
+
     private enum Mode {
         MODE_NONE,
         MODE_MOVE,
@@ -98,23 +98,23 @@ public class ImageTruePortraitMask extends ImageShow {
     private void setup() {
         mMaskPaintForeground.setAntiAlias(true);
         mMaskPaintForeground.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
-        mMaskPaintForeground.setColorFilter(new ColorMatrixColorFilter(new float[] {
+        mMaskPaintForeground.setColorFilter(new ColorMatrixColorFilter(new float[]{
                 // Set color to GREEN
-                0,0,0,0,0,
-                0,0,0,0,191,
-                0,0,0,0,0,
-                0,0,0,.5f,0
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 191,
+                0, 0, 0, 0, 0,
+                0, 0, 0, .5f, 0
         }));
 
         mMaskPaintBackground.setAntiAlias(true);
         mMaskPaintBackground.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
-        mMaskPaintBackground.setColorFilter(new ColorMatrixColorFilter(new float[] {
+        mMaskPaintBackground.setColorFilter(new ColorMatrixColorFilter(new float[]{
                 // Set color to RED and inverse ALPHA channel
                 // of original mask to get background
-                0,0,0,0,191,
-                0,0,0,0,0,
-                0,0,0,0,0,
-                0,0,0,-.5f,127
+                0, 0, 0, 0, 191,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, -.5f, 127
         }));
 
         mMaskEditPaint.setAntiAlias(true);
@@ -131,17 +131,17 @@ public class ImageTruePortraitMask extends ImageShow {
 
     @Override
     public void detach() {
-        if(mPreview != null) {
+        if (mPreview != null) {
             mPreview.recycle();
             mPreview = null;
         }
 
-        if(mOriginalMask != null) {
+        if (mOriginalMask != null) {
             mOriginalMask.recycle();
             mOriginalMask = null;
         }
 
-        if(mMask != null) {
+        if (mMask != null) {
             mMask.recycle();
             mMask = null;
         }
@@ -164,21 +164,21 @@ public class ImageTruePortraitMask extends ImageShow {
         drawImage(canvas, mPreview, mPaint);
         updateEditsToMask(mMask);
         drawImage(canvas, mMask,
-                mEditor.isBackgroundMode()?mMaskPaintBackground:mMaskPaintForeground);
+                mEditor.isBackgroundMode() ? mMaskPaintBackground : mMaskPaintForeground);
 
         if (!mEdgeEffect.isFinished()) {
             canvas.save();
             float dx = (getHeight() - getWidth()) / 2f;
             if (getWidth() > getHeight()) {
-                dx = - (getWidth() - getHeight()) / 2f;
+                dx = -(getWidth() - getHeight()) / 2f;
             }
             if (mCurrentEdgeEffect == EDGE_BOTTOM) {
-                canvas.rotate(180, getWidth()/2, getHeight()/2);
+                canvas.rotate(180, getWidth() / 2, getHeight() / 2);
             } else if (mCurrentEdgeEffect == EDGE_RIGHT) {
-                canvas.rotate(90, getWidth()/2, getHeight()/2);
+                canvas.rotate(90, getWidth() / 2, getHeight() / 2);
                 canvas.translate(0, dx);
             } else if (mCurrentEdgeEffect == EDGE_LEFT) {
-                canvas.rotate(270, getWidth()/2, getHeight()/2);
+                canvas.rotate(270, getWidth() / 2, getHeight() / 2);
                 canvas.translate(0, dx);
             }
             if (mCurrentEdgeEffect != 0) {
@@ -213,12 +213,12 @@ public class ImageTruePortraitMask extends ImageShow {
         Canvas canvas = new Canvas(mask);
         canvas.drawBitmap(mOriginalMask, 0, 0, null);
 
-        for(StrokeData sd:mDrawing) {
+        for (StrokeData sd : mDrawing) {
             drawEdit(canvas, sd);
         }
 
         // update current edit
-        if(mCurrent != null) {
+        if (mCurrent != null) {
             drawEdit(canvas, mCurrent);
         }
     }
@@ -231,7 +231,7 @@ public class ImageTruePortraitMask extends ImageShow {
             return;
         }
         mMaskEditPaint.setColor(sd.mColor);
-        if(sd.mColor == Color.TRANSPARENT)
+        if (sd.mColor == Color.TRANSPARENT)
             mMaskEditPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         else
             mMaskEditPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
@@ -263,7 +263,7 @@ public class ImageTruePortraitMask extends ImageShow {
         if (action == MotionEvent.ACTION_DOWN) {
             mTouchDown.x = ex;
             mTouchDown.y = ey;
-            if(event.getPointerCount() == 2) {
+            if (event.getPointerCount() == 2) {
                 mMode = Mode.MODE_MOVE;
                 setOriginalTranslation(getTranslation());
             } else if (event.getPointerCount() == 1) {
@@ -285,7 +285,7 @@ public class ImageTruePortraitMask extends ImageShow {
                 translation.x = (int) (originalTranslation.x + translateX);
                 translation.y = (int) (originalTranslation.y + translateY);
                 setTranslation(translation);
-            } else if(event.getPointerCount() == 1
+            } else if (event.getPointerCount() == 1
                     && mMode == Mode.MODE_DRAW) {
                 Point mapPoint = mapPoint(ex, ey);
                 addPoint(mapPoint.x, mapPoint.y);
@@ -293,7 +293,7 @@ public class ImageTruePortraitMask extends ImageShow {
         } else if (action == MotionEvent.ACTION_UP
                 || action == MotionEvent.ACTION_CANCEL
                 || action == MotionEvent.ACTION_OUTSIDE) {
-            if(event.getPointerCount() == 1
+            if (event.getPointerCount() == 1
                     && mMode == Mode.MODE_DRAW) {
                 Point mapPoint = mapPoint(ex, ey);
                 endSection(mapPoint.x, mapPoint.y);
@@ -306,7 +306,7 @@ public class ImageTruePortraitMask extends ImageShow {
             mTouch.y = 0;
             if (getScaleFactor() <= 1) {
                 setScaleFactor(1);
-                setTranslation(new Point(0,0));
+                setTranslation(new Point(0, 0));
             }
         }
 
@@ -320,7 +320,7 @@ public class ImageTruePortraitMask extends ImageShow {
     }
 
     private void startAnimTranslation(int fromX, int toX,
-            int fromY, int toY, int delay) {
+                                      int fromY, int toY, int delay) {
         if (fromX == toX && fromY == toY) {
             return;
         }
@@ -334,23 +334,17 @@ public class ImageTruePortraitMask extends ImageShow {
         mAnimatorTranslateY = ValueAnimator.ofInt(fromY, toY);
         mAnimatorTranslateX.setDuration(delay);
         mAnimatorTranslateY.setDuration(delay);
-        mAnimatorTranslateX.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                Point translation = getTranslation();
-                translation.x = (Integer) animation.getAnimatedValue();
-                setTranslation(translation);
-                invalidate();
-            }
+        mAnimatorTranslateX.addUpdateListener(animation -> {
+            Point translation = getTranslation();
+            translation.x = (Integer) animation.getAnimatedValue();
+            setTranslation(translation);
+            invalidate();
         });
-        mAnimatorTranslateY.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                Point translation = getTranslation();
-                translation.y = (Integer) animation.getAnimatedValue();
-                setTranslation(translation);
-                invalidate();
-            }
+        mAnimatorTranslateY.addUpdateListener(animation -> {
+            Point translation = getTranslation();
+            translation.y = (Integer) animation.getAnimatedValue();
+            setTranslation(translation);
+            invalidate();
         });
         mAnimatorTranslateX.start();
         mAnimatorTranslateY.start();
@@ -372,7 +366,7 @@ public class ImageTruePortraitMask extends ImageShow {
 
     @Override
     public boolean onDoubleTap(MotionEvent arg0) {
-        if(hasFusionApplied())
+        if (hasFusionApplied())
             return true;
 
         mZoomIn = !mZoomIn;
@@ -389,7 +383,7 @@ public class ImageTruePortraitMask extends ImageShow {
             mAnimatorScale = ValueAnimator.ofFloat(
                     getScaleFactor(),
                     scale
-                    );
+            );
             float translateX = (getWidth() / 2 - x);
             float translateY = (getHeight() / 2 - y);
             Point translation = getTranslation();
@@ -408,12 +402,9 @@ public class ImageTruePortraitMask extends ImageShow {
                     startTranslateY, translation.y,
                     mAnimationZoomDelay);
             mAnimatorScale.setDuration(mAnimationZoomDelay);
-            mAnimatorScale.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    setScaleFactor((Float) animation.getAnimatedValue());
-                    invalidate();
-                }
+            mAnimatorScale.addUpdateListener(animation -> {
+                setScaleFactor((Float) animation.getAnimatedValue());
+                invalidate();
             });
             mAnimatorScale.addListener(new Animator.AnimatorListener() {
                 @Override
@@ -487,7 +478,7 @@ public class ImageTruePortraitMask extends ImageShow {
             }
         } else {
             float ty = screenPos.bottom - translation.y * scale;
-            float dy = (getHeight()- screenPos.height()) / 2f;
+            float dy = (getHeight() - screenPos.height()) / 2f;
             translation.y = (int) ((getHeight() - ty - dy) / scale);
         }
 
@@ -555,9 +546,9 @@ public class ImageTruePortraitMask extends ImageShow {
     }
 
     private Matrix computeImageToScreen(int bmWidth, int bmHeight) {
-        float scale = 1f;
-        float translateX = 0;
-        float translateY = 0;
+        float scale;
+        float translateX;
+        float translateY;
 
         RectF size = new RectF(0, 0,
                 bmWidth, bmHeight);
@@ -588,10 +579,10 @@ public class ImageTruePortraitMask extends ImageShow {
 
     private Point mapPoint(int x, int y) {
         Matrix screenToImage = computeScreenToImage(mMask.getWidth(), mMask.getHeight());
-        float[] tmpPoint = {x,y};
+        float[] tmpPoint = {x, y};
         screenToImage.mapPoints(tmpPoint);
 
-        return new Point((int)tmpPoint[0], (int)tmpPoint[1]);
+        return new Point((int) tmpPoint[0], (int) tmpPoint[1]);
     }
 
     private void setTranslation(Point translation) {
@@ -624,8 +615,8 @@ public class ImageTruePortraitMask extends ImageShow {
         return mMaxScaleFactor;
     }
 
-    private void fillStrokeParameters(StrokeData sd){
-        sd.mColor = mEditor.isBackgroundMode()?Color.TRANSPARENT:Color.BLACK;
+    private void fillStrokeParameters(StrokeData sd) {
+        sd.mColor = mEditor.isBackgroundMode() ? Color.TRANSPARENT : Color.BLACK;
         sd.mRadius = mEditor.getBrushSize();
     }
 
@@ -642,7 +633,7 @@ public class ImageTruePortraitMask extends ImageShow {
     private void addPoint(float x, float y) {
         int len = mCurrent.noPoints * 2;
         mCurrent.mPath.lineTo(x, y);
-        if ((len+2) > mCurrent.mPoints.length) {
+        if ((len + 2) > mCurrent.mPoints.length) {
             mCurrent.mPoints = Arrays.copyOf(mCurrent.mPoints, mCurrent.mPoints.length * 2);
         }
         mCurrent.mPoints[len] = x;
@@ -666,7 +657,7 @@ public class ImageTruePortraitMask extends ImageShow {
     }
 
     public void undoLastEdit() {
-        if(!mDrawing.isEmpty()) {
+        if (!mDrawing.isEmpty()) {
             mDrawing.pop();
             mEditor.refreshUndoButton();
             invalidate();

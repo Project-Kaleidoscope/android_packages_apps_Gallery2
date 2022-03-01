@@ -29,16 +29,15 @@
 
 package com.android.gallery3d.filtershow.category;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.Editor;
-
-import org.codeaurora.gallery.R;
 
 public class StraightenPanel extends BasicGeometryPanel {
     public static final String EDITOR_ID = "editor_id";
@@ -61,11 +60,11 @@ public class StraightenPanel extends BasicGeometryPanel {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
         initArguments(getArguments());
         if (mEditorID != NO_EDITOR) {
-            FilterShowActivity filterShowActivity = (FilterShowActivity) activity;
+            FilterShowActivity filterShowActivity = (FilterShowActivity) context;
             mEditor = filterShowActivity.getEditor(mEditorID);
             if (mEditor != null) {
                 mEditor.attach();
@@ -74,7 +73,7 @@ public class StraightenPanel extends BasicGeometryPanel {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (mName != null) {
             mEditorName.setText(mName);
@@ -82,24 +81,18 @@ public class StraightenPanel extends BasicGeometryPanel {
 
         mBottomPanel.setVisibility(View.VISIBLE);
 
-        final FilterShowActivity activity = (FilterShowActivity) getActivity();
-        mExitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activity.cancelCurrentFilter();
-                activity.backToMain();
-                activity.setActionBar();
-            }
+        final FilterShowActivity activity = (FilterShowActivity) requireActivity();
+        mExitButton.setOnClickListener(view1 -> {
+            activity.cancelCurrentFilter();
+            activity.backToMain();
+            activity.setActionBar();
         });
-        mApplyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mEditor != null) {
-                    mEditor.finalApplyCalled();
-                }
-                activity.backToMain();
-                activity.setActionBar();
+        mApplyButton.setOnClickListener(view1 -> {
+            if (mEditor != null) {
+                mEditor.finalApplyCalled();
             }
+            activity.backToMain();
+            activity.setActionBar();
         });
     }
 

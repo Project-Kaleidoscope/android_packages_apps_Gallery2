@@ -10,7 +10,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.codeaurora.gallery.R;
-import org.codeaurora.gallery3d.ext.MovieUtils;
 
 public class StreamingHooker extends MovieHooker {
     private static final String TAG = "StreamingHooker";

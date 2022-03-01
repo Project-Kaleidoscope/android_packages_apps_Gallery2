@@ -22,16 +22,15 @@ package com.android.gallery3d.app;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -39,7 +38,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -53,15 +51,12 @@ import com.android.gallery3d.data.MediaItem;
 import com.android.gallery3d.data.MediaObject;
 import com.android.gallery3d.data.MediaSet;
 import com.android.gallery3d.data.Path;
-import com.android.gallery3d.data.ClusterAlbumSet;
 import com.android.gallery3d.filtershow.crop.CropActivity;
 import com.android.gallery3d.filtershow.crop.CropExtras;
 import com.android.gallery3d.glrenderer.FadeTexture;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.ui.ActionModeHandler;
-import com.android.gallery3d.ui.ActionModeHandler.ActionModeListener;
 import com.android.gallery3d.ui.DetailsHelper;
-import com.android.gallery3d.ui.DetailsHelper.CloseListener;
 import com.android.gallery3d.ui.GLRoot;
 import com.android.gallery3d.ui.GLView;
 import com.android.gallery3d.ui.PhotoFallbackEffect;
@@ -72,6 +67,7 @@ import com.android.gallery3d.ui.TimeLineSlotRenderer;
 import com.android.gallery3d.ui.TimeLineSlotView;
 import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.GalleryUtils;
+
 import org.codeaurora.gallery.R;
 
 import java.lang.ref.WeakReference;
@@ -162,7 +158,7 @@ public class TimeLinePage extends ActivityState implements
     }
 
     private final GLView mRootPane = new GLView() {
-        private final float mMatrix[] = new float[16];
+        private final float[] mMatrix = new float[16];
 
         @Override
         protected void onLayout(
@@ -175,7 +171,7 @@ public class TimeLinePage extends ActivityState implements
             } else {
                 slotViewTop = mActivity.getGalleryActionBar().getHeight();
             }
-            int padding =0 ;
+            int padding;
             if((right - left) > (bottom - top)) {
                 padding =  (int) mActivity.getResources().getDimension(R.dimen.timeline_land_margin);
             } else {
@@ -532,12 +528,7 @@ public class TimeLinePage extends ActivityState implements
             }
         });
         mActionModeHandler = new ActionModeHandler(mActivity, mSelectionManager);
-        mActionModeHandler.setActionModeListener(new ActionModeListener() {
-            @Override
-            public boolean onActionItemClicked(MenuItem item) {
-                return onItemSelected(item);
-            }
-        });
+        mActionModeHandler.setActionModeListener(this::onItemSelected);
     }
 
     private void initializeData(Bundle data) {
@@ -558,12 +549,7 @@ public class TimeLinePage extends ActivityState implements
         mShowDetails = true;
         if (mDetailsHelper == null) {
             mDetailsHelper = new DetailsHelper(mActivity, mRootPane, mDetailsSource);
-            mDetailsHelper.setCloseListener(new CloseListener() {
-                @Override
-                public void onClose() {
-                    hideDetails();
-                }
-            });
+            mDetailsHelper.setCloseListener(this::hideDetails);
         }
         mDetailsHelper.show();
     }
@@ -727,21 +713,18 @@ public class TimeLinePage extends ActivityState implements
     public void onSyncDone(final MediaSet mediaSet, final int resultCode) {
         Log.d(TAG, "onSyncDone: " + Utils.maskDebugInfo(mediaSet.getName()) + " result="
                 + resultCode);
-        mActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                GLRoot root = mActivity.getGLRoot();
-                root.lockRenderThread();
-                mSyncResult = resultCode;
-                try {
-                    if (resultCode == MediaSet.SYNC_RESULT_SUCCESS) {
-                        mInitialSynced = true;
-                    }
-                    clearLoadingBit(BIT_LOADING_SYNC);
-                    showSyncErrorIfNecessary(mLoadingFailed);
-                } finally {
-                    root.unlockRenderThread();
+        mActivity.runOnUiThread(() -> {
+            GLRoot root = mActivity.getGLRoot();
+            root.lockRenderThread();
+            mSyncResult = resultCode;
+            try {
+                if (resultCode == MediaSet.SYNC_RESULT_SUCCESS) {
+                    mInitialSynced = true;
                 }
+                clearLoadingBit(BIT_LOADING_SYNC);
+                showSyncErrorIfNecessary(mLoadingFailed);
+            } finally {
+                root.unlockRenderThread();
             }
         });
     }
@@ -768,7 +751,7 @@ public class TimeLinePage extends ActivityState implements
         if (mLoadingBits == 0 && mIsActive) {
             if (mAlbumDataAdapter.size() == 0) {
                 mShowedEmptyToastForSelf = true;
-                showEmptyAlbumToast(Toast.LENGTH_LONG);
+                showEmptyAlbumToast();
                 mSlotView.invalidate();
             } else {
                 hideEmptyAlbumToast();
@@ -813,8 +796,7 @@ public class TimeLinePage extends ActivityState implements
             if (mSelectionManager.getSelected(false) == null) return -1;
             Path id = mSelectionManager.getSelected(false).get(0);
             mIndex = mAlbumDataAdapter.findItem(id);
-            int indexToDisplay = mAlbumDataAdapter.getIndex(id, false);
-            return indexToDisplay;
+            return mAlbumDataAdapter.getIndex(id, false);
         }
 
         @Override
@@ -852,18 +834,13 @@ public class TimeLinePage extends ActivityState implements
 
     private boolean setupCameraButton() {
         if (!GalleryUtils.isAnyCameraAvailable(mActivity)) return false;
-        RelativeLayout galleryRoot = (RelativeLayout)mActivity.findViewById(R.id.gallery_root);
+        RelativeLayout galleryRoot = mActivity.findViewById(R.id.gallery_root);
         if (galleryRoot == null) return false;
 
         mCameraButton = new Button(mActivity);
         mCameraButton.setText(R.string.camera_label);
         mCameraButton.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.frame_overlay_gallery_camera, 0, 0);
-        mCameraButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                GalleryUtils.startCameraActivity(mActivity);
-            }
-        });
+        mCameraButton.setOnClickListener(view -> GalleryUtils.startCameraActivity(mActivity));
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -872,8 +849,8 @@ public class TimeLinePage extends ActivityState implements
         return true;
     }
 
-    private void showEmptyAlbumToast(int toastLength) {
-        RelativeLayout galleryRoot = (RelativeLayout) mActivity.findViewById(R.id.gallery_root);
+    private void showEmptyAlbumToast() {
+        RelativeLayout galleryRoot = mActivity.findViewById(R.id.gallery_root);
         if (galleryRoot == null) return;
         if (tvEmptyAlbum == null) {
             tvEmptyAlbum = new TextView(mActivity);

@@ -31,17 +31,8 @@ package com.android.gallery3d.filtershow.editors;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
-import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.SeekBar;
 
-import com.android.gallery3d.filtershow.controller.Parameter;
-import com.android.gallery3d.filtershow.filters.FilterBasicRepresentation;
-import com.android.gallery3d.filtershow.filters.FilterRepresentation;
-import com.android.gallery3d.filtershow.filters.FilterStraightenRepresentation;
-import com.android.gallery3d.filtershow.filters.TrueScannerActs;
-import com.android.gallery3d.filtershow.imageshow.ImageShow;
 import com.android.gallery3d.filtershow.imageshow.ImageTrueScanner;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 
@@ -50,9 +41,9 @@ import org.codeaurora.gallery.R;
 /**
  * The editor with no slider for filters without UI
  */
-public class TrueScannerEditor extends Editor{
+public class TrueScannerEditor extends Editor {
     public final static int ID = R.id.trueScannerEditor;
-    private final String LOGTAG = "TrueScannerEditor";
+    private final String TAG = "TrueScannerEditor";
     protected ImageTrueScanner mImageTrueScanner;
 
     public TrueScannerEditor() {
@@ -61,8 +52,8 @@ public class TrueScannerEditor extends Editor{
 
     public void initCords() {
         mImageTrueScanner.setDetectedPoints(getPoints(MasterImage.getImage().getHighresImage()),
-                            MasterImage.getImage().getHighresImage().getWidth(),
-                            MasterImage.getImage().getHighresImage().getHeight());
+                MasterImage.getImage().getHighresImage().getWidth(),
+                MasterImage.getImage().getHighresImage().getHeight());
         mImageTrueScanner.invalidate();
     }
 

@@ -16,12 +16,13 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.EditorTinyPlanet;
+
+import org.codeaurora.gallery.R;
 
 public class FilterTinyPlanetRepresentation extends FilterBasicRepresentation {
     private static final String SERIALIZATION_NAME = "TINYPLANET";
-    private static final String LOGTAG = "FilterTinyPlanetRepresentation";
+    private static final String TAG = "FilterTinyPlanetRepresentation";
     private static final String SERIAL_ANGLE = "Angle";
     private float mAngle = 0;
 
@@ -58,12 +59,12 @@ public class FilterTinyPlanetRepresentation extends FilterBasicRepresentation {
         setZoom(representation.getZoom());
     }
 
-    public void setAngle(float angle) {
-        mAngle = angle;
-    }
-
     public float getAngle() {
         return mAngle;
+    }
+
+    public void setAngle(float angle) {
+        mAngle = angle;
     }
 
     public int getZoom() {
@@ -83,29 +84,25 @@ public class FilterTinyPlanetRepresentation extends FilterBasicRepresentation {
         if (!super.equals(representation)) {
             return false;
         }
-        if (mAngle == ((FilterTinyPlanetRepresentation) representation).mAngle) {
-            return true;
-        }
-        return false;
+        return mAngle == ((FilterTinyPlanetRepresentation) representation).mAngle;
     }
 
     @Override
     public String[][] serializeRepresentation() {
-        String[][] ret = {
-                {SERIAL_NAME  , getName() },
-                {SERIAL_VALUE , Integer.toString(getValue())},
-                {SERIAL_ANGLE , Float.toString(mAngle)}};
-        return ret;
+        return new String[][]{
+                {SERIAL_NAME, getName()},
+                {SERIAL_VALUE, Integer.toString(getValue())},
+                {SERIAL_ANGLE, Float.toString(mAngle)}};
     }
 
     @Override
     public void deSerializeRepresentation(String[][] rep) {
         super.deSerializeRepresentation(rep);
-        for (int i = 0; i < rep.length; i++) {
-            if (SERIAL_VALUE.equals(rep[i][0])) {
-                setValue(Integer.parseInt(rep[i][1]));
-            } else if (SERIAL_ANGLE.equals(rep[i][0])) {
-                setAngle(Float.parseFloat(rep[i][1]));
+        for (String[] strings : rep) {
+            if (SERIAL_VALUE.equals(strings[0])) {
+                setValue(Integer.parseInt(strings[1]));
+            } else if (SERIAL_ANGLE.equals(strings[0])) {
+                setAngle(Float.parseFloat(strings[1]));
             }
         }
     }

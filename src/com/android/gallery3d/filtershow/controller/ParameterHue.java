@@ -29,12 +29,12 @@ public class ParameterHue extends BasicParameterInt {
         return sParameterType;
     }
 
-    public void setColor(float[] hsvo) {
-        mHSVO = hsvo;
-    }
-
     public float[] getColor() {
         mHSVO[3] = getValue() / (float) getMaximum();
         return mHSVO;
+    }
+
+    public void setColor(float[] hsvo) {
+        mHSVO = hsvo;
     }
 }

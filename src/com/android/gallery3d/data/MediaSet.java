@@ -17,6 +17,8 @@
 package com.android.gallery3d.data;
 
 import android.net.Uri;
+import android.util.Log;
+
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.util.Future;
 
@@ -33,44 +35,74 @@ import java.util.WeakHashMap;
 // getTotalMediaItemCount() returns the number of all MediaItems, including
 // those in sub-MediaSets.
 public abstract class MediaSet extends MediaObject {
-    @SuppressWarnings("unused")
-    private static final String TAG = "MediaSet";
-
     public static final int MEDIAITEM_BATCH_FETCH_COUNT = 500;
     public static final int INDEX_NOT_FOUND = -1;
-
     public static final int SYNC_RESULT_SUCCESS = 0;
     public static final int SYNC_RESULT_CANCELLED = 1;
     public static final int SYNC_RESULT_ERROR = 2;
+    @SuppressWarnings("unused")
+    private static final String TAG = "MediaSet";
+    private static final Future<Integer> FUTURE_STUB = new Future<Integer>() {
+        @Override
+        public void cancel() {
+        }
 
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return true;
+        }
+
+        @Override
+        public Integer get() {
+            return SYNC_RESULT_SUCCESS;
+        }
+
+        @Override
+        public void waitDone() {
+        }
+    };
+    private static boolean sShowTitle = true;
     private final Object mLock = new Object();
-
-    /** Listener to be used with requestSync(SyncListener). */
-    public static interface SyncListener {
-        /**
-         * Called when the sync task completed. Completion may be due to normal termination,
-         * an exception, or cancellation.
-         *
-         * @param mediaSet the MediaSet that's done with sync
-         * @param resultCode one of the SYNC_RESULT_* constants
-         */
-        void onSyncDone(MediaSet mediaSet, int resultCode);
-    }
+    private final WeakHashMap<ContentListener, Object> mListeners =
+            new WeakHashMap<>();
 
     public MediaSet(Path path, long version) {
         super(path, version);
+    }
+
+    /**
+     * @return true: in TimelinePage we need show TimeTitle
+     * false: we don't need TimeTitle
+     */
+    public static boolean isShowAlbumsetTimeTitle() {
+        return sShowTitle;
+    }
+
+    /**
+     * add for TimelinePage
+     *
+     * @param showTitle true: in TimelinePage we need show TimeTitle
+     *                  false: we don't need TimeTitle
+     */
+    public static void setShowAlbumsetTimeTitle(boolean showTitle) {
+        sShowTitle = showTitle;
     }
 
     public int getMediaItemCount() {
         return 0;
     }
 
-    public int getImageItemCount(){
-      return 0;
+    public int getImageItemCount() {
+        return 0;
     }
 
-    public int getVideoItemCount(){
-      return 0;
+    public int getVideoItemCount() {
+        return 0;
     }
 
     /**
@@ -91,7 +123,7 @@ public abstract class MediaSet extends MediaObject {
     // getMediaItemCount() because the contents of database may have already
     // changed.
     public ArrayList<MediaItem> getMediaItem(int start, int count) {
-        return new ArrayList<MediaItem>();
+        return new ArrayList<>();
     }
 
     public MediaItem getCoverMediaItem() {
@@ -175,9 +207,6 @@ public abstract class MediaSet extends MediaObject {
 
     public abstract String getName();
 
-    private WeakHashMap<ContentListener, Object> mListeners =
-            new WeakHashMap<ContentListener, Object>();
-
     // NOTE: The MediaSet only keeps a weak reference to the listener. The
     // listener is automatically removed when there is no other reference to
     // the listener.
@@ -229,10 +258,6 @@ public abstract class MediaSet extends MediaObject {
         enumerateTotalMediaItems(consumer, 0);
     }
 
-    public static interface ItemConsumer {
-        void consume(int index, MediaItem item);
-    }
-
     // The default implementation uses getMediaItem() for enumerateMediaItems().
     // Subclasses may override this and use more efficient implementations.
     // Returns the number of items enumerated.
@@ -271,9 +296,9 @@ public abstract class MediaSet extends MediaObject {
      * Requests sync on this MediaSet. It returns a Future object that can be used by the caller
      * to query the status of the sync. The sync result code is one of the SYNC_RESULT_* constants
      * defined in this class and can be obtained by Future.get().
-     *
+     * <p>
      * Subclasses should perform sync on a different thread.
-     *
+     * <p>
      * The default implementation here returns a Future stub that does nothing and returns
      * SYNC_RESULT_SUCCESS by get().
      */
@@ -282,31 +307,28 @@ public abstract class MediaSet extends MediaObject {
         return FUTURE_STUB;
     }
 
-    private static final Future<Integer> FUTURE_STUB = new Future<Integer>() {
-        @Override
-        public void cancel() {}
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return true;
-        }
-
-        @Override
-        public Integer get() {
-            return SYNC_RESULT_SUCCESS;
-        }
-
-        @Override
-        public void waitDone() {}
-    };
-
     protected Future<Integer> requestSyncOnMultipleSets(MediaSet[] sets, SyncListener listener) {
         return new MultiSetSyncFuture(sets, listener);
+    }
+
+    /**
+     * Listener to be used with requestSync(SyncListener).
+     */
+    public interface SyncListener {
+        /**
+         * Called when the sync task completed. Completion may be due to normal termination,
+         * an exception, or cancellation.
+         *
+         * @param mediaSet   the MediaSet that's done with sync
+         * @param resultCode one of the SYNC_RESULT_* constants
+         */
+        void onSyncDone(MediaSet mediaSet, int resultCode);
+    }
+
+    public interface ItemConsumer {
+
+        void consume(int index, MediaItem item);
+
     }
 
     private class MultiSetSyncFuture implements Future<Integer>, SyncListener {
@@ -314,7 +336,7 @@ public abstract class MediaSet extends MediaObject {
         private static final String TAG = "Gallery.MultiSetSync";
 
         private final SyncListener mListener;
-        private final Future<Integer> mFutures[];
+        private final Future<Integer>[] mFutures;
 
         private boolean mIsCancelled = false;
         private int mResult = -1;
@@ -383,25 +405,5 @@ public abstract class MediaSet extends MediaObject {
             }
             if (listener != null) listener.onSyncDone(MediaSet.this, mResult);
         }
-    }
-
-    private static boolean sShowTitle = true;
-
-    /**
-     * add for TimelinePage
-     * @param showTitle
-     * true: in TimelinePage we need show TimeTitle
-     * false: we don't need TimeTitle
-     */
-    public static void setShowAlbumsetTimeTitle(boolean showTitle) {
-        sShowTitle = showTitle;
-    }
-
-    /**
-     * @return true: in TimelinePage we need show TimeTitle
-     * false: we don't need TimeTitle
-     */
-    public static boolean isShowAlbumsetTimeTitle() {
-        return sShowTitle;
     }
 }

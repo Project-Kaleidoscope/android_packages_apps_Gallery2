@@ -19,10 +19,8 @@
 package com.android.gallery3d.ui;
 
 import android.graphics.Rect;
-import android.text.TextUtils;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 import com.android.gallery3d.anim.Animation;
@@ -30,8 +28,6 @@ import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.common.ApiHelper.SystemProperties;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.glrenderer.GLCanvas;
-
-import java.util.Locale;
 
 public class TimeLineSlotView extends GLView {
     @SuppressWarnings("unused")
@@ -43,22 +39,44 @@ public class TimeLineSlotView extends GLView {
     public static final int RENDER_MORE_PASS = 1;
     public static final int RENDER_MORE_FRAME = 2;
 
-    private int mWidth  = 0;
+    private int mWidth = 0;
 
     public interface Listener {
-        public void onDown(int index);
-        public void onUp(boolean followedByLongPress);
-        public void onSingleTapUp(int index, boolean isTitle);
-        public void onLongTap(int index, boolean isTitle);
-        public void onScrollPositionChanged(int position, int total);
+
+        void onDown(int index);
+
+        void onUp(boolean followedByLongPress);
+
+        void onSingleTapUp(int index, boolean isTitle);
+
+        void onLongTap(int index, boolean isTitle);
+
+        void onScrollPositionChanged(int position, int total);
+
     }
 
     public static class SimpleListener implements Listener {
-        @Override public void onDown(int index) {}
-        @Override public void onUp(boolean followedByLongPress) {}
-        @Override public void onSingleTapUp(int index, boolean isTitle) {}
-        @Override public void onLongTap(int index, boolean isTitle) {}
-        @Override public void onScrollPositionChanged(int position, int total) {}
+
+        @Override
+        public void onDown(int index) {
+        }
+
+        @Override
+        public void onUp(boolean followedByLongPress) {
+        }
+
+        @Override
+        public void onSingleTapUp(int index, boolean isTitle) {
+        }
+
+        @Override
+        public void onLongTap(int index, boolean isTitle) {
+        }
+
+        @Override
+        public void onScrollPositionChanged(int position, int total) {
+        }
+
     }
 
     private final GestureDetector mGestureDetector;
@@ -74,7 +92,7 @@ public class TimeLineSlotView extends GLView {
 
     private TimeLineSlotRenderer mRenderer;
 
-    private int[] mRequestRenderSlots = new int[16];
+    private final int[] mRequestRenderSlots = new int[16];
 
     // Flag to check whether it is come from Photo Page.
     private boolean isFromPhotoPage = false;
@@ -205,7 +223,7 @@ public class TimeLineSlotView extends GLView {
         mListener = listener;
     }
 
-    private static int[] expandIntArray(int array[], int capacity) {
+    private static int[] expandIntArray(int[] array, int capacity) {
         while (array.length < capacity) {
             array = new int[array.length * 2];
         }
@@ -231,7 +249,7 @@ public class TimeLineSlotView extends GLView {
         canvas.translate(-mScrollX, -mScrollY);
 
         int requestCount = 0;
-        int requestedSlot[] = expandIntArray(mRequestRenderSlots,
+        int[] requestedSlot = expandIntArray(mRequestRenderSlots,
                 mLayout.getVisibleEnd() - mLayout.getVisibleStart());
 
         for (int i = mLayout.getVisibleEnd() - 1; i >= mLayout.getVisibleStart(); --i) {
@@ -296,8 +314,8 @@ public class TimeLineSlotView extends GLView {
     }
 
     public static class ScatteringAnimation extends SlotAnimation {
-        private int PHOTO_DISTANCE = 1000;
-        private RelativePosition mCenter;
+        private final int PHOTO_DISTANCE = 1000;
+        private final RelativePosition mCenter;
 
         public ScatteringAnimation(RelativePosition center) {
             mCenter = center;
@@ -347,7 +365,7 @@ public class TimeLineSlotView extends GLView {
 
         @Override
         public boolean onFling(MotionEvent e1,
-                MotionEvent e2, float velocityX, float velocityY) {
+                               MotionEvent e2, float velocityX, float velocityY) {
             cancelDown(false);
             int scrollLimit = mLayout.getScrollLimit();
             if (scrollLimit == 0) return false;
@@ -358,7 +376,7 @@ public class TimeLineSlotView extends GLView {
 
         @Override
         public boolean onScroll(MotionEvent e1,
-                MotionEvent e2, float distanceX, float distanceY) {
+                                MotionEvent e2, float distanceX, float distanceY) {
             cancelDown(false);
             int overDistance = mScroller.startScroll(
                     Math.round(distanceY), 0, mLayout.getScrollLimit());
@@ -516,7 +534,7 @@ public class TimeLineSlotView extends GLView {
 
         private void initLayoutParameters() {
             mUnitCount = (mWidth > mHeight) ? mSpec.colsLand : mSpec.colsPort;
-            mSlotGap = (mWidth > mHeight) ? mSpec.slotGapLand: mSpec.slotGapPort;
+            mSlotGap = (mWidth > mHeight) ? mSpec.slotGapLand : mSpec.slotGapPort;
             mSlotWidth = Math.round((mWidth - (mUnitCount - 1) * mSlotGap) / mUnitCount);
             mSlotHeight = mSlotWidth;
             if (mRenderer != null) {
@@ -619,7 +637,7 @@ public class TimeLineSlotView extends GLView {
                 int rows = (count + mUnitCount - 1) / mUnitCount;
                 h = mSlotHeight * rows + mSlotGap * (rows > 0 ? rows - 1 : 0);
                 if (pos < top + h) {
-                    int row = ((int) pos - top) / (mSlotHeight + mSlotGap);
+                    int row = (pos - top) / (mSlotHeight + mSlotGap);
                     int col = 0;
                     if (roundUp) {
                         int idx = (row + 1) * mUnitCount;

@@ -39,11 +39,11 @@ import com.android.gallery3d.filtershow.editors.Editor;
 import com.android.gallery3d.filtershow.filters.FilterDualCamBasicRepresentation;
 
 public class ImageDualCamera extends ImageShow {
-    private static final String LOGTAG = "ImageDualCamera";
+    private static final String TAG = "ImageDualCamera";
     protected Editor mEditor;
     protected FilterDualCamBasicRepresentation mRepresentation;
     private Matrix mToOrig;
-    private float[] mTmpPoint = new float[2];
+    private final float[] mTmpPoint = new float[2];
 
     public ImageDualCamera(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,13 +55,13 @@ public class ImageDualCamera extends ImageShow {
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
-        Log.e(LOGTAG, "single tap: " + event.getX() + "x" + event.getY());
+        Log.e(TAG, "single tap: " + event.getX() + "x" + event.getY());
         calcScreenMapping();
         mTmpPoint[0] = event.getX();
         mTmpPoint[1] = event.getY();
         mToOrig.mapPoints(mTmpPoint);
 
-        mRepresentation.setPoint((int)mTmpPoint[0], (int)mTmpPoint[1]);
+        mRepresentation.setPoint((int) mTmpPoint[0], (int) mTmpPoint[1]);
         mEditor.commitLocalRepresentation();
         return true;
     }

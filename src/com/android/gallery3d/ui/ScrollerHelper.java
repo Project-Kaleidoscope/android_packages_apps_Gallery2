@@ -23,8 +23,8 @@ import com.android.gallery3d.common.OverScroller;
 import com.android.gallery3d.common.Utils;
 
 public class ScrollerHelper {
-    private OverScroller mScroller;
-    private int mOverflingDistance;
+    private final OverScroller mScroller;
+    private final int mOverflingDistance;
 
     public ScrollerHelper(Context context) {
         mScroller = new OverScroller(context);
@@ -84,8 +84,8 @@ public class ScrollerHelper {
         int newPosition = Utils.clamp(finalPosition + distance, min, max);
         if (newPosition != currPosition) {
             mScroller.startScroll(
-                currPosition, 0,                    // startX, startY
-                newPosition - currPosition, 0, 0);  // dx, dy, duration
+                    currPosition, 0,                    // startX, startY
+                    newPosition - currPosition, 0, 0);  // dx, dy, duration
         }
         return finalPosition + distance - newPosition;
     }

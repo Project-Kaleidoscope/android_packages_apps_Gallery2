@@ -22,8 +22,13 @@ import com.android.gallery3d.filtershow.imageshow.Spline;
 
 public class ImageFilterCurves extends ImageFilter {
 
-    private static final String LOGTAG = "ImageFilterCurves";
+    private static final String TAG = "ImageFilterCurves";
     FilterCurvesRepresentation mParameters = new FilterCurvesRepresentation();
+
+    public ImageFilterCurves() {
+        mName = "Curves";
+        reset();
+    }
 
     @Override
     public FilterRepresentation getDefaultRepresentation() {
@@ -32,13 +37,7 @@ public class ImageFilterCurves extends ImageFilter {
 
     @Override
     public void useRepresentation(FilterRepresentation representation) {
-        FilterCurvesRepresentation parameters = (FilterCurvesRepresentation) representation;
-        mParameters = parameters;
-    }
-
-    public ImageFilterCurves() {
-        mName = "Curves";
-        reset();
+        mParameters = (FilterCurvesRepresentation) representation;
     }
 
     public void populateArray(int[] array, int curveIndex) {

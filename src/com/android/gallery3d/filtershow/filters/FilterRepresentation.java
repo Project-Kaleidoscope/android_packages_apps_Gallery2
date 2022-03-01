@@ -17,10 +17,10 @@
 package com.android.gallery3d.filtershow.filters;
 
 import android.content.res.Resources;
-import android.text.TextUtils;
 import android.util.JsonReader;
 import android.util.JsonWriter;
-import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.android.gallery3d.filtershow.editors.BasicEditor;
 
@@ -28,23 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class FilterRepresentation {
-    private static final String LOGTAG = "FilterRepresentation";
-    private static final boolean DEBUG = false;
-    private String mName;
-    private int mPriority = TYPE_NORMAL;
-    private Class<?> mFilterClass;
-    private boolean mSupportsPartialRendering = false;
-    private int mTextId = 0;
-    private int mEditorId = BasicEditor.ID;
-    private int mButtonId = 0;
-    private int mOverlayId = 0;
-    private int mColorId = 0;
-    private boolean mOverlayOnly = false;
-    private boolean mShowParameterValue = true;
-    private boolean mIsBooleanFilter = false;
-    private boolean isSvgOverlay = false;
-    private Resources.Theme currentTheme;
-    private String mSerializationName;
     public static final byte TYPE_BORDER = 1;
     public static final byte TYPE_FX = 2;
     public static final byte TYPE_WBALANCE = 3;
@@ -59,13 +42,30 @@ public class FilterRepresentation {
     public static final byte TYPE_WATERMARK_CATEGORY = 12;
     public static final byte TYPE_WATERMARK = 13;
     protected static final String NAME_TAG = "Name";
+    private static final String TAG = "FilterRepresentation";
+    private static final boolean DEBUG = false;
+    private String mName;
+    private int mPriority = TYPE_NORMAL;
+    private Class<?> mFilterClass;
+    private boolean mSupportsPartialRendering = false;
+    private int mTextId = 0;
+    private int mEditorId = BasicEditor.ID;
+    private final int mButtonId = 0;
+    private int mOverlayId = 0;
+    private int mColorId = 0;
+    private boolean mOverlayOnly = false;
+    private boolean mShowParameterValue = true;
+    private boolean mIsBooleanFilter = false;
+    private boolean isSvgOverlay = false;
+    private Resources.Theme currentTheme;
+    private String mSerializationName;
 
     public FilterRepresentation(String name) {
         mName = name;
         mSerializationName = name.toUpperCase();
     }
 
-    public FilterRepresentation copy(){
+    public FilterRepresentation copy() {
         FilterRepresentation representation = new FilterRepresentation(mName);
         representation.useParametersFrom(this);
         if (getFilterType() == TYPE_WATERMARK) {
@@ -93,7 +93,7 @@ public class FilterRepresentation {
         if (representation == null) {
             return false;
         }
-        if (representation.mFilterClass == mFilterClass
+        return representation.mFilterClass == mFilterClass
                 && representation.mName.equalsIgnoreCase(mName)
                 && representation.mPriority == mPriority
                 // TODO: After we enable partial rendering, we can switch back
@@ -106,10 +106,7 @@ public class FilterRepresentation {
                 && representation.mOverlayOnly == mOverlayOnly
                 && representation.mShowParameterValue == mShowParameterValue
                 && representation.mIsBooleanFilter == mIsBooleanFilter
-                && representation.mColorId == mColorId) {
-            return true;
-        }
-        return false;
+                && representation.mColorId == mColorId;
     }
 
     public int getColorId() {
@@ -128,8 +125,13 @@ public class FilterRepresentation {
         mIsBooleanFilter = value;
     }
 
+    @NonNull
     @Override
     public String toString() {
+        return mName;
+    }
+
+    public String getName() {
         return mName;
     }
 
@@ -137,24 +139,20 @@ public class FilterRepresentation {
         mName = name;
     }
 
-    public String getName() {
-        return mName;
+    public String getSerializationName() {
+        return mSerializationName;
     }
 
     public void setSerializationName(String sname) {
         mSerializationName = sname;
     }
 
-    public String getSerializationName() {
-        return mSerializationName;
+    public int getFilterType() {
+        return mPriority;
     }
 
     public void setFilterType(int priority) {
         mPriority = priority;
-    }
-
-    public int getFilterType() {
-        return mPriority;
     }
 
     public boolean isNil() {
@@ -243,13 +241,12 @@ public class FilterRepresentation {
         return mEditorId;
     }
 
-    public int[] getEditorIds() {
-        return new int[] {
-        mEditorId };
-    }
-
     public void setEditorId(int editorId) {
         mEditorId = editorId;
+    }
+
+    public int[] getEditorIds() {
+        return new int[]{mEditorId};
     }
 
     public boolean showParameterValue() {
@@ -266,6 +263,7 @@ public class FilterRepresentation {
 
     /**
      * Method must "beginObject()" add its info and "endObject()"
+     *
      * @param writer
      * @throws IOException
      */
@@ -273,9 +271,9 @@ public class FilterRepresentation {
         writer.beginObject();
         {
             String[][] rep = serializeRepresentation();
-            for (int k = 0; k < rep.length; k++) {
-                writer.name(rep[k][0]);
-                writer.value(rep[k][1]);
+            for (String[] strings : rep) {
+                writer.name(strings[0]);
+                writer.value(strings[1]);
             }
         }
         writer.endObject();
@@ -283,12 +281,11 @@ public class FilterRepresentation {
 
     // this is the old way of doing this and will be removed soon
     public String[][] serializeRepresentation() {
-        String[][] ret = {{NAME_TAG, getName()}};
-        return ret;
+        return new String[][]{{NAME_TAG, getName()}};
     }
 
     public void deSerializeRepresentation(JsonReader reader) throws IOException {
-        ArrayList<String[]> al = new ArrayList<String[]>();
+        ArrayList<String[]> al = new ArrayList<>();
         reader.beginObject();
         while (reader.hasNext()) {
             String[] kv = {reader.nextName(), reader.nextString()};
@@ -303,9 +300,9 @@ public class FilterRepresentation {
 
     // this is the old way of doing this and will be removed soon
     public void deSerializeRepresentation(String[][] rep) {
-        for (int i = 0; i < rep.length; i++) {
-            if (NAME_TAG.equals(rep[i][0])) {
-                mName = rep[i][1];
+        for (String[] strings : rep) {
+            if (NAME_TAG.equals(strings[0])) {
+                mName = strings[1];
                 break;
             }
         }
@@ -317,10 +314,7 @@ public class FilterRepresentation {
     }
 
     public boolean canMergeWith(FilterRepresentation representation) {
-        if (getFilterType() == FilterRepresentation.TYPE_GEOMETRY
-            && representation.getFilterType() == FilterRepresentation.TYPE_GEOMETRY) {
-            return true;
-        }
-        return false;
+        return getFilterType() == FilterRepresentation.TYPE_GEOMETRY
+                && representation.getFilterType() == FilterRepresentation.TYPE_GEOMETRY;
     }
 }

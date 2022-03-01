@@ -18,13 +18,11 @@ package com.android.gallery3d.onetimeinitializer;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.android.gallery3d.app.GalleryApp;
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.LocalAlbum;
 import com.android.gallery3d.data.MediaSet;
@@ -38,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * This one-timer migrates local-album gallery app widgets from old paths from prior releases 
+ * This one-timer migrates local-album gallery app widgets from old paths from prior releases
  * to updated paths in the current build version. This migration is needed because of
  * bucket ID (i.e., directory hash) change in JB and JB MR1 (The external storage path has changed
  * from /mnt/sdcard in pre-JB releases, to /storage/sdcard0 in JB, then again
@@ -66,7 +64,7 @@ public class GalleryWidgetMigrator {
 
         try {
             migrateGalleryWidgetsInternal(context);
-            prefs.edit().putString(KEY_EXT_PATH, NEW_EXT_PATH).commit();
+            prefs.edit().putString(KEY_EXT_PATH, NEW_EXT_PATH).apply();
         } catch (Throwable t) {
             // exception may be thrown if external storage is not available(?)
             Log.w(TAG, "migrateGalleryWidgets", t);
@@ -86,7 +84,7 @@ public class GalleryWidgetMigrator {
         // path combined with external storage path. Otherwise, iterate through old external
         // storage paths to find the relative path that matches the old bucket id, and then update
         // bucket id and relative path
-        HashMap<Integer, Entry> localEntries = new HashMap<Integer, Entry>(entries.size());
+        HashMap<Integer, Entry> localEntries = new HashMap<>(entries.size());
         for (Entry entry : entries) {
             Path path = Path.fromString(entry.albumPath);
             MediaSet mediaSet = (MediaSet) manager.getMediaObject(path);
@@ -104,7 +102,7 @@ public class GalleryWidgetMigrator {
     }
 
     private static void migrateLocalEntries(Context context,
-            HashMap<Integer, Entry> entries, WidgetDatabaseHelper dbHelper) {
+                                            HashMap<Integer, Entry> entries, WidgetDatabaseHelper dbHelper) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String oldExtPath = prefs.getString(KEY_EXT_PATH, null);
         if (oldExtPath != null) {
@@ -114,22 +112,22 @@ public class GalleryWidgetMigrator {
         // If old external storage path is unknown, it could be either Pre-JB or JB version
         // we need to try both.
         migrateLocalEntries(entries, dbHelper, PRE_JB_EXT_PATH);
-        if (!entries.isEmpty() &&
-                Build.VERSION.SDK_INT > ApiHelper.VERSION_CODES.JELLY_BEAN) {
+        if (!entries.isEmpty()) {
             migrateLocalEntries(entries, dbHelper, JB_EXT_PATH);
         }
     }
 
     private static void migrateLocalEntries(HashMap<Integer, Entry> entries,
-             WidgetDatabaseHelper dbHelper, String oldExtPath) {
+                                            WidgetDatabaseHelper dbHelper, String oldExtPath) {
         File root = Environment.getExternalStorageDirectory();
         // check the DCIM directory first; this should take care of 99% use cases
         updatePath(new File(root, "DCIM"), entries, dbHelper, oldExtPath);
         // check other directories if DCIM doesn't cut it
         if (!entries.isEmpty()) updatePath(root, entries, dbHelper, oldExtPath);
     }
+
     private static void updatePath(File root, HashMap<Integer, Entry> entries,
-            WidgetDatabaseHelper dbHelper, String oldExtStorage) {
+                                   WidgetDatabaseHelper dbHelper, String oldExtStorage) {
         File[] files = root.listFiles();
         if (files != null) {
             for (File file : files) {

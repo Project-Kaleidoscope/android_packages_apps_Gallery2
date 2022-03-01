@@ -21,7 +21,6 @@ import android.os.Handler;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.GalleryApp;
 import com.android.gallery3d.data.BucketHelper.BucketEntry;
 import com.android.gallery3d.util.Future;
@@ -30,6 +29,8 @@ import com.android.gallery3d.util.MediaSetUtils;
 import com.android.gallery3d.util.ThreadPool;
 import com.android.gallery3d.util.ThreadPool.JobContext;
 
+import org.codeaurora.gallery.R;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -37,22 +38,20 @@ import java.util.Comparator;
 // The path should be "/local/image", "local/video" or "/local/all"
 public class LocalAlbumSet extends MediaSet
         implements FutureListener<ArrayList<MediaSet>> {
-    @SuppressWarnings("unused")
-    private static final String TAG = "LocalAlbumSet";
-
     public static final Path PATH_ALL = Path.fromString("/local/all");
     public static final Path PATH_IMAGE = Path.fromString("/local/image");
     public static final Path PATH_VIDEO = Path.fromString("/local/video");
-
+    @SuppressWarnings("unused")
+    private static final String TAG = "LocalAlbumSet";
     private static final Uri[] mWatchUris =
-        {Images.Media.EXTERNAL_CONTENT_URI, Video.Media.EXTERNAL_CONTENT_URI};
+            {Images.Media.EXTERNAL_CONTENT_URI, Video.Media.EXTERNAL_CONTENT_URI};
 
     private final GalleryApp mApplication;
     private final int mType;
-    private ArrayList<MediaSet> mAlbums = new ArrayList<MediaSet>();
     private final ChangeNotifier mNotifier;
     private final String mName;
     private final Handler mHandler;
+    private ArrayList<MediaSet> mAlbums = new ArrayList<>();
     private boolean mIsLoading;
 
     private Future<ArrayList<MediaSet>> mLoadTask;
@@ -69,11 +68,26 @@ public class LocalAlbumSet extends MediaSet
     }
 
     private static int getTypeFromPath(Path path) {
-        String name[] = path.split();
+        String[] name = path.split();
         if (name.length < 2) {
             throw new IllegalArgumentException(path.toString());
         }
         return getTypeFromString(name[1]);
+    }
+
+    private static int findBucket(BucketEntry[] entries, int bucketId) {
+        for (int i = 0, n = entries.length; i < n; ++i) {
+            if (entries[i].bucketId == bucketId) return i;
+        }
+        return -1;
+    }
+
+    // Circular shift the array range from a[i] to a[j] (inclusive). That is,
+    // a[i] -> a[i+1] -> a[i+2] -> ... -> a[j], and a[j] -> a[i]
+    private static <T> void circularShiftRight(T[] array, int i, int j) {
+        T temp = array[j];
+        if (j - i >= 0) System.arraycopy(array, i, array, i + 1, j - i);
+        array[i] = temp;
     }
 
     @Override
@@ -91,48 +105,6 @@ public class LocalAlbumSet extends MediaSet
         return mName;
     }
 
-    private static int findBucket(BucketEntry entries[], int bucketId) {
-        for (int i = 0, n = entries.length; i < n; ++i) {
-            if (entries[i].bucketId == bucketId) return i;
-        }
-        return -1;
-    }
-
-    private class AlbumsLoader implements ThreadPool.Job<ArrayList<MediaSet>> {
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public ArrayList<MediaSet> run(JobContext jc) {
-            // Note: it will be faster if we only select media_type and bucket_id.
-            //       need to test the performance if that is worth
-            BucketEntry[] entries = BucketHelper.loadBucketEntries(
-                    jc, mApplication.getContentResolver(), mType);
-
-            if (jc.isCancelled()) return null;
-
-            int offset = 0;
-            // Move camera and download bucket to the front, while keeping the
-            // order of others.
-            int index = findBucket(entries, MediaSetUtils.CAMERA_BUCKET_ID);
-            if (index != -1) {
-                circularShiftRight(entries, offset++, index);
-            }
-            index = findBucket(entries, MediaSetUtils.DOWNLOAD_BUCKET_ID);
-            if (index != -1) {
-                circularShiftRight(entries, offset++, index);
-            }
-
-            ArrayList<MediaSet> albums = new ArrayList<MediaSet>();
-            DataManager dataManager = mApplication.getDataManager();
-            for (BucketEntry entry : entries) {
-                MediaSet album = getLocalAlbum(dataManager,
-                        mType, mPath, entry.bucketId, entry.bucketName);
-                albums.add(album);
-            }
-            return albums;
-        }
-    }
-
     private MediaSet getLocalAlbum(
             DataManager manager, int type, Path parent, int id, String name) {
         synchronized (DataManager.LOCK) {
@@ -146,7 +118,7 @@ public class LocalAlbumSet extends MediaSet
                     return new LocalAlbum(path, mApplication, id, false, name);
                 case MEDIA_TYPE_ALL:
                     Comparator<MediaItem> comp = DataManager.sDateTakenComparator;
-                    return new LocalMergeAlbum(path, comp, new MediaSet[] {
+                    return new LocalMergeAlbum(path, comp, new MediaSet[]{
                             getLocalAlbum(manager, MEDIA_TYPE_IMAGE, PATH_IMAGE, id, name),
                             getLocalAlbum(manager, MEDIA_TYPE_VIDEO, PATH_VIDEO, id, name)}, id);
             }
@@ -185,13 +157,8 @@ public class LocalAlbumSet extends MediaSet
         if (mLoadTask != future) return; // ignore, wait for the latest task
         mLoadBuffer = future.get();
         mIsLoading = false;
-        if (mLoadBuffer == null) mLoadBuffer = new ArrayList<MediaSet>();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                notifyContentChanged();
-            }
-        });
+        if (mLoadBuffer == null) mLoadBuffer = new ArrayList<>();
+        mHandler.post(this::notifyContentChanged);
     }
 
     // For debug only. Fake there is a ContentObserver.onChange() event.
@@ -199,13 +166,37 @@ public class LocalAlbumSet extends MediaSet
         mNotifier.fakeChange();
     }
 
-    // Circular shift the array range from a[i] to a[j] (inclusive). That is,
-    // a[i] -> a[i+1] -> a[i+2] -> ... -> a[j], and a[j] -> a[i]
-    private static <T> void circularShiftRight(T[] array, int i, int j) {
-        T temp = array[j];
-        for (int k = j; k > i; k--) {
-            array[k] = array[k - 1];
+    private class AlbumsLoader implements ThreadPool.Job<ArrayList<MediaSet>> {
+
+        @Override
+        public ArrayList<MediaSet> run(JobContext jc) {
+            // Note: it will be faster if we only select media_type and bucket_id.
+            //       need to test the performance if that is worth
+            BucketEntry[] entries = BucketHelper.loadBucketEntries(
+                    jc, mApplication.getContentResolver(), mType);
+
+            if (jc.isCancelled()) return null;
+
+            int offset = 0;
+            // Move camera and download bucket to the front, while keeping the
+            // order of others.
+            int index = findBucket(entries, MediaSetUtils.CAMERA_BUCKET_ID);
+            if (index != -1) {
+                circularShiftRight(entries, offset++, index);
+            }
+            index = findBucket(entries, MediaSetUtils.DOWNLOAD_BUCKET_ID);
+            if (index != -1) {
+                circularShiftRight(entries, offset++, index);
+            }
+
+            ArrayList<MediaSet> albums = new ArrayList<>();
+            DataManager dataManager = mApplication.getDataManager();
+            for (BucketEntry entry : entries) {
+                MediaSet album = getLocalAlbum(dataManager,
+                        mType, mPath, entry.bucketId, entry.bucketName);
+                albums.add(album);
+            }
+            return albums;
         }
-        array[i] = temp;
     }
 }

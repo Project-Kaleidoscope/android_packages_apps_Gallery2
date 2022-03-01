@@ -28,23 +28,25 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import androidx.core.content.res.ResourcesCompat;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.crop.CropDrawingUtils;
 import com.android.gallery3d.filtershow.crop.CropMath;
 import com.android.gallery3d.filtershow.crop.CropObject;
-import com.android.gallery3d.filtershow.editors.EditorCrop;
 import com.android.gallery3d.filtershow.filters.FilterCropRepresentation;
 import com.android.gallery3d.filtershow.imageshow.GeometryMathUtils.GeometryHolder;
+
 import org.codeaurora.gallery.R;
 
 public class ImageCrop extends ImageShow {
     private static final String TAG = ImageCrop.class.getSimpleName();
-    private RectF mImageBounds = new RectF();
-    private RectF mScreenCropBounds = new RectF();
-    private Paint mPaint = new Paint();
+    private final RectF mImageBounds = new RectF();
+    private final RectF mScreenCropBounds = new RectF();
+    private final Paint mPaint = new Paint();
     private CropObject mCropObj = null;
-    private GeometryHolder mGeometry = new GeometryHolder();
-    private GeometryHolder mUpdateHolder = new GeometryHolder();
+    private final GeometryHolder mGeometry = new GeometryHolder();
+    private final GeometryHolder mUpdateHolder = new GeometryHolder();
     private Drawable mCropIndicator;
     private int mIndicatorSize;
     private boolean mMovingBlock = false;
@@ -55,9 +57,11 @@ public class ImageCrop extends ImageShow {
     private float mPrevY = 0;
     private int mMinSideSize = 90;
     private int mTouchTolerance = 40;
+
     private enum Mode {
         NONE, MOVE
     }
+
     private Mode mState = Mode.NONE;
     private boolean mValidDraw = false;
     FilterCropRepresentation mLocalRep = new FilterCropRepresentation();
@@ -78,11 +82,11 @@ public class ImageCrop extends ImageShow {
     }
 
     private void setup(Context context) {
-        Resources rsc = context.getResources();
-        mCropIndicator = rsc.getDrawable(R.drawable.camera_crop);
-        mIndicatorSize = (int) rsc.getDimension(R.dimen.crop_indicator_size);
-        mMinSideSize = (int) rsc.getDimension(R.dimen.crop_min_side);
-        mTouchTolerance = (int) rsc.getDimension(R.dimen.crop_touch_tolerance);
+        Resources res = context.getResources();
+        mCropIndicator = ResourcesCompat.getDrawable(res, R.drawable.camera_crop, null);
+        mIndicatorSize = (int) res.getDimension(R.dimen.crop_indicator_size);
+        mMinSideSize = (int) res.getDimension(R.dimen.crop_min_side);
+        mTouchTolerance = (int) res.getDimension(R.dimen.crop_touch_tolerance);
     }
 
     public void setFilterCropRepresentation(FilterCropRepresentation crop) {
@@ -278,20 +282,20 @@ public class ImageCrop extends ImageShow {
             mCropObj.unsetAspectRatio();
             Resources res = getContext().getResources();
             int panelHeight = 0;
-            if (canvas.getWidth() < canvas.getHeight()) {
+            if (getWidth() < getHeight()) {
                 panelHeight = res.getDimensionPixelOffset(R.dimen.category_panel_height) +
                         res.getDimensionPixelOffset(R.dimen.category_actionbar_panel_height);
             } else {
                 panelHeight = res.getDimensionPixelOffset(R.dimen.crop_panel_height_lanscape);
             }
             mDisplayMatrix = GeometryMathUtils.getFullGeometryToScreenMatrix(mGeometry,
-                    bitmap.getWidth(), bitmap.getHeight(), canvas.getWidth(),
-                    canvas.getHeight() - panelHeight);
+                    bitmap.getWidth(), bitmap.getHeight(), getWidth(),
+                    getHeight() - panelHeight);
             float straighten = mGeometry.straighten;
             mGeometry.straighten = 0;
             mDisplayCropMatrix = GeometryMathUtils.getFullGeometryToScreenMatrix(mGeometry,
-                    bitmap.getWidth(), bitmap.getHeight(), canvas.getWidth(),
-                    canvas.getHeight() - panelHeight);
+                    bitmap.getWidth(), bitmap.getHeight(), getWidth(),
+                    getHeight() - panelHeight);
             mGeometry.straighten = straighten;
             mDisplayMatrixInverse = new Matrix();
             mDisplayMatrixInverse.reset();
@@ -308,7 +312,7 @@ public class ImageCrop extends ImageShow {
                     CropObject.MOVE_BOTTOM,
                     CropObject.MOVE_LEFT,
                     CropObject.MOVE_RIGHT};
-            int delta = Math.min(canvas.getWidth(), canvas.getHeight()) / 4;
+            int delta = Math.min(getWidth(), getHeight()) / 4;
             int[] dx = {delta, -delta, 0, 0};
             int[] dy = {0, 0, delta, -delta};
 
@@ -347,7 +351,7 @@ public class ImageCrop extends ImageShow {
             return;
         }
         Resources res = getContext().getResources();
-        int panelHeight = 0;
+        int panelHeight;
         if (w < h) {
             panelHeight = res.getDimensionPixelOffset(R.dimen.category_panel_height) +
                     res.getDimensionPixelOffset(R.dimen.category_actionbar_panel_height);

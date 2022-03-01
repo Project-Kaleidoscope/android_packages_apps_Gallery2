@@ -17,24 +17,25 @@
 package com.android.gallery3d.filtershow.state;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import org.codeaurora.gallery.R;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.ImageOnlyEditor;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 
+import org.codeaurora.gallery.R;
+
 import java.util.Vector;
 
 public class StateAdapter extends ArrayAdapter<State> {
 
-    private static final String LOGTAG = "StateAdapter";
+    private static final String TAG = "StateAdapter";
     private int mOrientation;
-    private String mOriginalText;
-    private String mResultText;
+    private final String mOriginalText;
+    private final String mResultText;
 
     public StateAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
@@ -44,7 +45,7 @@ public class StateAdapter extends ArrayAdapter<State> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        StateView view = null;
+        StateView view;
         if (convertView == null) {
             convertView = new StateView(getContext());
         }
@@ -54,13 +55,9 @@ public class StateAdapter extends ArrayAdapter<State> {
         view.setOrientation(mOrientation);
         FilterRepresentation currentRep = MasterImage.getImage().getCurrentFilterRepresentation();
         FilterRepresentation stateRep = state.getFilterRepresentation();
-        if (currentRep != null && stateRep != null
-            && currentRep.getFilterClass() == stateRep.getFilterClass()
-            && currentRep.getEditorId() != ImageOnlyEditor.ID) {
-            view.setSelected(true);
-        } else {
-            view.setSelected(false);
-        }
+        view.setSelected(currentRep != null && stateRep != null
+                && currentRep.getFilterClass() == stateRep.getFilterClass()
+                && currentRep.getEditorId() != ImageOnlyEditor.ID);
         return view;
     }
 
@@ -88,7 +85,7 @@ public class StateAdapter extends ArrayAdapter<State> {
         }
         for (int i = 1; i < getCount(); i++) {
             State state = getItem(i);
-            if (!state.equals(states.elementAt(i-1))) {
+            if (!state.equals(states.elementAt(i - 1))) {
                 return false;
             }
         }

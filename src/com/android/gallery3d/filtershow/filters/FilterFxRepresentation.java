@@ -16,14 +16,16 @@
 
 package com.android.gallery3d.filtershow.filters;
 
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.editors.ImageOnlyEditor;
 
 public class FilterFxRepresentation extends FilterRepresentation {
-   private static final String LOGTAG = "FilterFxRepresentation";
+    private static final String TAG = "FilterFxRepresentation";
     // TODO: When implementing serialization, we should find a unique way of
     // specifying bitmaps / names (the resource IDs being random)
-    private int mBitmapResource = 0;
-    private int mNameResource = 0;
+    private int mBitmapResource;
+    private int mNameResource;
 
     public FilterFxRepresentation(String name, int bitmapResource, int nameResource) {
         super(name);
@@ -37,6 +39,7 @@ public class FilterFxRepresentation extends FilterRepresentation {
         setSupportsPartialRendering(true);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "FilterFx: " + hashCode() + " : " + getName() + " bitmap rsc: " + mBitmapResource;
@@ -44,7 +47,7 @@ public class FilterFxRepresentation extends FilterRepresentation {
 
     @Override
     public FilterRepresentation copy() {
-        FilterFxRepresentation representation = new FilterFxRepresentation(getName(),0,0);
+        FilterFxRepresentation representation = new FilterFxRepresentation(getName(), 0, 0);
         copyAllParameters(representation);
         return representation;
     }
@@ -73,10 +76,8 @@ public class FilterFxRepresentation extends FilterRepresentation {
         }
         if (representation instanceof FilterFxRepresentation) {
             FilterFxRepresentation fx = (FilterFxRepresentation) representation;
-            if (fx.mNameResource == mNameResource
-                    && fx.mBitmapResource == mBitmapResource) {
-                return true;
-            }
+            return fx.mNameResource == mNameResource
+                    && fx.mBitmapResource == mBitmapResource;
         }
         return false;
     }

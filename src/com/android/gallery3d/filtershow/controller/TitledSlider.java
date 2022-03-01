@@ -17,26 +17,25 @@
 package com.android.gallery3d.filtershow.controller;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.Editor;
 
+import org.codeaurora.gallery.R;
+
 public class TitledSlider implements Control {
-    private final String LOGTAG = "ParametricEditor";
+    private final String TAG = "ParametricEditor";
+    protected ParameterInteger mParameter;
+    protected int mLayoutID = R.layout.filtershow_control_title_slider;
+    Editor mEditor;
+    View mTopView;
     private SeekBar mSeekBar;
     private TextView mControlName;
     private TextView mControlValue;
-    protected ParameterInteger mParameter;
-    Editor mEditor;
-    View mTopView;
-    protected int mLayoutID = R.layout.filtershow_control_title_slider;
 
     @Override
     public void setUp(ViewGroup container, Parameter parameter, Editor editor) {
@@ -48,11 +47,11 @@ public class TitledSlider implements Control {
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mTopView = inflater.inflate(mLayoutID, container, true);
         mTopView.setVisibility(View.VISIBLE);
-        mSeekBar = (SeekBar) mTopView.findViewById(R.id.controlValueSeekBar);
-        mControlName = (TextView) mTopView.findViewById(R.id.controlName);
-        mControlValue = (TextView) mTopView.findViewById(R.id.controlValue);
+        mSeekBar = mTopView.findViewById(R.id.controlValueSeekBar);
+        mControlName = mTopView.findViewById(R.id.controlName);
+        mControlValue = mTopView.findViewById(R.id.controlValue);
         updateUI();
-        mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
@@ -70,7 +69,7 @@ public class TitledSlider implements Control {
                         mControlName.setText(mParameter.getParameterName());
                     }
                     if (mControlValue != null) {
-                        mControlValue.setText(Integer.toString(mParameter.getValue()));
+                        mControlValue.setText(String.valueOf(mParameter.getValue()));
                     }
                     mEditor.commitLocalRepresentation();
                 }
@@ -91,8 +90,7 @@ public class TitledSlider implements Control {
             mControlName.setText(mParameter.getParameterName());
         }
         if (mControlValue != null) {
-            mControlValue.setText(
-                    Integer.toString(mParameter.getValue()));
+            mControlValue.setText(String.valueOf(mParameter.getValue()));
         }
         mSeekBar.setMax(mParameter.getMaximum() - mParameter.getMinimum());
         mSeekBar.setProgress(mParameter.getValue() - mParameter.getMinimum());

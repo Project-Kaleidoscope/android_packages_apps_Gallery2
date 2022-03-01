@@ -45,16 +45,22 @@ public class HeaderGridView extends GridView {
      * or a footer at the bottom.
      */
     private static class FixedViewInfo {
-        /** The view to add to the grid */
+        /**
+         * The view to add to the grid
+         */
         public View view;
         public ViewGroup viewContainer;
-        /** The data backing the view. This is returned from {@link ListAdapter#getItem(int)}. */
+        /**
+         * The data backing the view. This is returned from {@link ListAdapter#getItem(int)}.
+         */
         public Object data;
-        /** <code>true</code> if the fixed view should be selectable in the grid */
+        /**
+         * <code>true</code> if the fixed view should be selectable in the grid
+         */
         public boolean isSelectable;
     }
 
-    private ArrayList<FixedViewInfo> mHeaderViewInfos = new ArrayList<FixedViewInfo>();
+    private ArrayList<FixedViewInfo> mHeaderViewInfos = new ArrayList<>();
 
     private void initHeaderGridView() {
         super.setClipChildren(false);
@@ -79,14 +85,14 @@ public class HeaderGridView extends GridView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         ListAdapter adapter = getAdapter();
-        if (adapter != null && adapter instanceof HeaderViewGridAdapter) {
+        if (adapter instanceof HeaderViewGridAdapter) {
             ((HeaderViewGridAdapter) adapter).setNumColumns(getNumColumns());
         }
     }
 
     @Override
     public void setClipChildren(boolean clipChildren) {
-       // Ignore, since the header rows depend on not being clipped
+        // Ignore, since the header rows depend on not being clipped
     }
 
     /**
@@ -97,14 +103,14 @@ public class HeaderGridView extends GridView {
      * NOTE: Call this before calling setAdapter. This is so HeaderGridView can wrap
      * the supplied cursor with one that will also account for header views.
      *
-     * @param v The view to add.
-     * @param data Data to associate with this view
+     * @param v            The view to add.
+     * @param data         Data to associate with this view
      * @param isSelectable whether the item is selectable
      */
     public void addHeaderView(View v, Object data, boolean isSelectable) {
         ListAdapter adapter = getAdapter();
 
-        if (adapter != null && ! (adapter instanceof HeaderViewGridAdapter)) {
+        if (adapter != null && !(adapter instanceof HeaderViewGridAdapter)) {
             throw new IllegalStateException(
                     "Cannot add header view to grid -- setAdapter has already been called.");
         }
@@ -148,7 +154,7 @@ public class HeaderGridView extends GridView {
      *
      * @param v The view to remove
      * @return true if the view was removed, false if the view was not a header
-     *         view
+     * view
      */
     public boolean removeHeaderView(View v) {
         if (mHeaderViewInfos.size() > 0) {
@@ -208,7 +214,7 @@ public class HeaderGridView extends GridView {
      * ListAdapter used when a HeaderGridView has header views. This ListAdapter
      * wraps another one and also keeps track of the header views and their
      * associated data objects.
-     *<p>This is intended as a base class; you will probably not need to
+     * <p>This is intended as a base class; you will probably not need to
      * use this class directly in your own code.
      */
     private static class HeaderViewGridAdapter implements WrapperListAdapter, Filterable {
@@ -314,7 +320,7 @@ public class HeaderGridView extends GridView {
 
             // Adapter
             final int adjPosition = position - numHeadersAndPlaceholders;
-            int adapterCount = 0;
+            int adapterCount;
             if (mAdapter != null) {
                 adapterCount = mAdapter.getCount();
                 if (adjPosition < adapterCount) {
@@ -338,7 +344,7 @@ public class HeaderGridView extends GridView {
 
             // Adapter
             final int adjPosition = position - numHeadersAndPlaceholders;
-            int adapterCount = 0;
+            int adapterCount;
             if (mAdapter != null) {
                 adapterCount = mAdapter.getCount();
                 if (adjPosition < adapterCount) {
@@ -373,7 +379,7 @@ public class HeaderGridView extends GridView {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             // Header (negative positions will throw an ArrayIndexOutOfBoundsException)
-            int numHeadersAndPlaceholders = getHeadersCount() * mNumColumns ;
+            int numHeadersAndPlaceholders = getHeadersCount() * mNumColumns;
             if (position < numHeadersAndPlaceholders) {
                 View headerViewContainer = mHeaderViewInfos
                         .get(position / mNumColumns).viewContainer;
@@ -393,7 +399,7 @@ public class HeaderGridView extends GridView {
 
             // Adapter
             final int adjPosition = position - numHeadersAndPlaceholders;
-            int adapterCount = 0;
+            int adapterCount;
             if (mAdapter != null) {
                 adapterCount = mAdapter.getCount();
                 if (adjPosition < adapterCount) {

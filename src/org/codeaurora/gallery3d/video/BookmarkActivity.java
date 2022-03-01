@@ -3,8 +3,6 @@ package org.codeaurora.gallery3d.video;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -28,8 +26,9 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.MovieActivity;
+
+import org.codeaurora.gallery.R;
 
 public class BookmarkActivity extends Activity implements OnItemClickListener {
     private static final String TAG = "BookmarkActivity";
@@ -57,8 +56,8 @@ public class BookmarkActivity extends Activity implements OnItemClickListener {
             getActionBar().setLogo(new BitmapDrawable(getResources(), logo));
         }
 
-        mListView = (ListView) findViewById(android.R.id.list);
-        mEmptyView = (TextView) findViewById(android.R.id.empty);
+        mListView = findViewById(android.R.id.list);
+        mEmptyView = findViewById(android.R.id.empty);
 
         mBookmark = new BookmarkEnhance(this);
         mCursor = mBookmark.query();
@@ -105,12 +104,9 @@ public class BookmarkActivity extends Activity implements OnItemClickListener {
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        switch (item.getItemId()) {
-            case MENU_DELETE_ALL:
-                mBookmark.deleteAll();
-                return true;
-            default:
-                break;
+        if (item.getItemId() == MENU_DELETE_ALL) {
+            mBookmark.deleteAll();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -126,8 +122,8 @@ public class BookmarkActivity extends Activity implements OnItemClickListener {
         public View newView(final Context context, final Cursor cursor, final ViewGroup parent) {
             final View view = super.newView(context, cursor, parent);
             final ViewHolder holder = new ViewHolder();
-            holder.mTitleView = (TextView) view.findViewById(R.id.title);
-            holder.mDataView = (TextView) view.findViewById(R.id.data);
+            holder.mTitleView = view.findViewById(R.id.title);
+            holder.mDataView = view.findViewById(R.id.data);
             view.setTag(holder);
             return view;
         }
@@ -217,8 +213,8 @@ public class BookmarkActivity extends Activity implements OnItemClickListener {
         }
         final LayoutInflater inflater = LayoutInflater.from(this);
         final View v = inflater.inflate(R.layout.bookmark_edit_dialog, null);
-        final EditText titleView = (EditText) v.findViewById(R.id.title);
-        final EditText dataView = (EditText) v.findViewById(R.id.data);
+        final EditText titleView = v.findViewById(R.id.title);
+        final EditText dataView = v.findViewById(R.id.data);
         titleView.setText(holder.mTitle);
         dataView.setText(holder.mData);
 
@@ -226,15 +222,8 @@ public class BookmarkActivity extends Activity implements OnItemClickListener {
         builder.setTitle(R.string.edit);
         builder.setView(v);
         builder.setIcon(R.drawable.ic_menu_display_bookmark);
-        builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
-
-            @Override
-            public void onClick(final DialogInterface dialog, final int which) {
-                mBookmark.update(holder.mId, titleView.getText().toString(),
-                        dataView.getText().toString(), 0);
-            }
-
-        });
+        builder.setPositiveButton(android.R.string.ok, (dialog, which) ->
+                mBookmark.update(holder.mId, titleView.getText().toString(), dataView.getText().toString(), 0));
         builder.setNegativeButton(android.R.string.cancel, null);
         final AlertDialog dialog = builder.create();
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);

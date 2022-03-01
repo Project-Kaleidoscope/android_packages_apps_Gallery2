@@ -17,20 +17,22 @@
 package com.android.gallery3d.filtershow.state;
 
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import org.codeaurora.gallery.R;
+
+import androidx.fragment.app.Fragment;
+
 import com.android.gallery3d.filtershow.category.MainPanel;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.util.FilterShowHelper;
 
+import org.codeaurora.gallery.R;
+
 public class StatePanel extends Fragment {
-    private static final String LOGTAG = "StatePanel";
+    private static final String TAG = "StatePanel";
     private MainPanel mMainPanel;
     private StatePanelTrack track;
     private LinearLayout mMainView;
@@ -51,7 +53,7 @@ public class StatePanel extends Fragment {
         StateAdapter imageStateAdapter = MasterImage.getImage().getState();
         if (imageStateAdapter == null) return null;
         track.setAdapter(imageStateAdapter);
-        mToggleVersionsPanel = (ImageButton) mMainView.findViewById(R.id.toggleVersionsPanel);
+        mToggleVersionsPanel = mMainView.findViewById(R.id.toggleVersionsPanel);
         if (FilterShowHelper.shouldUseVersions()) {
             if (mToggleVersionsPanel.getVisibility() == View.GONE
                     || mToggleVersionsPanel.getVisibility() == View.INVISIBLE) {

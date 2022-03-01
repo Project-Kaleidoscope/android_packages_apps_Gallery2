@@ -20,45 +20,53 @@ import android.view.View;
 
 public interface ControllerOverlay {
 
-  interface Listener {
-    void onPlayPause();
-    void onSeekStart();
-    void onSeekMove(int time);
-    void onSeekEnd(int time, int trimStartTime, int trimEndTime);
-    void onShown();
-    void onHidden();
-    // get current video is from RTSP
-    boolean onIsRTSP();
-    void onReplay();
-  }
+    void setListener(Listener listener);
 
-  void setListener(Listener listener);
+    void setCanReplay(boolean canReplay);
 
-  void setCanReplay(boolean canReplay);
+    /**
+     * @return The overlay view that should be added to the player.
+     */
+    View getView();
 
-  /**
-   * @return The overlay view that should be added to the player.
-   */
-  View getView();
+    void show();
 
-  void show();
+    void showPlaying();
 
-  void showPlaying();
+    void showPaused();
 
-  void showPaused();
+    void showEnded();
 
-  void showEnded();
+    void showLoading();
 
-  void showLoading();
+    void showErrorMessage(String message);
 
-  void showErrorMessage(String message);
+    void setTimes(int currentTime, int totalTime, int trimStartTime, int trimEndTime);
 
-  void setTimes(int currentTime, int totalTime,
-          int trimStartTime, int trimEndTime);
+    //set view enabled (play/pause asynchronous processing)
+    void setViewEnabled(boolean isEnabled);
 
-  //set view enabled (play/pause asynchronous processing)
-  void setViewEnabled(boolean isEnabled);
+    //view from disable to resume (play/pause asynchronous processing)
+    void setPlayPauseReplayResume();
 
-  //view from disable to resume (play/pause asynchronous processing)
-  void setPlayPauseReplayResume();
+    interface Listener {
+
+        void onPlayPause();
+
+        void onSeekStart();
+
+        void onSeekMove(int time);
+
+        void onSeekEnd(int time, int trimStartTime, int trimEndTime);
+
+        void onShown();
+
+        void onHidden();
+
+        // get current video is from RTSP
+        boolean onIsRTSP();
+
+        void onReplay();
+
+    }
 }

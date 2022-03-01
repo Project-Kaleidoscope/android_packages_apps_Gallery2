@@ -56,12 +56,12 @@ public class LocalPhotoSource implements WidgetSource {
             String.format("%s != %s", Media.BUCKET_ID, getDownloadBucketId());
     private static final String ORDER = String.format("%s DESC", DATE_TAKEN);
 
-    private Context mContext;
-    private ArrayList<Long> mPhotos = new ArrayList<Long>();
+    private final Context mContext;
+    private final ArrayList<Long> mPhotos = new ArrayList<>();
     private ContentListener mContentListener;
-    private ContentObserver mContentObserver;
+    private final ContentObserver mContentObserver;
     private boolean mContentDirty = true;
-    private DataManager mDataManager;
+    private final DataManager mDataManager;
     private static final Path LOCAL_IMAGE_ROOT = Path.fromString("/local/image/item");
 
     public LocalPhotoSource(Context context) {
@@ -107,12 +107,12 @@ public class LocalPhotoSource implements WidgetSource {
     private int[] getExponentialIndice(int total, int count) {
         Random random = new Random();
         if (count > total) count = total;
-        HashSet<Integer> selected = new HashSet<Integer>(count);
+        HashSet<Integer> selected = new HashSet<>(count);
         while (selected.size() < count) {
-            int row = (int)(-Math.log(random.nextDouble()) * total / 2);
+            int row = (int) (-Math.log(random.nextDouble()) * total / 2);
             if (row < total) selected.add(row);
         }
-        int values[] = new int[count];
+        int[] values = new int[count];
         int index = 0;
         for (int value : selected) {
             values[index++] = value;
@@ -143,7 +143,7 @@ public class LocalPhotoSource implements WidgetSource {
         }
         Cursor cursor = mContext.getContentResolver().query(
                 CONTENT_URI, COUNT_PROJECTION,
-                String.format("%s in (%s)", Media._ID, builder.toString()),
+                String.format("%s in (%s)", Media._ID, builder),
                 null, null);
         if (cursor == null) return false;
         try {
@@ -163,7 +163,7 @@ public class LocalPhotoSource implements WidgetSource {
         int photoCount = getPhotoCount(resolver);
         if (isContentSound(photoCount)) return;
 
-        int choosedIds[] = getExponentialIndice(photoCount, MAX_PHOTO_COUNT);
+        int[] choosedIds = getExponentialIndice(photoCount, MAX_PHOTO_COUNT);
         Arrays.sort(choosedIds);
 
         mPhotos.clear();
@@ -189,6 +189,7 @@ public class LocalPhotoSource implements WidgetSource {
 
     /**
      * Builds the bucket ID for the public external storage Downloads directory
+     *
      * @return the bucket ID
      */
     private static int getDownloadBucketId() {

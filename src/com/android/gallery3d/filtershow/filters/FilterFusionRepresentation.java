@@ -32,8 +32,13 @@ package com.android.gallery3d.filtershow.filters;
 import android.net.Uri;
 
 public interface FilterFusionRepresentation {
-    void setUnderlay(Uri uri);
-    void setUnderlay(String uri);
+
     boolean hasUnderlay();
+
     String getUnderlay();
+
+    void setUnderlay(Uri uri);
+
+    void setUnderlay(String uri);
+
 }

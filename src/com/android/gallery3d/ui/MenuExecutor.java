@@ -24,28 +24,29 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-//import android.drm.DrmHelper;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import androidx.print.PrintHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.codeaurora.gallery.R;
+import androidx.print.PrintHelper;
+
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.MediaItem;
 import com.android.gallery3d.data.MediaObject;
 import com.android.gallery3d.data.Path;
-import com.android.gallery3d.filtershow.crop.CropActivity;
 import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.GalleryUtils;
 import com.android.gallery3d.util.ThreadPool.Job;
 import com.android.gallery3d.util.ThreadPool.JobContext;
+
+import org.codeaurora.gallery.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,11 +88,15 @@ public class MenuExecutor {
     }
 
     public interface ProgressListener {
-        public void onConfirmDialogShown();
-        public void onConfirmDialogDismissed(boolean confirmed);
-        public void onProgressStart();
-        public void onProgressUpdate(int index);
-        public void onProgressComplete(int result);
+        void onConfirmDialogShown();
+
+        void onConfirmDialogDismissed(boolean confirmed);
+
+        void onProgressStart();
+
+        void onProgressUpdate(int index);
+
+        void onProgressComplete(int result);
     }
 
     public MenuExecutor(
@@ -127,7 +132,7 @@ public class MenuExecutor {
                         break;
                     }
                     case MSG_DO_SHARE: {
-                        ((Activity) mActivity).startActivity((Intent) message.obj);
+                        mActivity.startActivity((Intent) message.obj);
                         break;
                     }
                 }
@@ -205,12 +210,12 @@ public class MenuExecutor {
     }
 
     public static void updateMenuForPanorama(Menu menu, boolean shareAsPanorama360,
-            boolean disablePanorama360Options) {
+                                             boolean disablePanorama360Options) {
         setMenuItemVisible(menu, R.id.action_share_panorama, shareAsPanorama360);
-        if (disablePanorama360Options) {
+//        if (disablePanorama360Options) {
             //setMenuItemVisible(menu, R.id.action_rotate_ccw, false);
             //setMenuItemVisible(menu, R.id.action_rotate_cw, false);
-        }
+//        }
     }
 
     private static void setMenuItemVisible(Menu menu, int itemId, boolean visible) {
@@ -222,7 +227,7 @@ public class MenuExecutor {
         ArrayList<Path> ids = mSelectionManager.getSelected(true);
         if (ids.size() != 1)
             return null;
-         return ids.get(0);
+        return ids.get(0);
     }
 
     private Intent getIntentBySingleSelectedPath(String action) {
@@ -247,7 +252,7 @@ public class MenuExecutor {
     }
 
     public void onMenuClicked(int action, ProgressListener listener,
-            boolean waitOnStop, boolean showDialog) {
+                              boolean waitOnStop, boolean showDialog) {
         int title;
         switch (action) {
             case R.id.action_select_all:
@@ -368,14 +373,12 @@ public class MenuExecutor {
     }
 
     public void onMenuClicked(MenuItem menuItem, String confirmMsg,
-            final ProgressListener listener) {
+                              final ProgressListener listener) {
         final int action;
         if (menuItem == null) {
             action = R.id.photopage_bottom_control_delete;
-        }
-        else
-        {
-           action = menuItem.getItemId();
+        } else {
+            action = menuItem.getItemId();
         }
 
         if (confirmMsg != null) {
@@ -397,13 +400,12 @@ public class MenuExecutor {
     }
 
     public void startAction(int action, int title, ProgressListener listener,
-            boolean waitOnStop, boolean showDialog) {
+                            boolean waitOnStop, boolean showDialog) {
         ArrayList<Path> ids = mSelectionManager.getSelected(false);
         stopTaskAndDismissDialog();
 
-        Activity activity = mActivity;
         if (showDialog) {
-            mDialog = createProgressDialog(activity, title, ids.size());
+            mDialog = createProgressDialog(mActivity, title, ids.size());
             mDialog.show();
         } else {
             mDialog = null;
@@ -414,7 +416,7 @@ public class MenuExecutor {
     }
 
     public void startSingleItemAction(int action, Path targetPath) {
-        ArrayList<Path> ids = new ArrayList<Path>(1);
+        ArrayList<Path> ids = new ArrayList<>(1);
         ids.add(targetPath);
         mDialog = null;
         MediaOperation operation = new MediaOperation(action, ids, null);
@@ -424,11 +426,12 @@ public class MenuExecutor {
 
     public static String getMimeType(int type) {
         switch (type) {
-            case MediaObject.MEDIA_TYPE_IMAGE :
+            case MediaObject.MEDIA_TYPE_IMAGE:
                 return GalleryUtils.MIME_TYPE_IMAGE;
-            case MediaObject.MEDIA_TYPE_VIDEO :
+            case MediaObject.MEDIA_TYPE_VIDEO:
                 return GalleryUtils.MIME_TYPE_VIDEO;
-            default: return GalleryUtils.MIME_TYPE_ALL;
+            default:
+                return GalleryUtils.MIME_TYPE_ALL;
         }
     }
 
@@ -464,7 +467,7 @@ public class MenuExecutor {
             }
             case R.id.action_show_on_map: {
                 MediaItem item = (MediaItem) manager.getMediaObject(path);
-                double latlng[] = new double[2];
+                double[] latlng = new double[2];
                 item.getLatLong(latlng);
                 if (GalleryUtils.isValidLocation(latlng[0], latlng[1])) {
                     GalleryUtils.showOnMap(mActivity, latlng[0], latlng[1]);
@@ -485,7 +488,7 @@ public class MenuExecutor {
         private final ProgressListener mListener;
 
         public MediaOperation(int operation, ArrayList<Path> items,
-                ProgressListener listener) {
+                              ProgressListener listener) {
             mOperation = operation;
             mItems = items;
             mListener = listener;
@@ -512,7 +515,7 @@ public class MenuExecutor {
                 Log.e(TAG, "failed to execute operation " + mOperation
                         + " : " + th);
             } finally {
-               onProgressComplete(result, mListener);
+                onProgressComplete(result, mListener);
             }
             return null;
         }

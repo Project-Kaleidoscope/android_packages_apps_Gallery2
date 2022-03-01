@@ -28,7 +28,7 @@ public class ActivityHooker implements IActivityHooker {
     @Override
     public int getMenuActivityId(int id) {
         return mMenuId + id;
-    };
+    }
 
     @Override
     public int getMenuOriginalId(int id) {

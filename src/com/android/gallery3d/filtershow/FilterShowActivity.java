@@ -16,13 +16,6 @@
 
 package com.android.gallery3d.filtershow;
 
-import java.io.File;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Vector;
-
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -32,7 +25,6 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -54,10 +46,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.provider.MediaStore;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.print.PrintHelper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -66,8 +54,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewPropertyAnimator;
 import android.view.Window;
 import android.view.WindowManager;
@@ -83,7 +69,10 @@ import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.print.PrintHelper;
 
 import com.android.gallery3d.app.AbstractPermissionActivity;
 import com.android.gallery3d.app.PhotoPage;
@@ -99,9 +88,9 @@ import com.android.gallery3d.filtershow.category.StraightenPanel;
 import com.android.gallery3d.filtershow.category.SwipableView;
 import com.android.gallery3d.filtershow.category.TruePortraitMaskEditorPanel;
 import com.android.gallery3d.filtershow.category.TrueScannerPanel;
+import com.android.gallery3d.filtershow.category.WaterMarkView;
 import com.android.gallery3d.filtershow.data.FilterPresetSource;
 import com.android.gallery3d.filtershow.data.FilterPresetSource.SaveOption;
-import com.android.gallery3d.filtershow.category.WaterMarkView;
 import com.android.gallery3d.filtershow.data.UserPresetsManager;
 import com.android.gallery3d.filtershow.editors.Editor;
 import com.android.gallery3d.filtershow.editors.EditorCrop;
@@ -157,6 +146,15 @@ import com.thundersoft.hz.selfportrait.detect.FaceDetect;
 import com.thundersoft.hz.selfportrait.detect.FaceInfo;
 import com.thundersoft.hz.selfportrait.makeup.engine.MakeupEngine;
 
+import org.codeaurora.gallery.R;
+
+import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Vector;
+
 public class FilterShowActivity extends AbstractPermissionActivity implements OnItemClickListener,
         DialogInterface.OnShowListener,
         DialogInterface.OnDismissListener, PopupMenu.OnDismissListener {
@@ -172,21 +170,21 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
     private View mSaveButton = null;
 
-    private EditorPlaceHolder mEditorPlaceHolder = new EditorPlaceHolder(this);
+    private final EditorPlaceHolder mEditorPlaceHolder = new EditorPlaceHolder(this);
     private Editor mCurrentEditor = null;
 
     private MediaPickerFragment mMediaPicker;
 
     private static final int SELECT_PICTURE = 1;
     public static final int SELECT_FUSION_UNDERLAY = 2;
-    private static final String LOGTAG = "FilterShowActivity";
+    private static final String TAG = "FilterShowActivity";
 
     private boolean mShowingTinyPlanet = false;
     private boolean mShowingImageStatePanel = false;
     private boolean mShowingVersionsPanel = false;
-    private boolean mShowingFilterGenerator = false;
+    private final boolean mShowingFilterGenerator = false;
 
-    private final Vector<ImageShow> mImageViews = new Vector<ImageShow>();
+    private final Vector<ImageShow> mImageViews = new Vector<>();
 
     private File mSharedOutputFile = null;
 
@@ -204,7 +202,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
     private Uri mSelectedImageUri = null;
 
-    private ArrayList<Action> mActions = new ArrayList<Action>();
+    private final ArrayList<Action> mActions = new ArrayList<>();
     private UserPresetsManager mUserPresetsManager = null;
     private UserPresetsAdapter mUserPresetsAdapter = null;
     private CategoryAdapter mCategoryLooksAdapter = null;
@@ -218,11 +216,11 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     private CategoryAdapter mCategoryMakeupAdapter = null;
     private CategoryAdapter mCategoryDualCamAdapter = null;
     private CategoryAdapter mCategoryTruePortraitAdapter = null;
-    private CategoryAdapter mCategoryFilterPresetAdapter = null;
+    private final CategoryAdapter mCategoryFilterPresetAdapter = null;
     private ArrayList<CategoryAdapter> mCategoryWatermarkAdapters;
     private int mCurrentPanel = MainPanel.LOOKS;
-    private Vector<FilterUserPresetRepresentation> mVersions =
-            new Vector<FilterUserPresetRepresentation>();
+    private final Vector<FilterUserPresetRepresentation> mVersions =
+            new Vector<>();
     private int mVersionsCounter = 0;
 
     private boolean mHandlingSwipeButton = false;
@@ -254,21 +252,17 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     protected Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case SaveWaterMark.MARK_SAVE_COMPLETE:
-                    completeSaveImage((Uri) msg.obj);
-                    break;
-                default:
-                    break;
+            if (msg.what == SaveWaterMark.MARK_SAVE_COMPLETE) {
+                completeSaveImage((Uri) msg.obj);
             }
             super.handleMessage(msg);
         }
     };
-    private SaveWaterMark mSaveWaterMark = new SaveWaterMark();
+    private final SaveWaterMark mSaveWaterMark = new SaveWaterMark();
 
     private PresetManagementDialog mPresetDialog;
     private FilterPresetSource mFilterPresetSource;
-    private ArrayList <SaveOption>  tempFilterArray = new ArrayList<SaveOption>();
+    private final ArrayList<SaveOption> tempFilterArray = new ArrayList<>();
     private boolean mChangeable = false;
     private int mOrientation;
 
@@ -313,7 +307,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     };
 
     private boolean canUpdataUI = false;
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private final ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             /*
@@ -323,7 +317,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
              * service that we know is running in our own process, we can
              * cast its IBinder to a concrete class and directly access it.
              */
-            mBoundService = ((ProcessingService.LocalBinder)service).getService();
+            mBoundService = ((ProcessingService.LocalBinder) service).getService();
             updateUIAfterServiceStarted();
         }
 
@@ -457,78 +451,48 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             return;
         }
         if (useStraightenPanel(currentId)) {
-            new Runnable() {
-                @Override
-                public void run() {
-                    StraightenPanel panel = new StraightenPanel();
-                    Bundle bundle = new Bundle();
-                    bundle.putInt(StraightenPanel.EDITOR_ID, currentId);
-                    bundle.putString(StraightenPanel.EDITOR_NAME, representation.getName());
-                    panel.setArguments(bundle);
-                    FragmentTransaction transaction =
-                            getSupportFragmentManager().beginTransaction();
-                    transaction.remove(getSupportFragmentManager().findFragmentByTag(
-                            MainPanel.FRAGMENT_TAG));
-                    transaction.replace(R.id.main_panel_container, panel,
-                            MainPanel.FRAGMENT_TAG);
-                    transaction.commit();
-                }
-            }.run();
+            StraightenPanel panel = new StraightenPanel();
+            Bundle bundle = new Bundle();
+            bundle.putInt(StraightenPanel.EDITOR_ID, currentId);
+            bundle.putString(StraightenPanel.EDITOR_NAME, representation.getName());
+            panel.setArguments(bundle);
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(getSupportFragmentManager().findFragmentByTag(MainPanel.FRAGMENT_TAG));
+            transaction.replace(R.id.main_panel_container, panel, MainPanel.FRAGMENT_TAG);
+            transaction.commit();
             return;
         }
         if (currentId == TrueScannerEditor.ID) {
-            new Runnable() {
-                @Override
-                public void run() {
-                    TrueScannerPanel panel = new TrueScannerPanel();
-                    FragmentTransaction transaction =
-                            getSupportFragmentManager().beginTransaction();
-                    transaction.remove(getSupportFragmentManager().findFragmentByTag(
-                            MainPanel.FRAGMENT_TAG));
-                    transaction.replace(R.id.main_panel_container, panel,
-                            MainPanel.FRAGMENT_TAG);
-                    transaction.commit();
-                }
-            }.run();
+            TrueScannerPanel panel = new TrueScannerPanel();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(getSupportFragmentManager().findFragmentByTag(MainPanel.FRAGMENT_TAG));
+            transaction.replace(R.id.main_panel_container, panel, MainPanel.FRAGMENT_TAG);
+            transaction.commit();
             return;
         }
-        if(currentId == EditorTruePortraitMask.ID) {
-            new Runnable() {
-                @Override
-                public void run() {
-                    setActionBarForEffects(mCurrentEditor);
-                    TruePortraitMaskEditorPanel panel = new TruePortraitMaskEditorPanel();
-                    FragmentTransaction transaction =
-                            getSupportFragmentManager().beginTransaction();
-                    transaction.remove(getSupportFragmentManager().findFragmentByTag(
-                            MainPanel.FRAGMENT_TAG));
-                    transaction.replace(R.id.main_panel_container, panel,
-                            MainPanel.FRAGMENT_TAG);
-                    transaction.commit();
-                }
-            }.run();
+        if (currentId == EditorTruePortraitMask.ID) {
+            setActionBarForEffects(mCurrentEditor);
+            TruePortraitMaskEditorPanel panel = new TruePortraitMaskEditorPanel();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(getSupportFragmentManager().findFragmentByTag(MainPanel.FRAGMENT_TAG));
+            transaction.replace(R.id.main_panel_container, panel, MainPanel.FRAGMENT_TAG);
+            transaction.commit();
             return;
         }
 
-        Runnable showEditor = new Runnable() {
-            @Override
-            public void run() {
-                EditorPanel panel = new EditorPanel();
-                panel.setEditor(currentId);
-                setActionBarForEffects(mCurrentEditor);
-                Fragment main =
-                        getSupportFragmentManager().findFragmentByTag(MainPanel.FRAGMENT_TAG);
-                if (main instanceof MainPanel) {
-                    ((MainPanel) main).setEditorPanelFragment(panel);
-                }
+        Runnable showEditor = () -> {
+            EditorPanel panel = new EditorPanel();
+            panel.setEditor(currentId);
+            setActionBarForEffects(mCurrentEditor);
+            Fragment main =
+                    getSupportFragmentManager().findFragmentByTag(MainPanel.FRAGMENT_TAG);
+            if (main instanceof MainPanel) {
+                ((MainPanel) main).setEditorPanelFragment(panel);
             }
         };
         Fragment main = getSupportFragmentManager().findFragmentByTag(MainPanel.FRAGMENT_TAG);
-        boolean doAnimation = false;
-        if (mShowingImageStatePanel
-                && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            doAnimation = true;
-        }
+        boolean doAnimation = mShowingImageStatePanel
+                && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
         if (doAnimation && main != null && main instanceof MainPanel) {
             MainPanel mainPanel = (MainPanel) main;
             View container = mainPanel.getView().findViewById(R.id.category_panel_container);
@@ -548,35 +512,25 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     private void loadEditorCropPanel() {
-        new Runnable() {
-            @Override
-            public void run() {
-                EditorCropPanel panel = new EditorCropPanel();
-                FragmentTransaction transaction =
-                        getSupportFragmentManager().beginTransaction();
-                transaction.remove(getSupportFragmentManager().findFragmentByTag(
-                        MainPanel.FRAGMENT_TAG));
-                transaction.replace(R.id.main_panel_container, panel,
-                        MainPanel.FRAGMENT_TAG);
-                transaction.commitAllowingStateLoss();
-            }
-        }.run();
+        EditorCropPanel panel = new EditorCropPanel();
+        FragmentTransaction transaction =
+                getSupportFragmentManager().beginTransaction();
+        transaction.remove(getSupportFragmentManager().findFragmentByTag(
+                MainPanel.FRAGMENT_TAG));
+        transaction.replace(R.id.main_panel_container, panel,
+                MainPanel.FRAGMENT_TAG);
+        transaction.commitAllowingStateLoss();
     }
 
     private void loadWaterMarkPanel(final FilterWatermarkRepresentation representation) {
-        new Runnable() {
-            @Override
-            public void run() {
-                CategoryPanelLevelTwo panel = new CategoryPanelLevelTwo(representation.getAdapterId());
-                FragmentTransaction transaction =
-                        getSupportFragmentManager().beginTransaction();
-                transaction.remove(getSupportFragmentManager().findFragmentByTag(
-                        MainPanel.FRAGMENT_TAG));
-                transaction.replace(R.id.main_panel_container, panel,
-                        MainPanel.FRAGMENT_TAG);
-                transaction.commitAllowingStateLoss();
-            }
-        }.run();
+        CategoryPanelLevelTwo panel = new CategoryPanelLevelTwo(representation.getAdapterId());
+        FragmentTransaction transaction =
+                getSupportFragmentManager().beginTransaction();
+        transaction.remove(getSupportFragmentManager().findFragmentByTag(
+                MainPanel.FRAGMENT_TAG));
+        transaction.replace(R.id.main_panel_container, panel,
+                MainPanel.FRAGMENT_TAG);
+        transaction.commitAllowingStateLoss();
     }
 
     public void setLocation(String location) {
@@ -623,10 +577,10 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         mCancel = r.getString(R.string.cancel).toUpperCase(Locale.getDefault());
         int marginTop = r.getDimensionPixelSize(R.dimen.compare_margin_top);
         int marginRight = r.getDimensionPixelSize(R.dimen.compare_margin_right);
-        imgComparison = (ImageButton) findViewById(R.id.imgComparison);
-        rlImageContainer = (RelativeLayout) findViewById(R.id.imageContainer);
+        imgComparison = findViewById(R.id.imgComparison);
+        rlImageContainer = findViewById(R.id.imageContainer);
 
-        mImageShow = (ImageShow) findViewById(R.id.imageShow);
+        mImageShow = findViewById(R.id.imageShow);
         mImageViews.add(mImageShow);
 
         setupEditors();
@@ -636,31 +590,27 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
         setupStatePanel();
 
-        imgComparison.setOnTouchListener(new OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getAction();
-                action = action & MotionEvent.ACTION_MASK;
-                if (action == MotionEvent.ACTION_DOWN) {
-                    MasterImage.getImage().setShowsOriginal(true);
-                    v.setPressed(true);
-                    if (mWaterMarkView != null) {
-                        mWaterMarkView.setVisibility(View.GONE);
-                    }
+        imgComparison.setOnTouchListener((v, event) -> {
+            int action = event.getAction();
+            action = action & MotionEvent.ACTION_MASK;
+            if (action == MotionEvent.ACTION_DOWN) {
+                MasterImage.getImage().setShowsOriginal(true);
+                v.setPressed(true);
+                if (mWaterMarkView != null) {
+                    mWaterMarkView.setVisibility(View.GONE);
                 }
-                if (action == MotionEvent.ACTION_UP
-                        || action == MotionEvent.ACTION_CANCEL
-                        || action == MotionEvent.ACTION_OUTSIDE) {
-                    v.setPressed(false);
-                    MasterImage.getImage().setShowsOriginal(false);
-                    if (mWaterMarkView != null) {
-                        mWaterMarkView.setVisibility(View.VISIBLE);
-                    }
-                }
-
-                return false;
             }
+            if (action == MotionEvent.ACTION_UP
+                    || action == MotionEvent.ACTION_CANCEL
+                    || action == MotionEvent.ACTION_OUTSIDE) {
+                v.setPressed(false);
+                MasterImage.getImage().setShowsOriginal(false);
+                if (mWaterMarkView != null) {
+                    mWaterMarkView.setVisibility(View.VISIBLE);
+                }
+            }
+
+            return false;
         });
     }
 
@@ -689,27 +639,19 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         View customView = getLayoutInflater().inflate(R.layout.filtershow_actionbar, null);
         actionBar.setCustomView(customView, lp);
         mSaveButton = actionBar.getCustomView().findViewById(R.id.filtershow_done);
-        mSaveButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveImage();
-            }
-        });
+        mSaveButton.setOnClickListener(view -> saveImage());
 
         showSaveButtonIfNeed();
 
         View exitButton = actionBar.getCustomView().findViewById(R.id.filtershow_exit);
-        exitButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mImageShow.hasModifications()) {
-                    if (mBackAlertDialogBuilder == null) {
-                        createBackDialog();
-                    }
-                    mBackAlertDialogBuilder.show();
-                } else {
-                    done();
+        exitButton.setOnClickListener(v -> {
+            if (mImageShow.hasModifications()) {
+                if (mBackAlertDialogBuilder == null) {
+                    createBackDialog();
                 }
+                mBackAlertDialogBuilder.show();
+            } else {
+                done();
             }
         });
 
@@ -722,34 +664,28 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources()
                 .getColor(R.color.edit_actionbar_background)));
         actionBar.setCustomView(R.layout.filtershow_actionbar_effects);
-        ImageButton cancelButton = (ImageButton) actionBar.getCustomView()
+        ImageButton cancelButton = actionBar.getCustomView()
                 .findViewById(R.id.cancelFilter);
-        ImageButton applyButton = (ImageButton) actionBar.getCustomView()
+        ImageButton applyButton = actionBar.getCustomView()
                 .findViewById(R.id.applyFilter);
-        Button editTitle = (Button) actionBar.getCustomView().findViewById(
+        Button editTitle = actionBar.getCustomView().findViewById(
                 R.id.applyEffect);
         editTitle.setTransformationMethod(null);
         View actionControl = actionBar.getCustomView().findViewById(
                 R.id.panelAccessoryViewList);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancelCurrentFilter();
-                FilterShowActivity.this.backToMain();
-                setActionBar();
-            }
+        cancelButton.setOnClickListener(v -> {
+            cancelCurrentFilter();
+            FilterShowActivity.this.backToMain();
+            setActionBar();
         });
-        applyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                currentEditor.finalApplyCalled();
-                FilterShowActivity.this.backToMain();
-                setActionBar();
-            }
+        applyButton.setOnClickListener(v -> {
+            currentEditor.finalApplyCalled();
+            FilterShowActivity.this.backToMain();
+            setActionBar();
         });
 
         if (currentEditor != null) {
-            if(!currentEditor.showsActionBarControls()) {
+            if (!currentEditor.showsActionBarControls()) {
                 cancelButton.setVisibility(View.GONE);
                 applyButton.setVisibility(View.GONE);
             }
@@ -763,7 +699,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
     private void showActionBar(boolean show) {
         ActionBar actionBar = getActionBar();
-        if (actionBar != null ) {
+        if (actionBar != null) {
             if (show) {
                 if (!actionBar.isShowing()) {
                     actionBar.show();
@@ -784,7 +720,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         masterImage.onHistoryItemClick(position);
         invalidateViews();
 
-        if(!masterImage.hasFusionApplied()) {
+        if (!masterImage.hasFusionApplied()) {
             masterImage.setFusionUnderlay(null);
             masterImage.setScaleFactor(1);
             masterImage.resetTranslation();
@@ -891,84 +827,57 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         }
         mUserPresetsManager.delete(rep.getId());
         updateUserPresetsFromManager();
-     }
+    }
 
-    public void handlePreset(Action action,View view,int i) {
+    public void handlePreset(Action action, View view, int i) {
         mChangeable = true;
         mHandledSwipeView = view;
         final Action ac = action;
         mFilterPresetSource = new FilterPresetSource(this);
         switch (i) {
             case R.id.renameButton:
-                final View layout = View.inflate(this,R.layout.filtershow_default_edittext,null);
+                final View layout = View.inflate(this, R.layout.filtershow_default_edittext, null);
                 AlertDialog.Builder renameAlertDialogBuilder = new AlertDialog.Builder(this);
                 renameAlertDialogBuilder.setTitle(R.string.rename_before_exit);
                 renameAlertDialogBuilder.setView(layout);
-                renameAlertDialogBuilder.setPositiveButton(R.string.ok,
-                        new DialogInterface.OnClickListener(){
-                            @Override
-                            public void onClick(DialogInterface dialog, int id){
-                                EditText mEditText = (EditText) layout.findViewById(
-                                        R.id.filtershow_default_edit);
-                                String name = String.valueOf(mEditText.getText());
-                                if ( (name.trim().length() == 0)|| name.isEmpty()) {
-                                    Toast.makeText(getApplicationContext(),
-                                            getString(R.string.filter_name_notification),
-                                            Toast.LENGTH_SHORT).show();
-                                } else if (isDuplicateName(name)) {
-                                    Toast.makeText(getApplicationContext(),
-                                            getString(R.string.filter_name_duplicate),
-                                            Toast.LENGTH_SHORT).show();
-                                } else {
-                                    renamePreset(ac, name);
-                                }
-                                dialog.dismiss();
-                            }
-                        }
-                );
-                renameAlertDialogBuilder.setNegativeButton(mCancel,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick (DialogInterface dialog, int id){
-
-                            }
-                        }
-                );
+                renameAlertDialogBuilder.setPositiveButton(R.string.ok, (dialog, id) -> {
+                    EditText mEditText = layout.findViewById(R.id.filtershow_default_edit);
+                    String name = String.valueOf(mEditText.getText());
+                    if ((name.trim().length() == 0) || name.isEmpty()) {
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.filter_name_notification),
+                                Toast.LENGTH_SHORT).show();
+                    } else if (isDuplicateName(name)) {
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.filter_name_duplicate),
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        renamePreset(ac, name);
+                    }
+                    dialog.dismiss();
+                });
+                renameAlertDialogBuilder.setNegativeButton(mCancel, null);
                 renameAlertDialogBuilder.create().show();
                 break;
 
             case R.id.deleteButton:
                 String name = action.getName();
                 AlertDialog.Builder deleteAlertDialogBuilder = new AlertDialog.Builder(this);
-                String textview ="Do you want to delete "+name+"?";
+                String textview = "Do you want to delete " + name + "?";
                 deleteAlertDialogBuilder.setMessage(textview)
                         .setTitle(R.string.delete_before_exit);
-                deleteAlertDialogBuilder.setPositiveButton(R.string.ok,
-                        new DialogInterface.OnClickListener(){
-                            @Override
-                            public void onClick(DialogInterface dialog, int id){
-                                ((SwipableView) mHandledSwipeView).delete();
-                                dialog.dismiss();
-                            }
-                        }
-                );
-                deleteAlertDialogBuilder.setNegativeButton(mCancel,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick (DialogInterface dialog, int id){
-                                dialog.dismiss();
-
-                            }
-                        }
-                );
+                deleteAlertDialogBuilder.setPositiveButton(R.string.ok, (dialog, id) -> {
+                    ((SwipableView) mHandledSwipeView).delete();
+                    dialog.dismiss();
+                });
+                deleteAlertDialogBuilder.setNegativeButton(mCancel, (dialog, id) -> dialog.dismiss());
                 deleteAlertDialogBuilder.create().show();
                 break;
         }
     }
 
     public void removePreset(Action action) {
-        FilterPresetRepresentation rep =
-                (FilterPresetRepresentation)action.getRepresentation();
+        FilterPresetRepresentation rep = (FilterPresetRepresentation) action.getRepresentation();
         if (rep == null) {
             return;
         }
@@ -987,7 +896,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
     public void renamePreset(Action action, String name) {
         FilterPresetRepresentation rep =
-                (FilterPresetRepresentation)action.getRepresentation();
+                (FilterPresetRepresentation) action.getRepresentation();
         if (rep == null) {
             return;
         }
@@ -1000,7 +909,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
                 }
             }
         }
-        mFilterPresetSource.updatePresetName(rep.getId(),name);
+        mFilterPresetSource.updatePresetName(rep.getId(), name);
         fillLooks();
     }
 
@@ -1039,7 +948,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     private void fillMakeup() {
-        if(!SimpleMakeupImageFilter.HAS_TS_MAKEUP) {
+        if (!SimpleMakeupImageFilter.HAS_TS_MAKEUP) {
             return;
         }
 
@@ -1090,11 +999,11 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     private void fillPresetFilter() {
         FiltersManager filtersManager = FiltersManager.getManager();
         ArrayList<FilterRepresentation> filtersRepresentations = filtersManager.getFilterPreset();
-        if(mChangeable) {
+        if (mChangeable) {
             ArrayList<FilterRepresentation> mFilterPreset = new ArrayList<FilterRepresentation>();
             ArrayList<SaveOption> ret = mFilterPresetSource.getAllUserPresets();
             if (ret == null) return;
-            for (int id = 0; id < ret.size(); id ++) {
+            for (int id = 0; id < ret.size(); id++) {
                 FilterPresetRepresentation representation = new FilterPresetRepresentation(
                         ret.get(id).name, ret.get(id)._id, id + 1);
                 Uri filteredUri = Uri.parse(ret.get(id).Uri);
@@ -1102,8 +1011,8 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
                 representation.setSerializationName("Custom");
                 mFilterPreset.add(representation);
             }
-            if (tempFilterArray.size() != 0){
-                for (int id = 0; id < tempFilterArray.size(); id ++) {
+            if (tempFilterArray.size() != 0) {
+                for (int id = 0; id < tempFilterArray.size(); id++) {
                     FilterPresetRepresentation representation = new FilterPresetRepresentation(
                             tempFilterArray.get(id).name, tempFilterArray.get(id)._id, id + 1);
                     Uri filteredUri = Uri.parse(tempFilterArray.get(id).Uri);
@@ -1118,7 +1027,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
         if (filtersRepresentations == null) return;
         for (FilterRepresentation representation : filtersRepresentations) {
-            mCategoryLooksAdapter.add(new Action(this, representation, Action.FULL_VIEW,true));
+            mCategoryLooksAdapter.add(new Action(this, representation, Action.FULL_VIEW, true));
         }
     }
 
@@ -1220,7 +1129,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     private void setupEditors() {
-        FrameLayout editorContainer = (FrameLayout) findViewById(R.id.editorContainer);
+        FrameLayout editorContainer = findViewById(R.id.editorContainer);
         mEditorPlaceHolder.setContainer(editorContainer);
         EditorManager.addEditors(mEditorPlaceHolder);
         mEditorPlaceHolder.setOldViews(mImageViews);
@@ -1253,7 +1162,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         mParseDepthMapTask = new ParseDepthMapTask();
         mParseDepthMapTask.execute(uri);
 
-        if(TruePortraitNativeEngine.getInstance().isLibLoaded()) {
+        if (TruePortraitNativeEngine.getInstance().isLibLoaded()) {
             mLoadTruePortraitTask = new LoadTruePortraitTask();
             mLoadTruePortraitTask.execute(uri);
         }
@@ -1418,7 +1327,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         }
         if (hasWaterMark && representation.getFilterType() != FilterRepresentation.TYPE_WATERMARK &&
                 representation.getFilterType() !=
-                FilterWatermarkRepresentation.TYPE_WATERMARK_CATEGORY) {
+                        FilterWatermarkRepresentation.TYPE_WATERMARK_CATEGORY) {
             clearWaterMark();
             resetHistory();
             showWatermarkButton(false);
@@ -1462,15 +1371,15 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         if (representation.getFilterType() == FilterRepresentation.TYPE_DUALCAM) {
             DisplayMetrics dm = getResources().getDisplayMetrics();
             float[] mTmpPoint = new float[2];
-            mTmpPoint[0] = dm.widthPixels/2;
-            mTmpPoint[1] = dm.heightPixels/2;
+            mTmpPoint[0] = dm.widthPixels / 2;
+            mTmpPoint[1] = dm.heightPixels / 2;
             Matrix m = MasterImage.getImage().getScreenToImageMatrix(true);
             m.mapPoints(mTmpPoint);
             if (representation instanceof FilterDualCamBasicRepresentation) {
-                ((FilterDualCamBasicRepresentation)representation).setPoint((int)mTmpPoint[0],(int)mTmpPoint[1]);
+                ((FilterDualCamBasicRepresentation) representation).setPoint((int) mTmpPoint[0], (int) mTmpPoint[1]);
             }
             if (representation instanceof FilterDualCamFusionRepresentation) {
-                ((FilterDualCamFusionRepresentation)representation).setPoint((int)mTmpPoint[0],(int)mTmpPoint[1]);
+                ((FilterDualCamFusionRepresentation) representation).setPoint((int) mTmpPoint[0], (int) mTmpPoint[1]);
             }
         }
         if (representation.getFilterType() == FilterRepresentation.TYPE_WATERMARK) {
@@ -1503,7 +1412,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
     private void showWaterMark(FilterRepresentation representation) {
         FilterWatermarkRepresentation watermarkRepresentation =
-                (FilterWatermarkRepresentation)representation;
+                (FilterWatermarkRepresentation) representation;
         if (mWaterMarkView != null) {
             rlImageContainer.removeView(mWaterMarkView);
             hasWaterMark = false;
@@ -1598,7 +1507,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     @Override
-    public void onDismiss(PopupMenu popupMenu){
+    public void onDismiss(PopupMenu popupMenu) {
         if (mCurrentMenu == null) {
             return;
         }
@@ -1631,13 +1540,13 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     public void onMediaPickerResult(Uri selImg) {
         mFilterPresetSource = new FilterPresetSource(this);
         int id = nameFilter(mFilterPresetSource, tempFilterArray);
-        FilterPresetRepresentation fp= new FilterPresetRepresentation(
+        FilterPresetRepresentation fp = new FilterPresetRepresentation(
                 getString(R.string.filtershow_preset_title) + id, id, id);
         fp.setSerializationName("Custom");
         fp.setUri(selImg);
         ImagePreset preset = new ImagePreset();
         preset.addFilter(fp);
-        SaveOption sp= new SaveOption();
+        SaveOption sp = new SaveOption();
         sp._id = id;
         sp.name = "Custom" + id;
         sp.Uri = selImg.toString();
@@ -1655,9 +1564,9 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         removeSeekBarPanel();
         showActionBar(true);
         loadMainPanel();
-        if(mEditorPlaceHolder != null)
+        if (mEditorPlaceHolder != null)
             mEditorPlaceHolder.hide();
-        if(mImageShow != null)
+        if (mImageShow != null)
             mImageShow.setVisibility(View.VISIBLE);
         updateCategories();
         mCategoryLooksAdapter.setSelected(pos);
@@ -1691,7 +1600,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     public FilterRepresentation createUserPresentaion(Uri selImg, int index) {
-        FilterPresetRepresentation fp= new FilterPresetRepresentation(
+        FilterPresetRepresentation fp = new FilterPresetRepresentation(
                 getString(R.string.filtershow_preset_title) + index, index, index);
         fp.setSerializationName("Custom");
         fp.setUri(selImg);
@@ -1709,7 +1618,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             MasterImage master = MasterImage.getImage();
             if (master.supportsHighRes()) {
                 int highresPreviewSize = Math.min(MasterImage.MAX_BITMAP_DIM, getScreenImageSize());
-                Log.d(LOGTAG, "FilterShowActivity.LoadHighresBitmapTask.doInBackground(): after, highresPreviewSize is " + highresPreviewSize);
+                Log.d(TAG, "FilterShowActivity.LoadHighresBitmapTask.doInBackground(): after, highresPreviewSize is " + highresPreviewSize);
                 Rect bounds = new Rect();
                 Bitmap originalHires = ImageLoader.loadOrientedConstrainedBitmap(master.getUri(),
                         master.getActivity(), highresPreviewSize,
@@ -1717,8 +1626,8 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
                 // Force the bitmap to even width and height which is required by beautification algo
                 Bitmap tempBmp = MasterImage.convertToEvenNumberWidthImage(originalHires);
-                if(tempBmp != null && originalHires != null) {
-                    if(!originalHires.isRecycled() && originalHires != tempBmp) {
+                if (tempBmp != null && originalHires != null) {
+                    if (!originalHires.isRecycled() && originalHires != tempBmp) {
                         originalHires.recycle();
                     }
                     originalHires = tempBmp;
@@ -1726,8 +1635,8 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
                 master.setOriginalBounds(bounds);
                 master.setOriginalBitmapHighres(originalHires);
-                Log.d(LOGTAG, "FilterShowActivity.LoadHighresBitmapTask.doInBackground(): originalHires.WH is (" + originalHires.getWidth()
-                        + ", " + originalHires.getHeight() +"), bounds is " + bounds.toString());
+                Log.d(TAG, "FilterShowActivity.LoadHighresBitmapTask.doInBackground(): originalHires.WH is (" + originalHires.getWidth()
+                        + ", " + originalHires.getHeight() + "), bounds is " + bounds);
                 mBoundService.setOriginalBitmapHighres(originalHires);
                 master.warnListeners();
             }
@@ -1740,7 +1649,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             if (highresBitmap != null) {
                 float highResPreviewScale = (float) highresBitmap.getWidth()
                         / (float) MasterImage.getImage().getOriginalBounds().width();
-                Log.d(LOGTAG, "FilterShowActivity.LoadHighresBitmapTask.onPostExecute(): highResPreviewScale is " + highResPreviewScale);
+                Log.d(TAG, "FilterShowActivity.LoadHighresBitmapTask.onPostExecute(): highResPreviewScale is " + highResPreviewScale);
                 mBoundService.setHighresPreviewScaleFactor(highResPreviewScale);
             }
 
@@ -1770,19 +1679,14 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     public void startLoadingIndicator() {
-        if(mLoadingDialog == null) {
+        if (mLoadingDialog == null) {
             mLoadingDialog = new ProgressDialog(this);
             mLoadingDialog.setMessage(getString(R.string.loading_image));
             mLoadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             mLoadingDialog.setIndeterminate(true);
             mLoadingDialog.setCancelable(true);
             mLoadingDialog.setCanceledOnTouchOutside(false);
-            mLoadingDialog.setOnCancelListener(new OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    done();
-                }
-            });
+            mLoadingDialog.setOnCancelListener(dialog -> done());
         }
 
         mLoadingDialog.show();
@@ -1800,7 +1704,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         protected Boolean doInBackground(Uri... params) {
             boolean result = false;
             Bitmap src = ImageLoader.loadBitmap(FilterShowActivity.this, params[0], null);
-            if(src == null) {
+            if (src == null) {
                 return false;
             }
 
@@ -1812,9 +1716,9 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
                 fDetect.uninitialize();
             }
 
-            if(faceInfos != null && faceInfos.length > 0) {
+            if (faceInfos != null && faceInfos.length > 0) {
                 Rect[] faces = new Rect[faceInfos.length];
-                for(int i=0; i<faceInfos.length; i++) {
+                for (int i = 0; i < faceInfos.length; i++) {
                     faces[i] = faceInfos[i].face;
                 }
 
@@ -1839,7 +1743,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
         public LoadBitmapTask() {
             mBitmapSize = getScreenImageSize();
-            Log.d(LOGTAG, "FilterShowActivity.LoadBitmapTask(): mBitmapSize is " + mBitmapSize);
+            Log.d(TAG, "FilterShowActivity.LoadBitmapTask(): mBitmapSize is " + mBitmapSize);
         }
 
         @Override
@@ -1884,7 +1788,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             }
 
             if (null == CachingPipeline.getRenderScriptContext()) {
-                Log.v(LOGTAG, "RenderScript context destroyed during load");
+                Log.v(TAG, "RenderScript context destroyed during load");
                 return;
             }
             final View imageShow = findViewById(R.id.imageShow);
@@ -1895,7 +1799,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
             float previewScale = (float) largeBitmap.getWidth()
                     / (float) MasterImage.getImage().getOriginalBounds().width();
-            Log.d(LOGTAG, "FilterShowActivity.LoadBitmapTask.onPostExecute(): previewScale is " + previewScale);
+            Log.d(TAG, "FilterShowActivity.LoadBitmapTask.onPostExecute(): previewScale is " + previewScale);
             mBoundService.setPreviewScaleFactor(previewScale);
             if (!mShowingTinyPlanet) {
                 mCategoryFiltersAdapter.removeTinyPlanet();
@@ -1906,7 +1810,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             mCategoryFiltersAdapter.imageLoaded();
             mCategoryDualCamAdapter.imageLoaded();
             mCategoryTruePortraitAdapter.imageLoaded();
-            if(mCategoryMakeupAdapter != null) {
+            if (mCategoryMakeupAdapter != null) {
                 mCategoryMakeupAdapter.imageLoaded();
             }
             mLoadBitmapTask = null;
@@ -1953,20 +1857,20 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             mLoadBitmapTask.cancel(false);
         }
 
-        if(mHiResBitmapTask != null) {
+        if (mHiResBitmapTask != null) {
             mHiResBitmapTask.cancel(false);
         }
 
-        if(mParseDepthMapTask != null) {
+        if (mParseDepthMapTask != null) {
             mParseDepthMapTask.cancel(false);
         }
 
-        if(mLoadTruePortraitTask != null) {
+        if (mLoadTruePortraitTask != null) {
             mLoadTruePortraitTask.cancel(false);
         }
 
         mUserPresetsManager.close();
-        if (mFilterPresetSource !=null) {
+        if (mFilterPresetSource != null) {
             mFilterPresetSource.close();
         }
 
@@ -2068,28 +1972,25 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         getMenuInflater().inflate(R.menu.filtershow_activity_menu, menu);
         MenuItem item = menu.findItem(R.id.menu_share);
         if (item != null) {
-            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    final Intent shareIntent = getDefaultShareIntent();
-                    onShareTargetSelected();
-                    Intent intent = Intent.createChooser(shareIntent, null);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    FilterShowActivity.this.startActivity(intent);
-                    return true;
-                }
+            item.setOnMenuItemClickListener(item1 -> {
+                final Intent shareIntent = getDefaultShareIntent();
+                onShareTargetSelected();
+                Intent intent = Intent.createChooser(shareIntent, null);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                FilterShowActivity.this.startActivity(intent);
+                return true;
             });
         }
         mMenu = menu;
         setupMenu();
 
-        if(mCurrentEditor != null) {
+        if (mCurrentEditor != null) {
             mCurrentEditor.onPrepareOptionsMenu(menu);
         }
         return true;
     }
 
-    private void setupMenu(){
+    private void setupMenu() {
         if (mMenu == null || mMasterImage == null) {
             return;
         }
@@ -2134,27 +2035,27 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
                 invalidateViews();
                 return true;
             }*/
-        case R.id.resetHistoryButton: {
-            clearWaterMark();
-            resetHistory();
-            return true;
-        }
+            case R.id.resetHistoryButton: {
+                clearWaterMark();
+                resetHistory();
+                return true;
+            }
         /*case R.id.showImageStateButton: {
                 toggleImageStatePanel();
                 return true;
             }*/
-        case R.id.exportFlattenButton: {
-            showExportOptionsDialog();
-            return true;
-        }
-        case android.R.id.home: {
-            saveImage();
-            return true;
-        }
-        case R.id.manageUserPresets: {
-            manageUserPresets();
-            return true;
-        }
+            case R.id.exportFlattenButton: {
+                showExportOptionsDialog();
+                return true;
+            }
+            case android.R.id.home: {
+                saveImage();
+                return true;
+            }
+            case R.id.manageUserPresets: {
+                manageUserPresets();
+                return true;
+            }
         }
         return false;
     }
@@ -2165,19 +2066,14 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         try {
             printer.printBitmap("ImagePrint", bitmap);
         } catch (RuntimeException e) {
-            Log.e(LOGTAG,"Print failure,",e);
+            Log.e(TAG, "Print failure,", e);
         }
     }
 
     private void manageUserPresets() {
         if (mPresetDialog == null) {
             mPresetDialog = new PresetManagementDialog();
-            mPresetDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    mPresetDialog = null;
-                }
-            });
+            mPresetDialog.setOnDismissListener(dialog -> mPresetDialog = null);
             mPresetDialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
         }
     }
@@ -2410,11 +2306,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         mMasterImage.setStateAdapter(imageStateAdapter);
         mMasterImage.setActivity(this);
 
-        if (Runtime.getRuntime().maxMemory() > LIMIT_SUPPORTS_HIGHRES) {
-            mMasterImage.setSupportsHighRes(true);
-        } else {
-            mMasterImage.setSupportsHighRes(false);
-        }
+        mMasterImage.setSupportsHighRes(Runtime.getRuntime().maxMemory() > LIMIT_SUPPORTS_HIGHRES);
     }
 
     void resetHistory() {
@@ -2447,11 +2339,11 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     public void showDefaultImageView() {
-        if(mEditorPlaceHolder != null)
+        if (mEditorPlaceHolder != null)
             mEditorPlaceHolder.hide();
-        if(mImageShow != null)
+        if (mImageShow != null)
             mImageShow.setVisibility(View.VISIBLE);
-        if(MasterImage.getImage() != null) {
+        if (MasterImage.getImage() != null) {
             MasterImage.getImage().setCurrentFilter(null);
             MasterImage.getImage().setCurrentFilterRepresentation(null);
         }
@@ -2516,19 +2408,9 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         mBackAlertDialogBuilder.setMessage(R.string.discard_message).setTitle(
                 R.string.discard_title);
         mBackAlertDialogBuilder.setPositiveButton(mPopUpText,
-                new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                done();
-            }
-        });
+                (dialog, id) -> done());
         mBackAlertDialogBuilder.setNegativeButton(mCancel,
-                new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-            }
-        });
+                (dialog, id) -> dialog.dismiss());
     }
 
     public void cannotLoadImage() {
@@ -2546,7 +2428,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position,
-            long id) {
+                            long id) {
         mMasterImage.onHistoryItemClick(position);
         invalidateViews();
     }
@@ -2570,8 +2452,8 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             } else if (requestCode == SELECT_FUSION_UNDERLAY) {
                 Uri underlayImageUri = data.getData();
                 // find fusion representation
-                if(mCurrentEditor instanceof EditorDualCamFusion) {
-                    EditorDualCamFusion editor = (EditorDualCamFusion)mCurrentEditor;
+                if (mCurrentEditor instanceof EditorDualCamFusion) {
+                    EditorDualCamFusion editor = (EditorDualCamFusion) mCurrentEditor;
                     editor.setUnderlayImageUri(underlayImageUri);
                 } else if (mCurrentEditor instanceof EditorTruePortraitFusion) {
                     if (checkExtensionValidity(this, underlayImageUri)) {
@@ -2579,7 +2461,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
                                 Toast.LENGTH_SHORT).show();
                         pickImage(SELECT_FUSION_UNDERLAY);
                     } else {
-                        EditorTruePortraitFusion editor = (EditorTruePortraitFusion)mCurrentEditor;
+                        EditorTruePortraitFusion editor = (EditorTruePortraitFusion) mCurrentEditor;
                         editor.setUnderlayImageUri(underlayImageUri);
                     }
                 }
@@ -2589,8 +2471,9 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
     /**
      * check whether the extension of the given uri is supported to be underlay
+     *
      * @param context context for get ContentResolver
-     * @param uri uri need to check
+     * @param uri     uri need to check
      * @return validity of uri's extension, true means unsupported, false means supported
      */
     private boolean checkExtensionValidity(final Context context, final Uri uri) {
@@ -2604,7 +2487,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             filePath = uri.getPath();
         } else if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
             Cursor cursor = context.getContentResolver().query(
-                    uri, new String[] {MediaStore.Images.ImageColumns.DATA}, null, null, null);
+                    uri, new String[]{MediaStore.Images.ImageColumns.DATA}, null, null, null);
             if (null != cursor) {
                 if (cursor.moveToFirst()) {
                     int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
@@ -2627,8 +2510,8 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     private int nameFilter(FilterPresetSource source,
-                                            ArrayList <SaveOption> tempFilterArray) {
-        String s,s1,s2;
+                           ArrayList<SaveOption> tempFilterArray) {
+        String s, s1, s2;
         ArrayList<SaveOption> sp = source.getAllUserPresets();
         ArrayList<Integer> temp = new ArrayList<Integer>();
         if (sp != null) {
@@ -2650,7 +2533,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
             }
         }
 
-        if (tempFilterArray.size() != 0 ){
+        if (tempFilterArray.size() != 0) {
             for (int i = 0; i < tempFilterArray.size(); i++) {
                 s = tempFilterArray.get(i).name;
                 if (s.length() > "Custom".length()) {
@@ -2672,23 +2555,23 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
 
         if (temp != null) {
             Collections.sort(temp);
-            for (int i = 1; i <= temp.size(); i++){
-                if (temp.get(i-1)!= i){
+            for (int i = 1; i <= temp.size(); i++) {
+                if (temp.get(i - 1) != i) {
                     return i;
                 }
             }
         }
-        return temp.size()+1;
+        return temp.size() + 1;
     }
 
 
-    public static boolean completeSaveFilters (FilterPresetSource mFilterPresetSource,
-                                               ArrayList<SaveOption> tempFilterArray) {
+    public static boolean completeSaveFilters(FilterPresetSource mFilterPresetSource,
+                                              ArrayList<SaveOption> tempFilterArray) {
 
-        for (int i = 0; i < tempFilterArray.size(); i++){
+        for (int i = 0; i < tempFilterArray.size(); i++) {
             String name = tempFilterArray.get(i).name;
             String filteredUri = tempFilterArray.get(i).Uri;
-            if (mFilterPresetSource.insertPreset(name,filteredUri) == false) return false;
+            if (mFilterPresetSource.insertPreset(name, filteredUri) == false) return false;
         }
         tempFilterArray.clear();
         return true;
@@ -2739,11 +2622,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     public void setHandlesSwipeForView(View view, float startX, float startY) {
-        if (view != null) {
-            mHandlingSwipeButton = true;
-        } else {
-            mHandlingSwipeButton = false;
-        }
+        mHandlingSwipeButton = view != null;
         mHandledSwipeView = view;
         int[] location = new int[2];
         view.getLocationInWindow(location);
@@ -2751,7 +2630,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
         mSwipeStartY = location[1] + startY;
     }
 
-    public boolean dispatchTouchEvent (MotionEvent ev) {
+    public boolean dispatchTouchEvent(MotionEvent ev) {
         if (mHandlingSwipeButton) {
             int direction = CategoryView.HORIZONTAL;
             if (mHandledSwipeView instanceof CategoryView) {
@@ -2785,7 +2664,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
                 if (mHandledSwipeViewLastDelta > distance) {
                     ((SwipableView) mHandledSwipeView).delete();
                 }
-           }
+            }
             return true;
         }
         return super.dispatchTouchEvent(ev);
@@ -2794,7 +2673,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     public Point mHintTouchPoint = new Point();
 
     public Point hintTouchPoint(View view) {
-        int location[] = new int[2];
+        int[] location = new int[2];
         view.getLocationOnScreen(location);
         int x = mHintTouchPoint.x - location[0];
         int y = mHintTouchPoint.y - location[1];
@@ -2802,7 +2681,7 @@ public class FilterShowActivity extends AbstractPermissionActivity implements On
     }
 
     public void startTouchAnimation(View target, float x, float y) {
-        int location[] = new int[2];
+        int[] location = new int[2];
         target.getLocationOnScreen(location);
         mHintTouchPoint.x = (int) (location[0] + x);
         mHintTouchPoint.y = (int) (location[1] + y);

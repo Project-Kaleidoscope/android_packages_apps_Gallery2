@@ -19,13 +19,14 @@ package com.android.gallery3d.ui;
 import android.content.Context;
 import android.graphics.Rect;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.data.MediaObject;
 import com.android.gallery3d.glrenderer.FadeOutTexture;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.glrenderer.NinePatchTexture;
 import com.android.gallery3d.glrenderer.ResourceTexture;
 import com.android.gallery3d.glrenderer.Texture;
+
+import org.codeaurora.gallery.R;
 
 public abstract class AbstractSlotRenderer implements SlotView.SlotRenderer {
 
@@ -49,7 +50,7 @@ public abstract class AbstractSlotRenderer implements SlotView.SlotRenderer {
     }
 
     protected void drawContent(GLCanvas canvas,
-            Texture content, int width, int height, int rotation) {
+                               Texture content, int width, int height, int rotation) {
         canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
 
         // The content is always rendered in to the largest square that fits
@@ -72,7 +73,7 @@ public abstract class AbstractSlotRenderer implements SlotView.SlotRenderer {
     }
 
     protected void drawVideoOverlay(GLCanvas canvas, int width, int height,
-            boolean isGridViewShown, int thumbSize) {
+                                    boolean isGridViewShown, int thumbSize) {
         // Scale the video overlay to the height of the thumbnail and put it
         // on the left side.
         int side = Math.min(width, height) / 6;
@@ -82,7 +83,7 @@ public abstract class AbstractSlotRenderer implements SlotView.SlotRenderer {
     }
 
     protected void drawDrmOverlay(GLCanvas canvas, int width, int height, int Drm_mediaType,
-                boolean isGridViewShown, int thumbSize) {
+                                  boolean isGridViewShown, int thumbSize) {
         // Scale the video overlay to the height of the thumbnail and put it on the left side.
         if (Drm_mediaType == MediaObject.MEDIA_TYPE_DRM_VIDEO) {
             ResourceTexture v = mVideoOverlay;
@@ -99,7 +100,7 @@ public abstract class AbstractSlotRenderer implements SlotView.SlotRenderer {
     }
 
     protected void drawPanoramaIcon(GLCanvas canvas, int width, int height,
-                   boolean isGridViewShown, int thumbSize) {
+                                    boolean isGridViewShown, int thumbSize) {
         int iconSize = Math.min(width, height) / 6;
         if (!isGridViewShown) {
             width = thumbSize;
@@ -136,8 +137,8 @@ public abstract class AbstractSlotRenderer implements SlotView.SlotRenderer {
     }
 
     protected static void drawFrame(GLCanvas canvas, Rect padding, Texture frame,
-            int x, int y, int width, int height) {
+                                    int x, int y, int width, int height) {
         frame.draw(canvas, x - padding.left, y - padding.top, width + padding.left + padding.right,
-                 height + padding.top + padding.bottom);
+                height + padding.top + padding.bottom);
     }
 }

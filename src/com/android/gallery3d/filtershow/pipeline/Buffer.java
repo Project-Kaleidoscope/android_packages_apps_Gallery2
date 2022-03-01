@@ -26,10 +26,10 @@ import com.android.gallery3d.filtershow.cache.BitmapCache;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 
 public class Buffer {
-    private static final String LOGTAG = "Buffer";
+    private static final String TAG = "Buffer";
     private Bitmap mBitmap;
     private Allocation mAllocation;
-    private boolean mUseAllocation = false;
+    private final boolean mUseAllocation = false;
     private ImagePreset mPreset;
 
     public Buffer(Bitmap bitmap) {
@@ -50,11 +50,8 @@ public class Buffer {
         if (mBitmap == null || bitmap == null) {
             return false;
         }
-        if (mBitmap.getWidth() == bitmap.getWidth()
-                && mBitmap.getHeight() == bitmap.getHeight()) {
-            return true;
-        }
-        return false;
+        return mBitmap.getWidth() == bitmap.getWidth()
+                && mBitmap.getHeight() == bitmap.getHeight();
     }
 
     public synchronized void useBitmap(Bitmap bitmap) {

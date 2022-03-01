@@ -65,7 +65,9 @@ public abstract class AutoThumbnailDrawable<T> extends Drawable {
     }
 
     protected abstract byte[] getPreferredImageBytes(T data);
+
     protected abstract InputStream getFallbackImageStream(T data);
+
     protected abstract boolean dataChangedLocked(T data);
 
     public void setImage(T data, int width, int height) {
@@ -113,9 +115,8 @@ public abstract class AutoThumbnailDrawable<T> extends Drawable {
             canvas.concat(mDrawMatrix);
             canvas.drawBitmap(mBitmap, 0, 0, mPaint);
             canvas.restore();
-        } else {
-            // TODO: Draw placeholder...?
         }
+
     }
 
     private void updateDrawMatrixLocked() {
@@ -277,13 +278,13 @@ public abstract class AutoThumbnailDrawable<T> extends Drawable {
                 }
             } catch (Exception e) {
                 Log.d(TAG, "Failed to fetch bitmap", e);
-                return;
             } finally {
                 try {
                     if (is != null) {
                         is.close();
                     }
-                } catch (Exception e) {}
+                } catch (Exception ignored) {
+                }
                 if (b != null) {
                     synchronized (mLock) {
                         if (!dataChangedLocked(data)) {
@@ -296,13 +297,10 @@ public abstract class AutoThumbnailDrawable<T> extends Drawable {
         }
     };
 
-    private final Runnable mUpdateBitmap = new Runnable() {
-        @Override
-        public void run() {
-            synchronized (AutoThumbnailDrawable.this) {
-                updateDrawMatrixLocked();
-                invalidateSelf();
-            }
+    private final Runnable mUpdateBitmap = () -> {
+        synchronized (AutoThumbnailDrawable.this) {
+            updateDrawMatrixLocked();
+            invalidateSelf();
         }
     };
 

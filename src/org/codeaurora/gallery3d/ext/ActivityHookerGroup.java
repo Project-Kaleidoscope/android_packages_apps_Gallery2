@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * hookers.
  */
 public class ActivityHookerGroup extends ActivityHooker {
-    private ArrayList<IActivityHooker> mHooks = new ArrayList<IActivityHooker>();
+    private ArrayList<IActivityHooker> mHooks = new ArrayList<>();
 
     /**
      * Add hooker to current group.

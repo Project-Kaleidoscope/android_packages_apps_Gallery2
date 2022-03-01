@@ -1,4 +1,3 @@
-
 package com.android.gallery3d.filtershow.imageshow;
 
 import android.content.Context;
@@ -10,8 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
@@ -20,14 +17,17 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import org.codeaurora.gallery.R;
+import androidx.core.content.res.ResourcesCompat;
+
 import com.android.gallery3d.filtershow.editors.EditorDraw;
 import com.android.gallery3d.filtershow.filters.FilterDrawRepresentation;
 import com.android.gallery3d.filtershow.filters.ImageFilterDraw;
 
+import org.codeaurora.gallery.R;
+
 public class ImageDraw extends ImageShow {
 
-    private static final String LOGTAG = "ImageDraw";
+    private static final String TAG = "ImageDraw";
     private int mCurrentColor = Color.RED;
     final static float INITAL_STROKE_RADIUS = 40;
     private float mCurrentSize = INITAL_STROKE_RADIUS;
@@ -35,29 +35,24 @@ public class ImageDraw extends ImageShow {
     private FilterDrawRepresentation mFRep;
     private EditorDraw mEditorDraw;
     private long mTimeout;
-    private Paint mCheckerdPaint = makeCheckedPaint();
-    private Paint mShadowPaint = new Paint();
-    private Paint mIconPaint = new Paint();
-    private Paint mBorderPaint = new Paint();
+    private final Paint mCheckerdPaint = makeCheckedPaint();
+    private final Paint mShadowPaint = new Paint();
+    private final Paint mIconPaint = new Paint();
+    private final Paint mBorderPaint = new Paint();
     private Handler mHandler;
     private FilterDrawRepresentation.StrokeData mTmpStrokData =
             new FilterDrawRepresentation.StrokeData();
     private Bitmap mBitmap;
     private float mDisplayRound;
     private float mDisplayBorder;
-    private int DISPLAY_TIME = 500;
-    private Matrix mRotateToScreen = new Matrix();
+    private final int DISPLAY_TIME = 500;
+    private final Matrix mRotateToScreen = new Matrix();
     private Matrix mToOrig;
     private int mBorderColor;
     private int mBorderShadowSize;
     private NinePatchDrawable mShadow;
 
-    Runnable mUpdateRunnable = new Runnable() {
-        @Override
-        public void run() {
-           invalidate();
-        }
-    };
+    Runnable mUpdateRunnable = this::invalidate;
 
 
     public ImageDraw(Context context, AttributeSet attrs) {
@@ -74,22 +69,22 @@ public class ImageDraw extends ImageShow {
         setupTimer();
     }
 
-    private void setupConstants(Context context){
+    private void setupConstants(Context context) {
         Resources res = context.getResources();
         mDisplayRound = res.getDimensionPixelSize(R.dimen.draw_rect_round);
         mDisplayBorder = res.getDimensionPixelSize(R.dimen.draw_rect_border);
         mBorderShadowSize = res.getDimensionPixelSize(R.dimen.draw_rect_shadow);
         float edge = res.getDimensionPixelSize(R.dimen.draw_rect_border_edge);
 
-        mBorderColor = res.getColor(R.color.draw_rect_border);
+        mBorderColor = context.getColor(R.color.draw_rect_border);
         mBorderPaint.setColor(mBorderColor);
         mBorderPaint.setStyle(Paint.Style.STROKE);
         mBorderPaint.setStrokeWidth(edge);
         mShadowPaint.setStyle(Paint.Style.FILL);
         mShadowPaint.setColor(Color.BLACK);
-        mShadowPaint.setShadowLayer(mBorderShadowSize,mBorderShadowSize,
-                mBorderShadowSize,Color.BLACK);
-        mShadow = (NinePatchDrawable) res.getDrawable(R.drawable.geometry_shadow);
+        mShadowPaint.setShadowLayer(mBorderShadowSize, mBorderShadowSize,
+                mBorderShadowSize, Color.BLACK);
+        mShadow = (NinePatchDrawable) ResourcesCompat.getDrawable(res, R.drawable.geometry_shadow, null);
     }
 
     public void setEditor(EditorDraw editorDraw) {
@@ -103,7 +98,6 @@ public class ImageDraw extends ImageShow {
     }
 
     public Drawable getIcon(Context context) {
-
         return null;
     }
 
@@ -135,6 +129,7 @@ public class ImageDraw extends ImageShow {
     }
 
     float[] mTmpPoint = new float[2]; // so we do not malloc
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getPointerCount() > 1) {
@@ -156,7 +151,7 @@ public class ImageDraw extends ImageShow {
             mTmpPoint[0] = event.getX();
             mTmpPoint[1] = event.getY();
             mToOrig.mapPoints(mTmpPoint);
-            mFRep.startNewSection( mTmpPoint[0], mTmpPoint[1]);
+            mFRep.startNewSection(mTmpPoint[0], mTmpPoint[1]);
         }
 
         if (event.getAction() == MotionEvent.ACTION_MOVE) {
@@ -189,7 +184,7 @@ public class ImageDraw extends ImageShow {
         mToOrig.invert(mRotateToScreen);
     }
 
-    private static Paint makeCheckedPaint(){
+    private static Paint makeCheckedPaint() {
         int[] colors = new int[16 * 16];
         for (int i = 0; i < colors.length; i++) {
             int y = i / (16 * 8);

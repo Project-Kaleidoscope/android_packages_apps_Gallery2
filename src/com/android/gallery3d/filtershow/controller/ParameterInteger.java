@@ -17,7 +17,8 @@
 package com.android.gallery3d.filtershow.controller;
 
 public interface ParameterInteger extends Parameter {
-    static String sParameterType = "ParameterInteger";
+
+    String sParameterType = "ParameterInteger";
 
     int getMaximum();
 
@@ -28,4 +29,5 @@ public interface ParameterInteger extends Parameter {
     int getValue();
 
     void setValue(int value);
+
 }

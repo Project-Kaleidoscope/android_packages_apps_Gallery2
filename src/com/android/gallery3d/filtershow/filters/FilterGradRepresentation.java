@@ -19,24 +19,29 @@ import android.graphics.Rect;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
-import org.codeaurora.gallery.R;
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.editors.EditorGrad;
-import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.imageshow.Line;
+import com.android.gallery3d.filtershow.imageshow.MasterImage;
+
+import org.codeaurora.gallery.R;
 
 import java.io.IOException;
 import java.util.Vector;
 
 public class FilterGradRepresentation extends FilterRepresentation
         implements Line {
-    private static final String LOGTAG = "FilterGradRepresentation";
     public static final int MAX_POINTS = 16;
     public static final int PARAM_BRIGHTNESS = 0;
     public static final int PARAM_SATURATION = 1;
     public static final int PARAM_CONTRAST = 2;
+    private static final String TAG = "FilterGradRepresentation";
     private static final double ADD_MIN_DIST = .05;
-    private static String LINE_NAME = "Point";
-    private static final  String SERIALIZATION_NAME = "grad";
+    private static final String SERIALIZATION_NAME = "grad";
+    private static final String LINE_NAME = "Point";
+    Vector<Band> mBands = new Vector<>();
+    Band mCurrentBand;
 
     public FilterGradRepresentation() {
         super("Grad");
@@ -48,54 +53,17 @@ public class FilterGradRepresentation extends FilterRepresentation
         setEditorId(EditorGrad.ID);
     }
 
-    public void trimVector(){
+    public void trimVector() {
         int n = mBands.size();
         for (int i = n; i < MAX_POINTS; i++) {
             mBands.add(new Band());
         }
-        for (int i = MAX_POINTS; i <  n; i++) {
+        for (int i = MAX_POINTS; i < n; i++) {
             mBands.remove(i);
         }
     }
 
-    Vector<Band> mBands = new Vector<Band>();
-    Band mCurrentBand;
-
-    static class Band {
-        private boolean mask = true;
-
-        private int xPos1 = -1;
-        private int yPos1 = 100;
-        private int xPos2 = -1;
-        private int yPos2 = 100;
-        private int brightness = -40;
-        private int contrast = 0;
-        private int saturation = 0;
-
-
-        public Band() {
-        }
-
-        public Band(int x, int y) {
-            xPos1 = x;
-            yPos1 = y+30;
-            xPos2 = x;
-            yPos2 = y-30;
-        }
-
-        public Band(Band copy) {
-            mask = copy.mask;
-            xPos1 = copy.xPos1;
-            yPos1 = copy.yPos1;
-            xPos2 = copy.xPos2;
-            yPos2 = copy.yPos2;
-            brightness = copy.brightness;
-            contrast = copy.contrast;
-            saturation = copy.saturation;
-        }
-
-    }
-
+    @NonNull
     @Override
     public String toString() {
         int count = 0;
@@ -124,15 +92,15 @@ public class FilterGradRepresentation extends FilterRepresentation
 
     @Override
     public void useParametersFrom(FilterRepresentation a) {
-            FilterGradRepresentation rep = (FilterGradRepresentation) a;
-            Vector<Band> tmpBands = new Vector<Band>();
-            int n = (rep.mCurrentBand == null) ? 0 : rep.mBands.indexOf(rep.mCurrentBand);
-            for (Band band : rep.mBands) {
-                tmpBands.add(new Band(band));
-            }
-            mCurrentBand = null;
-            mBands = tmpBands;
-            mCurrentBand = mBands.elementAt(n);
+        FilterGradRepresentation rep = (FilterGradRepresentation) a;
+        Vector<Band> tmpBands = new Vector<>();
+        int n = (rep.mCurrentBand == null) ? 0 : rep.mBands.indexOf(rep.mCurrentBand);
+        for (Band band : rep.mBands) {
+            tmpBands.add(new Band(band));
+        }
+        mCurrentBand = null;
+        mBands = tmpBands;
+        mCurrentBand = mBands.elementAt(n);
     }
 
     @Override
@@ -188,12 +156,12 @@ public class FilterGradRepresentation extends FilterRepresentation
     public int addBand(Rect rect) {
         mBands.add(0, mCurrentBand = new Band(rect.centerX(), rect.centerY()));
         mCurrentBand.mask = false;
-        int x = (mCurrentBand.xPos1 + mCurrentBand.xPos2)/2;
-        int y = (mCurrentBand.yPos1 + mCurrentBand.yPos2)/2;
+        int x = (mCurrentBand.xPos1 + mCurrentBand.xPos2) / 2;
+        int y = (mCurrentBand.yPos1 + mCurrentBand.yPos2) / 2;
         double addDelta = ADD_MIN_DIST * Math.max(rect.width(), rect.height());
         boolean moved = true;
         int count = 0;
-        int toMove =  mBands.indexOf(mCurrentBand);
+        int toMove = mBands.indexOf(mCurrentBand);
 
         while (moved) {
             moved = false;
@@ -222,8 +190,8 @@ public class FilterGradRepresentation extends FilterRepresentation
                         mCurrentBand.yPos1 += addDelta;
                         mCurrentBand.xPos2 += addDelta;
                         mCurrentBand.yPos2 += addDelta;
-                        x = (mCurrentBand.xPos1 + mCurrentBand.xPos2)/2;
-                        y = (mCurrentBand.yPos1 + mCurrentBand.yPos2)/2;
+                        x = (mCurrentBand.xPos1 + mCurrentBand.xPos2) / 2;
+                        y = (mCurrentBand.yPos1 + mCurrentBand.yPos2) / 2;
 
                         if (mCurrentBand.yPos1 > rect.bottom) {
                             mCurrentBand.yPos1 = (int) (rect.top + addDelta);
@@ -249,28 +217,28 @@ public class FilterGradRepresentation extends FilterRepresentation
         mCurrentBand = mBands.get(0);
     }
 
-    public void  nextPoint(){
+    public void nextPoint() {
         int index = mBands.indexOf(mCurrentBand);
         int tmp = index;
         Band point;
         int k = 0;
-        do  {
-            index =   (index+1)% mBands.size();
+        do {
+            index = (index + 1) % mBands.size();
             point = mBands.get(index);
             if (k++ >= mBands.size()) {
                 break;
             }
         }
-        while (point.mask == true);
+        while (point.mask);
         mCurrentBand = mBands.get(index);
-    }
-
-    public void setSelectedPoint(int pos) {
-        mCurrentBand = mBands.get(pos);
     }
 
     public int getSelectedPoint() {
         return mBands.indexOf(mCurrentBand);
+    }
+
+    public void setSelectedPoint(int pos) {
+        mCurrentBand = mBands.get(pos);
     }
 
     public boolean[] getMask() {
@@ -346,7 +314,7 @@ public class FilterGradRepresentation extends FilterRepresentation
     }
 
     public int getParameter(int type) {
-        switch (type){
+        switch (type) {
             case PARAM_BRIGHTNESS:
                 return mCurrentBand.brightness;
             case PARAM_SATURATION:
@@ -360,9 +328,7 @@ public class FilterGradRepresentation extends FilterRepresentation
     public int getParameterMax(int type) {
         switch (type) {
             case PARAM_BRIGHTNESS:
-                return 100;
             case PARAM_SATURATION:
-                return 100;
             case PARAM_CONTRAST:
                 return 100;
         }
@@ -372,9 +338,7 @@ public class FilterGradRepresentation extends FilterRepresentation
     public int getParameterMin(int type) {
         switch (type) {
             case PARAM_BRIGHTNESS:
-                return -100;
             case PARAM_SATURATION:
-                return -100;
             case PARAM_CONTRAST:
                 return -100;
         }
@@ -400,14 +364,14 @@ public class FilterGradRepresentation extends FilterRepresentation
 
     @Override
     public void setPoint1(float x, float y) {
-        mCurrentBand.xPos1 = (int)x;
-        mCurrentBand.yPos1 = (int)y;
+        mCurrentBand.xPos1 = (int) x;
+        mCurrentBand.yPos1 = (int) y;
     }
 
     @Override
     public void setPoint2(float x, float y) {
-        mCurrentBand.xPos2 = (int)x;
-        mCurrentBand.yPos2 = (int)y;
+        mCurrentBand.xPos2 = (int) x;
+        mCurrentBand.yPos2 = (int) y;
     }
 
     @Override
@@ -419,6 +383,7 @@ public class FilterGradRepresentation extends FilterRepresentation
     public float getPoint1Y() {
         return mCurrentBand.yPos1;
     }
+
     @Override
     public float getPoint2X() {
         return mCurrentBand.xPos2;
@@ -458,7 +423,7 @@ public class FilterGradRepresentation extends FilterRepresentation
     @Override
     public void deSerializeRepresentation(JsonReader sreader) throws IOException {
         sreader.beginObject();
-        Vector<Band> points = new Vector<Band>();
+        Vector<Band> points = new Vector<>();
 
         while (sreader.hasNext()) {
             String name = sreader.nextName();
@@ -493,5 +458,40 @@ public class FilterGradRepresentation extends FilterRepresentation
         trimVector();
         mCurrentBand = mBands.get(0);
         sreader.endObject();
+    }
+
+    static class Band {
+        private boolean mask = true;
+
+        private int xPos1 = -1;
+        private int yPos1 = 100;
+        private int xPos2 = -1;
+        private int yPos2 = 100;
+        private int brightness = -40;
+        private int contrast = 0;
+        private int saturation = 0;
+
+
+        public Band() {
+        }
+
+        public Band(int x, int y) {
+            xPos1 = x;
+            yPos1 = y + 30;
+            xPos2 = x;
+            yPos2 = y - 30;
+        }
+
+        public Band(Band copy) {
+            mask = copy.mask;
+            xPos1 = copy.xPos1;
+            yPos1 = copy.yPos1;
+            xPos2 = copy.xPos2;
+            yPos2 = copy.yPos2;
+            brightness = copy.brightness;
+            contrast = copy.contrast;
+            saturation = copy.saturation;
+        }
+
     }
 }

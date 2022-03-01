@@ -21,8 +21,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.ui.PopupList.OnPopupItemClickListener;
+
+import org.codeaurora.gallery.R;
 
 public class SelectionMenu implements OnClickListener {
     @SuppressWarnings("unused")
@@ -37,14 +38,13 @@ public class SelectionMenu implements OnClickListener {
         mContext = context;
         mButton = button;
         mPopupList = new PopupList(context, mButton);
-        mPopupList.addItem(R.id.action_select_all,
-                context.getString(R.string.select_all));
+        mPopupList.addItem(R.id.action_select_all, context.getString(R.string.select_all));
         mPopupList.setOnPopupItemClickListener(listener);
         mButton.setOnClickListener(this);
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View view) {
         if (isLeaving) return;
         mPopupList.show();
     }

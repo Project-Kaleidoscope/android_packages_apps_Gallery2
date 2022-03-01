@@ -21,8 +21,8 @@ import com.android.gallery3d.app.GalleryApp;
 class ComboSource extends MediaSource {
     private static final int COMBO_ALBUMSET = 0;
     private static final int COMBO_ALBUM = 1;
-    private GalleryApp mApplication;
-    private PathMatcher mMatcher;
+    private final GalleryApp mApplication;
+    private final PathMatcher mMatcher;
 
     public ComboSource(GalleryApp application) {
         super("combo");

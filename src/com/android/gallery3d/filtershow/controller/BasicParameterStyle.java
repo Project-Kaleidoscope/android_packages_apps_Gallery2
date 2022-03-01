@@ -18,17 +18,22 @@ package com.android.gallery3d.filtershow.controller;
 
 import android.content.Context;
 
-import com.android.gallery3d.filtershow.pipeline.RenderingRequestCaller;
+import androidx.annotation.NonNull;
 
 public class BasicParameterStyle implements ParameterStyles {
+    public final int ID;
+    private final String TAG = "BasicParameterStyle";
     protected String mParameterName;
     protected int mSelectedStyle;
     protected int mNumberOfStyles;
     protected int mDefaultStyle = 0;
     protected Control mControl;
     protected FilterView mEditor;
-    public final int ID;
-    private final String LOGTAG = "BasicParameterStyle";
+
+    public BasicParameterStyle(int id, int numberOfStyles) {
+        ID = id;
+        mNumberOfStyles = numberOfStyles;
+    }
 
     @Override
     public void copyFrom(Parameter src) {
@@ -39,11 +44,6 @@ public class BasicParameterStyle implements ParameterStyles {
         mNumberOfStyles = p.mNumberOfStyles;
         mSelectedStyle = p.mSelectedStyle;
         mDefaultStyle = p.mDefaultStyle;
-    }
-
-    public BasicParameterStyle(int id, int numberOfStyles) {
-        ID = id;
-        mNumberOfStyles = numberOfStyles;
     }
 
     @Override
@@ -99,6 +99,7 @@ public class BasicParameterStyle implements ParameterStyles {
         return "";
     }
 
+    @NonNull
     @Override
     public String toString() {
         return getValueString();

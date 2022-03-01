@@ -53,7 +53,8 @@ final class ImageLoaderTask implements Runnable {
     final String uri;
     private final String memoryCacheKey;
     final ImageViewImpl imageView;
-    private int imageHeight, imageWidth;
+    private final int imageHeight;
+    private final int imageWidth;
 
     public ImageLoaderTask(ImageLoaderHandle handle, ImageLoaderInfo imageLoadingInfo, Handler handler) {
         this.handle = handle;
@@ -96,10 +97,6 @@ final class ImageLoaderTask implements Runnable {
             checkTaskInterrupted();
         } catch (TaskInvalidException e) {
             return;
-        } catch (IOException e) {
-            Log.e(TAG, e.toString());
-        } catch (OutOfMemoryError e) {
-            Log.e(TAG, e.toString());
         } catch (Throwable e) {
             Log.e(TAG, e.toString());
         } finally {
@@ -138,19 +135,17 @@ final class ImageLoaderTask implements Runnable {
     public static void closeSilently(Closeable closeable) {
         try {
             closeable.close();
-        } catch (Exception e) {
-            // Just catched here.
+        } catch (Exception ignored) {
         }
     }
 
-    protected InputStream getImageStream(String imageUri) throws FileNotFoundException {
+    private InputStream getImageStream(String imageUri) throws FileNotFoundException {
         ContentResolver res = handle.configuration.context.getContentResolver();
         Uri uri = Uri.parse(imageUri);
         return res.openInputStream(uri);
     }
 
-    protected BitmapFactory.Options getImageOpt(InputStream imageStream)
-            throws IOException {
+    private BitmapFactory.Options getImageOpt(InputStream imageStream) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(imageStream, null, options);
@@ -158,7 +153,7 @@ final class ImageLoaderTask implements Runnable {
         return options;
     }
 
-    protected InputStream resetStream(InputStream imageStream, String imageUri) throws IOException {
+    private InputStream resetStream(InputStream imageStream, String imageUri) throws IOException {
         try {
             imageStream.reset();
         } catch (IOException e) {
@@ -170,8 +165,8 @@ final class ImageLoaderTask implements Runnable {
 
     public static int computeImageSampleSize(BitmapFactory.Options opt, int h, int w,
                                              ViewScaleType viewScaleType) {
-        final int width = opt.outWidth/2;
-        final int height = opt.outHeight/2;
+        final int width = opt.outWidth / 2;
+        final int height = opt.outHeight / 2;
         final int maxWidth = 2048;
         final int maxHeight = 2048;
 
@@ -184,7 +179,7 @@ final class ImageLoaderTask implements Runnable {
                 break;
             case CROP:
                 while ((width / scale) > w && (height / scale) > h) {
-                        scale *= 2;
+                    scale *= 2;
                 }
                 break;
         }
@@ -194,7 +189,7 @@ final class ImageLoaderTask implements Runnable {
         return scale;
     }
 
-    protected Bitmap checkScale(Bitmap subsampledBitmap) {
+    private Bitmap checkScale(Bitmap subsampledBitmap) {
         Matrix m = new Matrix();
 
         Bitmap finalBitmap = Bitmap.createBitmap(subsampledBitmap, 0, 0, subsampledBitmap.getWidth(),
@@ -206,9 +201,7 @@ final class ImageLoaderTask implements Runnable {
     }
 
     private boolean isTaskAvailable() {
-        if (isRecyled() || isCached())
-            return true;
-        return false;
+        return isRecyled() || isCached();
     }
 
     private void checkTaskNotActual() throws TaskInvalidException {
@@ -221,8 +214,8 @@ final class ImageLoaderTask implements Runnable {
     }
 
     private boolean isRecyled() {
-        if (imageView.isRecyled()) {
-            Log.d(TAG,"ImageAware was collected by GC. Task is cancelled: " + memoryCacheKey);
+        if (imageView.isRecycled()) {
+            Log.d(TAG, "ImageAware was collected by GC. Task is cancelled: " + memoryCacheKey);
             return true;
         }
         return false;
@@ -251,7 +244,7 @@ final class ImageLoaderTask implements Runnable {
         }
     }
 
-    class TaskInvalidException extends Exception {
+    static class TaskInvalidException extends Exception {
     }
 }
 

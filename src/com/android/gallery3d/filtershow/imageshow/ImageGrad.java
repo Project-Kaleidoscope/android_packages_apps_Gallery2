@@ -22,17 +22,18 @@ import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.EditorGrad;
 import com.android.gallery3d.filtershow.filters.FilterGradRepresentation;
 
+import org.codeaurora.gallery.R;
+
 public class ImageGrad extends ImageShow {
-    private static final String LOGTAG = "ImageGrad";
+    private static final String TAG = "ImageGrad";
     private FilterGradRepresentation mGradRep;
     private EditorGrad mEditorGrad;
-    private float mMinTouchDist;
+    private final float mMinTouchDist;
     private int mActiveHandle = -1;
-    private GradControl mEllipse;
+    private final GradControl mEllipse;
 
     Matrix mToScr = new Matrix();
     float[] mPointsX = new float[FilterGradRepresentation.MAX_POINTS];
@@ -74,12 +75,12 @@ public class ImageGrad extends ImageShow {
                             continue;
                         }
                         float d = (float) Math.hypot(x - mPointsX[i], y - mPointsY[i]);
-                        if ( min_d > d) {
+                        if (min_d > d) {
                             min_d = d;
                             pos = i;
                         }
                     }
-                    if (min_d > mMinTouchDist){
+                    if (min_d > mMinTouchDist) {
                         pos = -1;
                     }
 
@@ -136,23 +137,23 @@ public class ImageGrad extends ImageShow {
 
         toImg.invert(mToScr);
 
-        float[] c1 = new float[] { mGradRep.getPoint1X(), mGradRep.getPoint1Y() };
-        float[] c2 = new float[] { mGradRep.getPoint2X(), mGradRep.getPoint2Y() };
+        float[] c1 = new float[]{mGradRep.getPoint1X(), mGradRep.getPoint1Y()};
+        float[] c2 = new float[]{mGradRep.getPoint2X(), mGradRep.getPoint2Y()};
 
         if (c1[0] == -1) {
             float cx = MasterImage.getImage().getOriginalBounds().width() / 2;
             float cy = MasterImage.getImage().getOriginalBounds().height() / 2;
             float rx = Math.min(cx, cy) * .4f;
 
-            mGradRep.setPoint1(cx, cy-rx);
-            mGradRep.setPoint2(cx, cy+rx);
+            mGradRep.setPoint1(cx, cy - rx);
+            mGradRep.setPoint2(cx, cy + rx);
             c1[0] = cx;
-            c1[1] = cy-rx;
+            c1[1] = cy - rx;
             mToScr.mapPoints(c1);
             if (getWidth() != 0) {
                 mEllipse.setPoint1(c1[0], c1[1]);
                 c2[0] = cx;
-                c2[1] = cy+rx;
+                c2[1] = cy + rx;
                 mToScr.mapPoints(c2);
                 mEllipse.setPoint2(c2[0], c2[1]);
             }
@@ -175,12 +176,12 @@ public class ImageGrad extends ImageShow {
     }
 
     public void computCenterLocations() {
-        int x1[] = mGradRep.getXPos1();
-        int y1[] = mGradRep.getYPos1();
-        int x2[] = mGradRep.getXPos2();
-        int y2[] = mGradRep.getYPos2();
+        int[] x1 = mGradRep.getXPos1();
+        int[] y1 = mGradRep.getYPos1();
+        int[] x2 = mGradRep.getXPos2();
+        int[] y2 = mGradRep.getYPos2();
         int selected = mGradRep.getSelectedPoint();
-        boolean m[] = mGradRep.getMask();
+        boolean[] m = mGradRep.getMask();
         float[] c = new float[2];
         for (int i = 0; i < m.length; i++) {
             if (selected == i || !m[i]) {
@@ -188,8 +189,8 @@ public class ImageGrad extends ImageShow {
                 continue;
             }
 
-            c[0] = (x1[i]+x2[i])/2;
-            c[1] = (y1[i]+y2[i])/2;
+            c[0] = (x1[i] + x2[i]) / 2;
+            c[1] = (y1[i] + y2[i]) / 2;
             mToScr.mapPoints(c);
 
             mPointsX[i] = c[0];

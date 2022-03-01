@@ -17,28 +17,27 @@
 package com.android.gallery3d.app;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.RelativeLayout;
-import android.widget.ImageButton;
 
 import org.codeaurora.gallery.R;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PhotoPageBottomControls implements OnClickListener {
+public class PhotoPageBottomControls implements View.OnClickListener {
+
     public interface Delegate {
-        public boolean canDisplayBottomControls();
-        public boolean canDisplayBottomControl(int control);
-        public void onBottomControlClicked(int control);
-        public void refreshBottomControlsWhenReady();
+
+        boolean canDisplayBottomControls();
+        boolean canDisplayBottomControl(int control);
+        void onBottomControlClicked(int control);
+        void refreshBottomControlsWhenReady();
+
     }
 
     private Delegate mDelegate;
@@ -46,7 +45,7 @@ public class PhotoPageBottomControls implements OnClickListener {
     private ViewGroup mContainer;
 
     private boolean mContainerVisible = false;
-    private Map<View, Boolean> mControlsVisible = new HashMap<View, Boolean>();
+    private Map<View, Boolean> mControlsVisible = new HashMap<>();
 
     private Animation mContainerAnimIn = new AlphaAnimation(0f, 1f);
     private Animation mContainerAnimOut = new AlphaAnimation(1f, 0f);
@@ -136,7 +135,7 @@ public class PhotoPageBottomControls implements OnClickListener {
     @Override
     public void onClick(View view) {
         Boolean controlVisible = mControlsVisible.get(view);
-        if (mContainerVisible && controlVisible != null && controlVisible.booleanValue()) {
+        if (mContainerVisible && controlVisible != null && controlVisible) {
             mDelegate.onBottomControlClicked(view.getId());
         }
     }

@@ -32,16 +32,16 @@ package com.android.gallery3d.filtershow.editors;
 import android.content.Context;
 import android.widget.FrameLayout;
 
-import org.codeaurora.gallery.R;
-
 import com.android.gallery3d.filtershow.filters.FilterBasicRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterDualCamBasicRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.ImageDualCamera;
 
+import org.codeaurora.gallery.R;
+
 public class EditorDualCamera extends BasicEditor {
     public static final int ID = R.id.editorDualCam;
-    private static final String LOGTAG = "EditorDualCamera";
+    private static final String TAG = "EditorDualCamera";
     private ImageDualCamera mImageDualCam;
 
     public EditorDualCamera() {
@@ -59,7 +59,7 @@ public class EditorDualCamera extends BasicEditor {
     public void reflectCurrentFilter() {
         super.reflectCurrentFilter();
         FilterRepresentation rep = getLocalRepresentation();
-        if (rep != null && rep instanceof FilterDualCamBasicRepresentation) {
+        if (rep instanceof FilterDualCamBasicRepresentation) {
             FilterDualCamBasicRepresentation dualRep = (FilterDualCamBasicRepresentation) rep;
             mImageDualCam.setRepresentation(dualRep);
         }
@@ -68,7 +68,7 @@ public class EditorDualCamera extends BasicEditor {
     @Override
     public boolean showsSeekBar() {
         FilterRepresentation r = getLocalRepresentation();
-        if (r != null && r instanceof FilterBasicRepresentation) {
+        if (r instanceof FilterBasicRepresentation) {
             FilterBasicRepresentation repr = (FilterBasicRepresentation) r;
             return repr.getMaximum() != repr.getMinimum();
         }

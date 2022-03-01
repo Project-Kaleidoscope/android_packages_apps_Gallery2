@@ -19,5 +19,7 @@ package com.android.gallery3d.filtershow.controller;
 import android.graphics.Bitmap;
 
 public interface BitmapCaller {
-    public void available(Bitmap bmap);
+
+    void available(Bitmap bmap);
+
 }

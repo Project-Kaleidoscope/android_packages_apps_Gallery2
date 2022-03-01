@@ -25,6 +25,7 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -37,8 +38,9 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 
-import org.codeaurora.gallery.R;
+import androidx.core.content.res.ResourcesCompat;
 
+import org.codeaurora.gallery.R;
 import org.codeaurora.gallery3d.ext.IContrllerOverlayExt;
 import org.codeaurora.gallery3d.video.IControllerRewindAndForward;
 import org.codeaurora.gallery3d.video.ScreenModeManager;
@@ -72,12 +74,7 @@ public class MovieControllerOverlay extends CommonControllerOverlay implements
         super(context);
         mContext = context;
         handler = new Handler();
-        startHidingRunnable = new Runnable() {
-            @Override
-            public void run() {
-                startHiding();
-            }
-        };
+        startHidingRunnable = this::startHiding;
 
         hideAnimation = AnimationUtils.loadAnimation(context, R.anim.player_out);
         hideAnimation.setAnimationListener(this);
@@ -555,7 +552,7 @@ public class MovieControllerOverlay extends CommonControllerOverlay implements
         public void setBottomPanel(boolean alwaysShow, boolean foreShow) {
             mAlwaysShowBottom = alwaysShow;
             if (!alwaysShow) { // clear background
-                setBackgroundDrawable(null);
+                setBackground(null);
                 updateBackgroundColor();
             } else {
                 setBackgroundResource(R.drawable.media_default_bkg);
@@ -703,8 +700,7 @@ public class MovieControllerOverlay extends CommonControllerOverlay implements
             }
 
             // for screen layout
-            Drawable screenButton = context.getResources()
-                    .getDrawable(R.drawable.ic_media_bigscreen, null);
+            Drawable screenButton = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_media_bigscreen, null);
             if (screenButton != null) {
                 mScreenWidth = screenButton.getIntrinsicWidth();
             }
@@ -797,8 +793,7 @@ public class MovieControllerOverlay extends CommonControllerOverlay implements
             }
             mTimeBarHeight = mTimeBar.getPreferredHeight();
 
-            Drawable forwardMenu = context.getResources().
-                    getDrawable(R.drawable.ic_menu_forward, null);
+            Drawable forwardMenu = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_menu_forward, null);
             if (forwardMenu != null) {
                 mButtonWidth = forwardMenu.getIntrinsicWidth();
             }

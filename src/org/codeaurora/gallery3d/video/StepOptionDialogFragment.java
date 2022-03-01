@@ -6,9 +6,11 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-/** M: use DialogFragment to show Dialog */
+/**
+ * M: use DialogFragment to show Dialog
+ */
 public class StepOptionDialogFragment extends DialogFragment implements
-        DialogInterface.OnClickListener{
+        DialogInterface.OnClickListener {
 
     private static final String KEY_ITEM_ARRAY = "itemArray";
     private static final String KEY_TITLE = "title";
@@ -17,19 +19,15 @@ public class StepOptionDialogFragment extends DialogFragment implements
 
     /**
      * M: create a instance of SelectDialogFragment
-     * 
-     * @param itemArrayID
-     *            the resource id array of strings that show in list
-     * @param sufffixArray
-     *            the suffix array at the right of list item
-     * @param titleID
-     *            the resource id of title string
-     * @param nowSelect
-     *            the current select item index
+     *
+     * @param itemArrayID  the resource id array of strings that show in list
+     * @param sufffixArray the suffix array at the right of list item
+     * @param titleID      the resource id of title string
+     * @param nowSelect    the current select item index
      * @return the instance of SelectDialogFragment
      */
     public static StepOptionDialogFragment newInstance(int[] itemArrayID,
-            int titleID, int nowSelect) {
+                                                       int titleID, int nowSelect) {
         StepOptionDialogFragment frag = new StepOptionDialogFragment();
         Bundle args = new Bundle();
         args.putIntArray(KEY_ITEM_ARRAY, itemArrayID);
@@ -39,10 +37,10 @@ public class StepOptionDialogFragment extends DialogFragment implements
         return frag;
     }
 
-    @Override
     /**
      * M: create a select dialog
      */
+    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle args = getArguments();
         final String title = getString(args.getInt(KEY_TITLE));
@@ -53,18 +51,18 @@ public class StepOptionDialogFragment extends DialogFragment implements
             itemArray[i] = getString(itemArrayID[i]);
         }
 
-        AlertDialog.Builder builder = null;
+        AlertDialog.Builder builder;
         int nowSelect = args.getInt(KEY_DEFAULT_SELECT);
-        builder = new AlertDialog.Builder(getActivity());
+        builder = new AlertDialog.Builder(getContext());
         builder.setTitle(title).setSingleChoiceItems(itemArray, nowSelect, this)
-                .setNegativeButton(getString(android.R.string.cancel), null);
+                .setNegativeButton(android.R.string.cancel, null);
         return builder.create();
     }
 
-    @Override
     /**
      * M: the process of select an item
      */
+    @Override
     public void onClick(DialogInterface arg0, int arg1) {
         if (null != mClickListener) {
             mClickListener.onClick(arg0, arg1);
@@ -73,9 +71,8 @@ public class StepOptionDialogFragment extends DialogFragment implements
 
     /**
      * M: set listener of click items
-     * 
-     * @param listener
-     *            the listener to be set
+     *
+     * @param listener the listener to be set
      */
     public void setOnClickListener(DialogInterface.OnClickListener listener) {
         mClickListener = listener;

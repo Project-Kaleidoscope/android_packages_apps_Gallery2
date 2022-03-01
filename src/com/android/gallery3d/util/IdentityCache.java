@@ -25,8 +25,8 @@ import java.util.Set;
 public class IdentityCache<K, V> {
 
     private final HashMap<K, Entry<K, V>> mWeakMap =
-            new HashMap<K, Entry<K, V>>();
-    private ReferenceQueue<V> mQueue = new ReferenceQueue<V>();
+            new HashMap<>();
+    private final ReferenceQueue<V> mQueue = new ReferenceQueue<>();
 
     public IdentityCache() {
     }
@@ -51,7 +51,7 @@ public class IdentityCache<K, V> {
     public synchronized V put(K key, V value) {
         cleanUpWeakMap();
         Entry<K, V> entry = mWeakMap.put(
-                key, new Entry<K, V>(key, value, mQueue));
+                key, new Entry<>(key, value, mQueue));
         return entry == null ? null : entry.get();
     }
 
@@ -72,7 +72,6 @@ public class IdentityCache<K, V> {
     // This is for debugging only
     public synchronized ArrayList<K> keys() {
         Set<K> set = mWeakMap.keySet();
-        ArrayList<K> result = new ArrayList<K>(set);
-        return result;
+        return new ArrayList<>(set);
     }
 }

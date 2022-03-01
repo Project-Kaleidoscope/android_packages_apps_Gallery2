@@ -26,11 +26,11 @@ import com.android.gallery3d.filtershow.editors.EditorVignette;
 import com.android.gallery3d.filtershow.filters.FilterVignetteRepresentation;
 
 public class ImageVignette extends ImageShow {
-    private static final String LOGTAG = "ImageVignette";
+    private static final String TAG = "ImageVignette";
 
     private FilterVignetteRepresentation mVignetteRep;
     private EditorVignette mEditorVignette;
-    private OvalSpaceAdapter mScreenOval = new OvalSpaceAdapter();
+    private final OvalSpaceAdapter mScreenOval = new OvalSpaceAdapter();
     private int mActiveHandle = -1;
 
     EclipseControl mElipse;

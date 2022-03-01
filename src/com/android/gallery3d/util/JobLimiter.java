@@ -16,6 +16,8 @@
 
 package com.android.gallery3d.util;
 
+import android.util.Log;
+
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.util.ThreadPool.Job;
 import com.android.gallery3d.util.ThreadPool.JobContext;
@@ -34,7 +36,7 @@ public class JobLimiter implements FutureListener {
     private static final int STATE_DONE = 1;
     private static final int STATE_CANCELLED = 2;
 
-    private final LinkedList<JobWrapper<?>> mJobs = new LinkedList<JobWrapper<?>>();
+    private final LinkedList<JobWrapper<?>> mJobs = new LinkedList<>();
     private final ThreadPool mPool;
     private int mLimit;
 
@@ -83,7 +85,7 @@ public class JobLimiter implements FutureListener {
         @Override
         public boolean isDone() {
             // Both CANCELLED AND DONE is considered as done
-            return mState !=  STATE_INIT;
+            return mState != STATE_INIT;
         }
 
         @Override
@@ -102,18 +104,18 @@ public class JobLimiter implements FutureListener {
 
         @Override
         public T run(JobContext jc) {
-            Job<T> job = null;
+            Job<T> job;
             synchronized (this) {
                 if (mState == STATE_CANCELLED) return null;
                 job = mJob;
             }
-            T result  = null;
+            T result = null;
             try {
                 result = job.run(jc);
             } catch (Throwable t) {
                 Log.w(TAG, "error executing job: " + job, t);
             }
-            FutureListener<T> listener = null;
+            FutureListener<T> listener;
             synchronized (this) {
                 if (mState == STATE_CANCELLED) return null;
                 mState = STATE_DONE;
@@ -134,7 +136,7 @@ public class JobLimiter implements FutureListener {
     }
 
     public synchronized <T> Future<T> submit(Job<T> job, FutureListener<T> listener) {
-        JobWrapper<T> future = new JobWrapper<T>(Utils.checkNotNull(job), listener);
+        JobWrapper<T> future = new JobWrapper<>(Utils.checkNotNull(job), listener);
         mJobs.addLast(future);
         submitTasksIfAllowed();
         return future;

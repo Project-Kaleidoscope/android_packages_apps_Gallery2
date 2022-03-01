@@ -30,10 +30,12 @@
 package com.android.gallery3d.filtershow.category;
 
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 public class BottomPanel extends Fragment {
     public static final String FRAGMENT_TAG = "BottomPanel";
@@ -41,12 +43,8 @@ public class BottomPanel extends Fragment {
     private BottomPanelDelegate mPanelDelegate;
     private View mBottomView;
 
-    interface BottomPanelDelegate {
-        View getBottomPanelView(LayoutInflater inflater);
-    }
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (mBottomView == null && mPanelDelegate != null) {
             mBottomView = mPanelDelegate.getBottomPanelView(inflater);
@@ -56,5 +54,11 @@ public class BottomPanel extends Fragment {
 
     public void setBottomPanelDelegate(BottomPanelDelegate panelDelegate) {
         mPanelDelegate = panelDelegate;
+    }
+
+    interface BottomPanelDelegate {
+
+        View getBottomPanelView(LayoutInflater inflater);
+
     }
 }

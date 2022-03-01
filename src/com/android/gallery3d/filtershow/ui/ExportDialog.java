@@ -18,7 +18,6 @@ package com.android.gallery3d.filtershow.ui;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -33,13 +32,16 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import org.codeaurora.gallery.R;
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 import com.android.gallery3d.filtershow.pipeline.ProcessingService;
 import com.android.gallery3d.filtershow.tools.SaveImage;
 import com.android.gallery3d.ui.BaseDialogFragment;
+
+import org.codeaurora.gallery.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -62,16 +64,14 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
     boolean mEditing = false;
     Handler mHandler;
     int mUpdateDelay = 1000;
-    Runnable mUpdateRunnable = new Runnable() {
-        @Override
-        public void run() {
-            updateCompressionFactor();
-            updateSize();
-        }
+    Runnable mUpdateRunnable = () -> {
+        updateCompressionFactor();
+        updateSize();
     };
 
     private class Watcher implements TextWatcher {
-        private EditText mEditText;
+        private final EditText mEditText;
+
         Watcher(EditText text) {
             mEditText = text;
         }
@@ -90,6 +90,7 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
         }
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mHandler = new Handler(getActivity().getMainLooper());
@@ -97,29 +98,25 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
         View view = initCustomLayout();
         builder.setView(view);
         builder.setTitle(R.string.export_flattened);
-        builder.setPositiveButton(R.string.done,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        FilterShowActivity activity = (FilterShowActivity) getActivity();
-                        Uri sourceUri = MasterImage.getImage().getUri();
-                        File dest = SaveImage.getNewFile(activity, activity.getSelectedImageUri());
-                        float scaleFactor = mExportWidth / (mOriginalBounds == null ? 1f :
-                                (float) mOriginalBounds.width());
-                        if (!activity.isWaterMarked()) {
-                            Intent processIntent = ProcessingService.getSaveIntent(activity,
-                                    MasterImage.getImage().getPreset(), dest,
-                                    activity.getSelectedImageUri(), sourceUri, true,
-                                    mSeekBar.getProgress(), scaleFactor, false, -1);
-                            activity.startService(processIntent);
-                        } else {
-                            activity.getSaveWaterMark().saveImage(activity,
-                                    MasterImage.getImage().getHighresImage(),
-                                    activity.getSelectedImageUri(), null, mSeekBar.getProgress(),
-                                    scaleFactor, true);
-                        }
-                    }
-                });
+        builder.setPositiveButton(R.string.done, (dialog, id) -> {
+            FilterShowActivity activity = (FilterShowActivity) getActivity();
+            Uri sourceUri = MasterImage.getImage().getUri();
+            File dest = SaveImage.getNewFile(activity, activity.getSelectedImageUri());
+            float scaleFactor = mExportWidth / (mOriginalBounds == null ? 1f :
+                    (float) mOriginalBounds.width());
+            if (!activity.isWaterMarked()) {
+                Intent processIntent = ProcessingService.getSaveIntent(activity,
+                        MasterImage.getImage().getPreset(), dest,
+                        activity.getSelectedImageUri(), sourceUri, true,
+                        mSeekBar.getProgress(), scaleFactor, false, -1);
+                activity.startService(processIntent);
+            } else {
+                activity.getSaveWaterMark().saveImage(activity,
+                        MasterImage.getImage().getHighresImage(),
+                        activity.getSelectedImageUri(), null, mSeekBar.getProgress(),
+                        scaleFactor, true);
+            }
+        });
         builder.setNegativeButton(R.string.cancel, null);
 
         updateCompressionFactor();
@@ -130,15 +127,15 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
     private View initCustomLayout() {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.filtershow_export_dialog, null);
-        mSeekBar = (SeekBar) view.findViewById(R.id.qualitySeekBar);
-        mSeekVal = (TextView) view.findViewById(R.id.qualityTextView);
+        mSeekBar = view.findViewById(R.id.qualitySeekBar);
+        mSeekVal = view.findViewById(R.id.qualityTextView);
         mSliderLabel = getString(R.string.quality) + ": ";
         mSeekBar.setProgress(mQuality);
         mSeekVal.setText(mSliderLabel + mSeekBar.getProgress());
         mSeekBar.setOnSeekBarChangeListener(this);
-        mWidthText = (EditText) view.findViewById(R.id.editableWidth);
-        mHeightText = (EditText) view.findViewById(R.id.editableHeight);
-        mEstimatedSize = (TextView) view.findViewById(R.id.estimadedSize);
+        mWidthText = view.findViewById(R.id.editableWidth);
+        mHeightText = view.findViewById(R.id.editableHeight);
+        mEstimatedSize = view.findViewById(R.id.estimadedSize);
 
         mOriginalBounds = MasterImage.getImage().getOriginalBounds();
         ImagePreset preset = MasterImage.getImage().getPreset();
@@ -153,8 +150,8 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
             return null;
         }
         mRatio = mOriginalBounds.width() / (float) mOriginalBounds.height();
-        mWidthText.setText("" + mOriginalBounds.width());
-        mHeightText.setText("" + mOriginalBounds.height());
+        mWidthText.setText(String.valueOf(mOriginalBounds.width()));
+        mHeightText.setText(String.valueOf(mOriginalBounds.height()));
         mExportWidth = mOriginalBounds.width();
         mExportHeight = mOriginalBounds.height();
         mWidthText.addTextChangedListener(new Watcher(mWidthText));
@@ -163,18 +160,18 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
     }
 
     @Override
-    public void onStopTrackingTouch(SeekBar arg0) {
+    public void onStartTrackingTouch(SeekBar seekBar) {
         // Do nothing
     }
 
     @Override
-    public void onStartTrackingTouch(SeekBar arg0) {
+    public void onStopTrackingTouch(SeekBar seekBar) {
         // Do nothing
     }
 
     @Override
-    public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-        mSeekVal.setText(mSliderLabel + arg1);
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        mSeekVal.setText(mSliderLabel + progress);
         mQuality = mSeekBar.getProgress();
         scheduleUpdateCompressionFactor();
     }
@@ -209,7 +206,7 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
         compressedSize *= mExportCompressionMargin;
         float size = compressedSize / 1024.f / 1024.f;
         size = ((int) (size * 100)) / 100f;
-        String estimatedSize = "" + size + " MB";
+        String estimatedSize = size + " MB";
         mEstimatedSize.setText(estimatedSize);
     }
 
@@ -231,15 +228,14 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
                     }
                     if (width > mOriginalBounds.width()) {
                         width = mOriginalBounds.width();
-                        mWidthText.setText("" + width);
                     }
                     if (width <= 0) {
                         width = (int) Math.ceil(mRatio);
-                        mWidthText.setText("" + width);
                     }
                     height = (int) (width / mRatio);
                 }
-                mHeightText.setText("" + height);
+                mWidthText.setText(String.valueOf(width));
+                mHeightText.setText(String.valueOf(height));
             }
         } else if (text.getId() == R.id.editableHeight) {
             if (mHeightText.getText() != null) {
@@ -252,15 +248,14 @@ public class ExportDialog extends BaseDialogFragment implements SeekBar.OnSeekBa
                     }
                     if (height > mOriginalBounds.height()) {
                         height = mOriginalBounds.height();
-                        mHeightText.setText("" + height);
                     }
                     if (height <= 0) {
                         height = 1;
-                        mHeightText.setText("" + height);
                     }
                     width = (int) (height * mRatio);
                 }
-                mWidthText.setText("" + width);
+                mHeightText.setText(String.valueOf(height));
+                mWidthText.setText(String.valueOf(width));
             }
         }
         mExportWidth = width;

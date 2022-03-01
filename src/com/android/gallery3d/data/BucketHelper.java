@@ -1,6 +1,5 @@
 package com.android.gallery3d.data;
 
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,13 +10,11 @@ import android.provider.MediaStore.Images.ImageColumns;
 import android.provider.MediaStore.Video;
 import android.util.Log;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.util.ThreadPool.JobContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 
 class BucketHelper {
@@ -73,15 +70,11 @@ class BucketHelper {
 
     public static BucketEntry[] loadBucketEntries(
             JobContext jc, ContentResolver resolver, int type) {
-        if (ApiHelper.HAS_MEDIA_PROVIDER_FILES_TABLE) {
-            return loadBucketEntriesFromFilesTable(jc, resolver, type);
-        } else {
-            return loadBucketEntriesFromImagesAndVideoTable(jc, resolver, type);
-        }
+        return loadBucketEntriesFromFilesTable(jc, resolver, type);
     }
 
     private static void updateBucketEntriesFromTable(JobContext jc,
-            ContentResolver resolver, Uri tableUri, HashMap<Integer, BucketEntry> buckets) {
+                                                     ContentResolver resolver, Uri tableUri, HashMap<Integer, BucketEntry> buckets) {
         Cursor cursor = resolver.query(tableUri, PROJECTION_BUCKET_IN_ONE_TABLE,
                 null, null, null);
         if (cursor == null) {
@@ -108,7 +101,7 @@ class BucketHelper {
 
     private static BucketEntry[] loadBucketEntriesFromImagesAndVideoTable(
             JobContext jc, ContentResolver resolver, int type) {
-        HashMap<Integer, BucketEntry> buckets = new HashMap<Integer, BucketEntry>(64);
+        HashMap<Integer, BucketEntry> buckets = new HashMap<>(64);
         if ((type & MediaObject.MEDIA_TYPE_IMAGE) != 0) {
             updateBucketEntriesFromTable(
                     jc, resolver, Images.Media.EXTERNAL_CONTENT_URI, buckets);
@@ -117,13 +110,10 @@ class BucketHelper {
             updateBucketEntriesFromTable(
                     jc, resolver, Video.Media.EXTERNAL_CONTENT_URI, buckets);
         }
-        BucketEntry[] entries = buckets.values().toArray(new BucketEntry[buckets.size()]);
-        Arrays.sort(entries, new Comparator<BucketEntry>() {
-            @Override
-            public int compare(BucketEntry a, BucketEntry b) {
-                // sorted by dateTaken in descending order
-                return b.dateTaken - a.dateTaken;
-            }
+        BucketEntry[] entries = buckets.values().toArray(new BucketEntry[0]);
+        Arrays.sort(entries, (o1, o2) -> {
+            // sorted by dateTaken in descending order
+            return o2.dateTaken - o1.dateTaken;
         });
         return entries;
     }
@@ -137,7 +127,7 @@ class BucketHelper {
             Log.w(TAG, "cannot open local database: " + uri);
             return new BucketEntry[0];
         }
-        ArrayList<BucketEntry> buffer = new ArrayList<BucketEntry>();
+        ArrayList<BucketEntry> buffer = new ArrayList<>();
         int typeBits = 0;
         if ((type & MediaObject.MEDIA_TYPE_IMAGE) != 0) {
             typeBits |= (1 << FileColumns.MEDIA_TYPE_IMAGE);
@@ -160,12 +150,12 @@ class BucketHelper {
         } finally {
             Utils.closeSilently(cursor);
         }
-        return buffer.toArray(new BucketEntry[buffer.size()]);
+        return buffer.toArray(new BucketEntry[0]);
     }
 
     private static String getBucketNameInTable(
             ContentResolver resolver, Uri tableUri, int bucketId) {
-        String selectionArgs[] = new String[] {String.valueOf(bucketId)};
+        String[] selectionArgs = new String[]{String.valueOf(bucketId)};
         Uri uri = tableUri.buildUpon()
                 .appendQueryParameter("limit", "1")
                 .build();
@@ -181,23 +171,13 @@ class BucketHelper {
         return null;
     }
 
-    @TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB)
     private static Uri getFilesContentUri() {
         return Files.getContentUri(EXTERNAL_MEDIA);
     }
 
     public static String getBucketName(ContentResolver resolver, int bucketId) {
-        if (ApiHelper.HAS_MEDIA_PROVIDER_FILES_TABLE) {
-            String result = getBucketNameInTable(resolver, getFilesContentUri(), bucketId);
-            return result == null ? "" : result;
-        } else {
-            String result = getBucketNameInTable(
-                    resolver, Images.Media.EXTERNAL_CONTENT_URI, bucketId);
-            if (result != null) return result;
-            result = getBucketNameInTable(
-                    resolver, Video.Media.EXTERNAL_CONTENT_URI, bucketId);
-            return result == null ? "" : result;
-        }
+        String result = getBucketNameInTable(resolver, getFilesContentUri(), bucketId);
+        return result == null ? "" : result;
     }
 
     public static class BucketEntry {

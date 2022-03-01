@@ -16,52 +16,45 @@
 
 package com.android.gallery3d.filtershow.category;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 
-import org.codeaurora.gallery.R;
+import androidx.core.content.res.ResourcesCompat;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.cache.BitmapCache;
-import com.android.gallery3d.filtershow.filters.FilterDrawRepresentation;
-import com.android.gallery3d.filtershow.filters.FilterUserPresetRepresentation;
-import com.android.gallery3d.filtershow.pipeline.RenderingRequest;
-import com.android.gallery3d.filtershow.pipeline.RenderingRequestCaller;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
-import com.android.gallery3d.glrenderer.Texture;
+import com.android.gallery3d.filtershow.pipeline.RenderingRequest;
+import com.android.gallery3d.filtershow.pipeline.RenderingRequestCaller;
+
+import org.codeaurora.gallery.R;
 
 public class Action implements RenderingRequestCaller {
 
-    private static final String LOGTAG = "Action";
+    public static final int FULL_VIEW = 0;
+    public static final int CROP_VIEW = 1;
+    public static final int ADD_ACTION = 2;
+    public static final int SPACER = 3;
+    private static final String TAG = "Action";
     private FilterRepresentation mRepresentation;
     private String mName;
     private Rect mImageFrame;
     private Bitmap mImage;
     private ArrayAdapter mAdapter;
-    public static final int FULL_VIEW = 0;
-    public static final int CROP_VIEW = 1;
-    public static final int ADD_ACTION = 2;
-    public static final int SPACER = 3;
     private int mType = CROP_VIEW;
     private Bitmap mPortraitImage;
     private Bitmap mOverlayBitmap;
-    private FilterShowActivity mContext;
+    private final FilterShowActivity mContext;
     private boolean mCanBeRemoved = false;
     private int mTextSize = 32;
     private boolean mIsDoubleAction = false;
@@ -104,6 +97,10 @@ public class Action implements RenderingRequestCaller {
 
     public int getType() {
         return mType;
+    }
+
+    public void setType(int type) {
+        mType = type;
     }
 
     public FilterRepresentation getRepresentation() {
@@ -166,10 +163,6 @@ public class Action implements RenderingRequestCaller {
         mAdapter = adapter;
     }
 
-    public void setType(int type) {
-        mType = type;
-    }
-
     private void postNewIconRenderRequest(int w, int h) {
         if (mRepresentation != null) {
             ImagePreset preset = new ImagePreset();
@@ -195,24 +188,22 @@ public class Action implements RenderingRequestCaller {
         if (mRepresentation.isSvgOverlay()) {
             mImage.eraseColor(0x00FFFFFF);
             Canvas canvas = new Canvas(mImage);
-            canvas.drawARGB(0,255,255,255);
-            Drawable overlayDrawable = mContext.getResources().
-                    getDrawable(mRepresentation.getOverlayId(), null);
+            canvas.drawARGB(0, 255, 255, 255);
+            Drawable overlayDrawable = ResourcesCompat.getDrawable(mContext.getResources(), mRepresentation.getOverlayId(), null);
             if (null != mRepresentation.getCurrentTheme() && overlayDrawable.canApplyTheme()) {
                 overlayDrawable.applyTheme(mRepresentation.getCurrentTheme());
             }
-            if(mIsClickAction) {
-                overlayDrawable.setColorFilter(mContext.getResources()
-                        .getColor(R.color.watermark_highlight_color), PorterDuff.Mode.MULTIPLY);
+            if (mIsClickAction) {
+                overlayDrawable.setColorFilter(mContext.getColor(R.color.watermark_highlight_color), PorterDuff.Mode.MULTIPLY);
             } else {
                 overlayDrawable.clearColorFilter();
             }
-            int with = mImageFrame.width()/9;
-            int height = mImageFrame.height()/8;
+            int with = mImageFrame.width() / 9;
+            int height = mImageFrame.height() / 8;
             if (!TextUtils.isEmpty(getName())) {
-                overlayDrawable.setBounds(with,16,with*8,height*6);
+                overlayDrawable.setBounds(with, 16, with * 8, height * 6);
             } else {
-                overlayDrawable.setBounds(with,52,with*8,height*7);
+                overlayDrawable.setBounds(with, 52, with * 8, height * 7);
             }
             overlayDrawable.draw(canvas);
             return;
@@ -223,12 +214,11 @@ public class Action implements RenderingRequestCaller {
                     mRepresentation.getOverlayId());
         }
         if (mOverlayBitmap != null) {
+            Canvas canvas = new Canvas(mImage);
             if (getRepresentation().getFilterType() == FilterRepresentation.TYPE_BORDER) {
-                Canvas canvas = new Canvas(mImage);
                 canvas.drawBitmap(mOverlayBitmap, new Rect(0, 0, mOverlayBitmap.getWidth(), mOverlayBitmap.getHeight()),
                         new Rect(0, 0, mImage.getWidth(), mImage.getHeight()), new Paint());
             } else {
-                Canvas canvas = new Canvas(mImage);
                 canvas.drawARGB(128, 0, 0, 0);
                 drawCenteredImage(mOverlayBitmap, mImage, false);
             }
@@ -249,12 +239,12 @@ public class Action implements RenderingRequestCaller {
         }
     }
 
-    public void setPortraitImage(Bitmap portraitImage) {
-        mPortraitImage = portraitImage;
-    }
-
     public Bitmap getPortraitImage() {
         return mPortraitImage;
+    }
+
+    public void setPortraitImage(Bitmap portraitImage) {
+        mPortraitImage = portraitImage;
     }
 
     public Bitmap getOverlayBitmap() {
@@ -265,9 +255,13 @@ public class Action implements RenderingRequestCaller {
         mOverlayBitmap = overlayBitmap;
     }
 
-    public void setClickAction() { mIsClickAction = true; }
+    public void setClickAction() {
+        mIsClickAction = true;
+    }
 
-    public void clearClickAction() { mIsClickAction = false; }
+    public void clearClickAction() {
+        mIsClickAction = false;
+    }
 
     public void clearBitmap() {
         if (mImage != null

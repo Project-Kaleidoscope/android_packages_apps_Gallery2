@@ -1,21 +1,11 @@
 package org.codeaurora.gallery3d.video;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.net.Uri;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings.System;
-import android.util.Log;
 
 public class DmReceiver extends BroadcastReceiver {
     private static final String TAG = "DmReceiver";
@@ -46,17 +36,17 @@ public class DmReceiver extends BroadcastReceiver {
             String value = intent.getStringExtra("value");
             if (valueType == STREAMING_MAX_UDP_PORT_IO_HANDLER_TYPE) {
                 mPref.edit().putString(SettingsActivity.PREFERENCE_RTP_MAXPORT,
-                        value).commit();
+                        value).apply();
                 System.putString(context.getContentResolver(),
                         "streaming_max_udp_port", value);
             } else if (valueType == STREAMING_MIN_UDP_PORT_IO_HANDLER_TYPE) {
                 mPref.edit().putString(SettingsActivity.PREFERENCE_RTP_MINPORT,
-                        value).commit();
+                        value).apply();
                 System.putString(context.getContentResolver(),
                         "streaming_min_udp_port", value);
             } else if (valueType == STREAMING_CONNPROFILE_IO_HANDLER_TYPE) {
                 mPref.edit().putString(SettingsActivity.PREFERENCE_APN,
-                        value).commit();
+                        value).apply();
                 System.putString(context.getContentResolver(),
                         "apn", value);
             }

@@ -40,8 +40,8 @@ public class CacheStorageUsageInfo {
     // number of bytes used for the cache if all pending downloads (and removals) are completed.
     private long mTargetCacheBytes;
 
-    private AbstractGalleryActivity mActivity;
-    private Context mContext;
+    private final AbstractGalleryActivity mActivity;
+    private final Context mContext;
     private long mUserChangeDelta;
 
     public CacheStorageUsageInfo(AbstractGalleryActivity activity) {
@@ -61,9 +61,9 @@ public class CacheStorageUsageInfo {
 
         String path = cacheDir.getAbsolutePath();
         StatFs stat = new StatFs(path);
-        long blockSize = stat.getBlockSize();
-        long availableBlocks = stat.getAvailableBlocks();
-        long totalBlocks = stat.getBlockCount();
+        long blockSize = stat.getBlockSizeLong();
+        long availableBlocks = stat.getAvailableBlocksLong();
+        long totalBlocks = stat.getBlockCountLong();
 
         mTotalBytes = blockSize * totalBlocks;
         mUsedBytes = blockSize * (totalBlocks - availableBlocks);

@@ -29,7 +29,6 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.crop.CropDrawingUtils;
 import com.android.gallery3d.filtershow.editors.EditorStraighten;
 import com.android.gallery3d.filtershow.filters.FilterCropRepresentation;
@@ -37,9 +36,10 @@ import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterStraightenRepresentation;
 import com.android.gallery3d.filtershow.imageshow.GeometryMathUtils.GeometryHolder;
 
+import org.codeaurora.gallery.R;
+
 import java.util.ArrayList;
 import java.util.Collection;
-
 
 public class ImageStraighten extends ImageShow {
     private static final String TAG = ImageStraighten.class.getSimpleName();
@@ -50,28 +50,30 @@ public class ImageStraighten extends ImageShow {
     private boolean mFirstDrawSinceUp = false;
     private EditorStraighten mEditorStraighten;
     private FilterStraightenRepresentation mLocalRep = new FilterStraightenRepresentation();
-    private RectF mPriorCropAtUp = new RectF();
-    private RectF mDrawRect = new RectF();
-    private Path mDrawPath = new Path();
-    private GeometryHolder mDrawHolder = new GeometryHolder();
+    private final RectF mPriorCropAtUp = new RectF();
+    private final RectF mDrawRect = new RectF();
+    private final Path mDrawPath = new Path();
+    private final GeometryHolder mDrawHolder = new GeometryHolder();
+
     private enum MODES {
         NONE, MOVE
     }
+
     private MODES mState = MODES.NONE;
     private ValueAnimator mAnimator = null;
-    private int mDefaultGridAlpha = 60;
+    private final int mDefaultGridAlpha = 60;
     private float mGridAlpha = 1f;
-    private int mOnStartAnimDelay = 1000;
-    private int mAnimDelay = 500;
+    private final int mOnStartAnimDelay = 1000;
+    private final int mAnimDelay = 500;
     private static final float MAX_STRAIGHTEN_ANGLE
-        = FilterStraightenRepresentation.MAX_STRAIGHTEN_ANGLE;
+            = FilterStraightenRepresentation.MAX_STRAIGHTEN_ANGLE;
     private static final float MIN_STRAIGHTEN_ANGLE
-        = FilterStraightenRepresentation.MIN_STRAIGHTEN_ANGLE;
+            = FilterStraightenRepresentation.MIN_STRAIGHTEN_ANGLE;
     private float mCurrentX;
     private float mCurrentY;
     private float mTouchCenterX;
     private float mTouchCenterY;
-    private RectF mCrop = new RectF();
+    private final RectF mCrop = new RectF();
     private final Paint mPaint = new Paint();
 
     public ImageStraighten(Context context) {
@@ -93,12 +95,9 @@ public class ImageStraighten extends ImageShow {
         mAnimator = ValueAnimator.ofFloat(1, 0);
         mAnimator.setStartDelay(delay);
         mAnimator.setDuration(mAnimDelay);
-        mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mGridAlpha = ((Float) animation.getAnimatedValue());
-                invalidate();
-            }
+        mAnimator.addUpdateListener(animation -> {
+            mGridAlpha = ((Float) animation.getAnimatedValue());
+            invalidate();
         });
         mAnimator.start();
     }
@@ -109,7 +108,7 @@ public class ImageStraighten extends ImageShow {
     }
 
     public Collection<FilterRepresentation> getFinalRepresentation() {
-        ArrayList<FilterRepresentation> reps = new ArrayList<FilterRepresentation>(2);
+        ArrayList<FilterRepresentation> reps = new ArrayList<>(2);
         reps.add(mLocalRep);
         if (mInitialAngle != mLocalRep.getStraighten()) {
             reps.add(new FilterCropRepresentation(mCrop));
@@ -205,7 +204,7 @@ public class ImageStraighten extends ImageShow {
     }
 
     private void updateCurrentCrop(Matrix m, GeometryHolder h, RectF tmp, int imageWidth,
-            int imageHeight, int viewWidth, int viewHeight) {
+                                   int imageHeight, int viewWidth, int viewHeight) {
         tmp.set(0, 0, imageHeight, imageWidth);
         m.mapRect(tmp);
         float top = tmp.top;
@@ -213,7 +212,7 @@ public class ImageStraighten extends ImageShow {
         float left = tmp.left;
         float right = tmp.right;
         m.mapRect(tmp);
-        int iw,ih;
+        int iw, ih;
         if (GeometryMathUtils.needsDimensionSwap(h.rotation)) {
             tmp.set(0, 0, imageHeight, imageWidth);
             iw = imageHeight;
@@ -255,8 +254,8 @@ public class ImageStraighten extends ImageShow {
         mDrawHolder.straighten = mAngle;
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
-        int viewWidth = canvas.getWidth();
-        int viewHeight = canvas.getHeight();
+        int viewWidth = getWidth();
+        int viewHeight = getHeight();
 
         int panelHeight = getContext().getResources().getDimensionPixelOffset(
                 R.dimen.category_actionbar_panel_height);
@@ -286,7 +285,7 @@ public class ImageStraighten extends ImageShow {
             canvas.clipRect(mDrawRect);
 
             float step = Math.max(viewWidth, viewHeight) / NBLINES;
-            float p = 0;
+            float p;
             for (int i = 1; i < NBLINES; i++) {
                 p = i * step;
                 int alpha = (int) (mDefaultGridAlpha * mGridAlpha);

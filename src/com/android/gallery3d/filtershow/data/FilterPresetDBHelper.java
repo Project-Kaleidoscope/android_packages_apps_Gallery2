@@ -25,22 +25,10 @@ public class FilterPresetDBHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "filterspreset.db";
     private static final String SQL_CREATE_TABLE = "CREATE TABLE ";
-
-    public static interface FilterPreset {
-        /** The row uid */
-        public static final String _ID = "_id";
-        /** The table name */
-        public static final String TABLE = "filterspreset";
-        /** The preset name */
-        public static final String PRESET_ID = "preset_id";
-        /** A serialized preset of filters. */
-        public static final String FILTER_PRESET= "preset";
-    }
-
     private static final String[][] CREATE_FILTER_PRESET = {
-            { FilterPreset._ID, "INTEGER PRIMARY KEY AUTOINCREMENT" },
-            { FilterPreset.PRESET_ID, "TEXT" },
-            { FilterPreset.FILTER_PRESET, "Uri" },
+            {FilterPreset._ID, "INTEGER PRIMARY KEY AUTOINCREMENT"},
+            {FilterPreset.PRESET_ID, "TEXT"},
+            {FilterPreset.FILTER_PRESET, "Uri"},
     };
 
     public FilterPresetDBHelper(Context context, String name, int version) {
@@ -53,18 +41,6 @@ public class FilterPresetDBHelper extends SQLiteOpenHelper {
 
     public FilterPresetDBHelper(Context context) {
         this(context, DATABASE_NAME);
-    }
-
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        createTable(db, FilterPreset.TABLE, CREATE_FILTER_PRESET);
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        dropTable(db, FilterPreset.TABLE);
-        onCreate(db);
     }
 
     protected static void createTable(SQLiteDatabase db, String table, String[][] columns) {
@@ -98,6 +74,36 @@ public class FilterPresetDBHelper extends SQLiteOpenHelper {
         } finally {
             db.endTransaction();
         }
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        createTable(db, FilterPreset.TABLE, CREATE_FILTER_PRESET);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        dropTable(db, FilterPreset.TABLE);
+        onCreate(db);
+    }
+
+    public interface FilterPreset {
+        /**
+         * The row uid
+         */
+        String _ID = "_id";
+        /**
+         * The table name
+         */
+        String TABLE = "filterspreset";
+        /**
+         * The preset name
+         */
+        String PRESET_ID = "preset_id";
+        /**
+         * A serialized preset of filters.
+         */
+        String FILTER_PRESET = "preset";
     }
 }
 

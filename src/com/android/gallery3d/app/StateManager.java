@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -41,7 +42,7 @@ public class StateManager {
     private static final String KEY_CLASS = "class";
 
     private AbstractGalleryActivity mActivity;
-    private Stack<StateEntry> mStack = new Stack<StateEntry>();
+    private Stack<StateEntry> mStack = new Stack<>();
     private ActivityState.ResultEntry mResult;
 
     public StateManager(AbstractGalleryActivity activity) {
@@ -51,7 +52,7 @@ public class StateManager {
     public void startState(Class<? extends ActivityState> klass,
             Bundle data) {
         Log.v(TAG, "startState " + klass);
-        ActivityState state = null;
+        ActivityState state;
         try {
             state = klass.newInstance();
         } catch (Exception e) {
@@ -77,7 +78,7 @@ public class StateManager {
     public void startStateForResult(Class<? extends ActivityState> klass,
             int requestCode, Bundle data) {
         Log.v(TAG, "startStateForResult " + klass + ", " + requestCode);
-        ActivityState state = null;
+        ActivityState state;
         try {
             state = klass.newInstance();
         } catch (Exception e) {
@@ -243,7 +244,7 @@ public class StateManager {
         oldState.onDestroy();
 
         // Create new state.
-        ActivityState state = null;
+        ActivityState state;
         try {
             state = klass.newInstance();
         } catch (Exception e) {
@@ -268,7 +269,7 @@ public class StateManager {
     @SuppressWarnings("unchecked")
     public void restoreFromState(Bundle inState) {
         Log.v(TAG, "restoreFromState");
-        Parcelable list[] = inState.getParcelableArray(KEY_MAIN);
+        Parcelable[] list = inState.getParcelableArray(KEY_MAIN);
         ActivityState topState = null;
         for (Parcelable parcelable : list) {
             Bundle bundle = (Bundle) parcelable;
@@ -299,7 +300,7 @@ public class StateManager {
     public void saveState(Bundle outState) {
         Log.v(TAG, "saveState");
 
-        Parcelable list[] = new Parcelable[mStack.size()];
+        Parcelable[] list = new Parcelable[mStack.size()];
         int i = 0;
         for (StateEntry entry : mStack) {
             Bundle bundle = new Bundle();

@@ -30,14 +30,11 @@
 package com.android.gallery3d.filtershow.filters;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.util.Log;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.HazeBusterEditor;
 
-import static com.android.gallery3d.filtershow.imageshow.ImageTrueScanner.*;
+import org.codeaurora.gallery.R;
 
 public class HazeBusterActs extends SimpleImageFilter {
     public static final String SERIALIZATION_NAME = "HazeBusterActs";
@@ -47,18 +44,26 @@ public class HazeBusterActs extends SimpleImageFilter {
     private static final String TAG = "HazeBuster";
     private static boolean isHazeBusterEnabled = true;
 
+    static {
+        try {
+            System.loadLibrary("jni_hazebuster");
+            isHazeBusterEnabled = true;
+        } catch (UnsatisfiedLinkError e) {
+            isHazeBusterEnabled = false;
+        }
+    }
 
-    private void printDebug(String str) {
-        if(DEBUG)
-            android.util.Log.d(TAG, str);
+    public HazeBusterActs() {
+        mName = "HazeBusterActs";
     }
 
     public static boolean isHazeBusterEnabled() {
         return isHazeBusterEnabled;
     }
 
-    public HazeBusterActs() {
-        mName = "HazeBusterActs";
+    private void printDebug(String str) {
+        if (DEBUG)
+            android.util.Log.d(TAG, str);
     }
 
     public FilterRepresentation getDefaultRepresentation() {
@@ -83,29 +88,20 @@ public class HazeBusterActs extends SimpleImageFilter {
 
     @Override
     public Bitmap apply(Bitmap bitmap, float not_use, int quality) {
-        if(bitmap == null)
+        if (bitmap == null)
             return null;
 
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-        if(width <= MIN_WIDTH && height <= MIN_HEIGHT)
+        if (width <= MIN_WIDTH && height <= MIN_HEIGHT)
             return bitmap;
 
         Bitmap outBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        if(!processImage(bitmap, width, height, outBitmap)) {
+        if (!processImage(bitmap, width, height, outBitmap)) {
             Log.e(TAG, "Image error on processing");
             return bitmap;
         }
 
         return outBitmap;
-    }
-
-    static {
-        try {
-            System.loadLibrary("jni_hazebuster");
-            isHazeBusterEnabled = true;
-        } catch(UnsatisfiedLinkError e) {
-            isHazeBusterEnabled = false;
-        }
     }
 }

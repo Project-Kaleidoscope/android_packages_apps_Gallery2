@@ -24,11 +24,15 @@ import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.util.ThreadPool;
 
 public interface GalleryContext {
-    public DataManager getDataManager();
 
-    public Context getAndroidContext();
+    DataManager getDataManager();
 
-    public Looper getMainLooper();
-    public Resources getResources();
-    public ThreadPool getThreadPool();
+    Context getAndroidContext();
+
+    Looper getMainLooper();
+
+    Resources getResources();
+
+    ThreadPool getThreadPool();
+
 }

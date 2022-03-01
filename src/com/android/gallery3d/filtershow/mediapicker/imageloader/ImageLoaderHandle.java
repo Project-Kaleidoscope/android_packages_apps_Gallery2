@@ -45,9 +45,8 @@ class ImageLoaderHandle {
     public Executor taskExecutor;
     public Executor taskDistributor;
 
-    public final Map<Integer, String> cacheKeysForImageAwares = Collections
-            .synchronizedMap(new HashMap<Integer, String>());
-    private final Map<String, ReentrantLock> uriLocks = new WeakHashMap<String, ReentrantLock>();
+    public final Map<Integer, String> cacheKeysForImageAwares = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, ReentrantLock> uriLocks = new WeakHashMap<>();
     private final Object pauseLock = new Object();
 
     ImageLoaderHandle(ImageLoaderConfig configuration) {
@@ -57,17 +56,16 @@ class ImageLoaderHandle {
         taskDistributor = createTaskDistributor();
     }
 
-    /** Submits task to execution pool */
+    /**
+     * Submits task to execution pool
+     */
     void submit(final ImageLoaderTask task) {
-        taskDistributor.execute(new Runnable() {
-            @Override
-            public void run() {
-                if (!configuration.customExecutor && ((ExecutorService) taskExecutor).isShutdown()) {
-                    taskExecutor = configuration.createExecutor(configuration.threadPoolSize,
-                            configuration.threadPriority);
-                }
-                taskExecutor.execute(task);
+        taskDistributor.execute(() -> {
+            if (!configuration.customExecutor && ((ExecutorService) taskExecutor).isShutdown()) {
+                taskExecutor = ImageLoaderConfig.createExecutor(configuration.threadPoolSize,
+                        configuration.threadPriority);
             }
+            taskExecutor.execute(task);
         });
     }
 

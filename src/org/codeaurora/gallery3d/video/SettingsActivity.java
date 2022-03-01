@@ -7,23 +7,20 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
-import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
-import android.provider.Settings.System;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.view.MenuItem;
-import org.codeaurora.gallery.R;
 
 import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.common.ApiHelper.SystemProperties;
+
+import org.codeaurora.gallery.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,15 +29,15 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
 
     private static final String LOG_TAG = "SettingsActivity";
 
-    public  static final String PREFERENCE_RTP_MINPORT = "rtp_min_port";
-    public  static final String PREFERENCE_RTP_MAXPORT = "rtp_max_port";
+    public static final String PREFERENCE_RTP_MINPORT = "rtp_min_port";
+    public static final String PREFERENCE_RTP_MAXPORT = "rtp_max_port";
     private static final String PREFERENCE_KEEP_ALIVE_INTERVAL_SECOND = "keep_alive_interval_second";
     private static final String PREFERENCE_CACHE_MIN_SIZE = "cache_min_size";
     private static final String PREFERENCE_CACHE_MAX_SIZE = "cache_max_size";
-    public  static final String PREFERENCE_BUFFER_SIZE = "buffer_size";
-    public  static final String PREFERENCE_APN_CATEGORY = "apn_category";
-    public  static final String PREFERENCE_APN = "apn";
-    private static final String PACKAGE_NAME  = "com.android.settings";
+    public static final String PREFERENCE_BUFFER_SIZE = "buffer_size";
+    public static final String PREFERENCE_APN_CATEGORY = "apn_category";
+    public static final String PREFERENCE_APN = "apn";
+    private static final String PACKAGE_NAME = "com.android.settings";
 
     private static final int DEFAULT_RTP_MINPORT = 8192;
     private static final int DEFAULT_RTP_MAXPORT = 65535;
@@ -50,22 +47,22 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
 
     private static final int RTP_MIN_PORT = 1;
     private static final int RTP_MAX_PORT = 2;
-    private static final int BUFFER_SIZE  = 3;
+    private static final int BUFFER_SIZE = 3;
     private static final boolean DBG = true;
     private static final String TAG = SettingsActivity.class.getSimpleName();
 
-    private SharedPreferences  mPref;
+    private SharedPreferences mPref;
     private EditTextPreference mRtpMinPort;
     private EditTextPreference mRtpMaxPort;
     private EditTextPreference mBufferSize;
     private PreferenceCategory mApnCategory;
-    private PreferenceScreen   mApn;
+    private PreferenceScreen mApn;
 
-    private static final int    SELECT_APN = 1;
-    public  static final String PREFERRED_APN_URI = "content://telephony/carriers/preferapn";
-    private static final Uri    PREFERAPN_URI = Uri.parse(PREFERRED_APN_URI);
-    private static final int    COLUMN_ID_INDEX = 0;
-    private static final int    NAME_INDEX = 1;
+    private static final int SELECT_APN = 1;
+    public static final String PREFERRED_APN_URI = "content://telephony/carriers/preferapn";
+    private static final Uri PREFERAPN_URI = Uri.parse(PREFERRED_APN_URI);
+    private static final int COLUMN_ID_INDEX = 0;
+    private static final int NAME_INDEX = 1;
 
     private boolean mUseNvOperatorForEhrpd = SystemProperties.getBoolean(
             "persist.radio.use_nv_for_ehrpd", false);
@@ -111,22 +108,22 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
     }
 
     private void init() {
-        mSubscriptionManager = SubscriptionManager.from(this);
-        try{
+        mSubscriptionManager = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+        try {
             mSubscriptionManager.addOnSubscriptionsChangedListener(mOnSubscriptionsChangeListener);
-        }catch (Exception e) {
-            Log.e(TAG,e.toString());
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
             mSubscriptionManager = null;
             return;
         }
         // Initialize mActiveSubInfo
         int max = mSubscriptionManager.getActiveSubscriptionInfoCountMax();
-        mActiveSubInfos = new ArrayList<SubscriptionInfo>(max);
+        mActiveSubInfos = new ArrayList<>(max);
 
         initializeSubscriptions();
 
         if (!hasActiveSubscriptions() && mApnCategory != null && mApn != null) {
-            ((PreferenceGroup)mApnCategory).removePreference(mApn);
+            mApnCategory.removePreference(mApn);
             getPreferenceScreen().removePreference(mApnCategory);
 
         }
@@ -141,8 +138,7 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
         }
     }
 
-    private final SubscriptionManager.OnSubscriptionsChangedListener mOnSubscriptionsChangeListener
-            = new SubscriptionManager.OnSubscriptionsChangedListener() {
+    private final SubscriptionManager.OnSubscriptionsChangedListener mOnSubscriptionsChangeListener = new SubscriptionManager.OnSubscriptionsChangedListener() {
         @Override
         public void onSubscriptionsChanged() {
             if (DBG) Log.i(TAG, "onSubscriptionsChanged:");
@@ -150,8 +146,8 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
             if (hasActiveSubscriptions()) {
                 getPreferenceScreen().addPreference(mApnCategory);
                 mApnCategory.addPreference(mApn);
-            } else{
-                ((PreferenceGroup)mApnCategory).removePreference(mApn);
+            } else {
+                mApnCategory.removePreference(mApn);
                 getPreferenceScreen().removePreference(mApnCategory);
             }
         }
@@ -165,7 +161,7 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
 
         // Before updating the the active subscription list check
         // if tab updating is needed as the list is changing.
-         List<SubscriptionInfo> sil = mSubscriptionManager.getActiveSubscriptionInfoList();
+        List<SubscriptionInfo> sil = mSubscriptionManager.getActiveSubscriptionInfoList();
 
         // Update to the active subscription list
         mActiveSubInfos.clear();
@@ -209,7 +205,7 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
     }
 
     private String[] getOperatorNumeric() {
-        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<>();
         if (mUseNvOperatorForEhrpd) {
             String mccMncForEhrpd = SystemProperties.get("ro.cdma.home.operator.numeric", null);
             if (mccMncForEhrpd != null && mccMncForEhrpd.length() > 0) {
@@ -230,7 +226,7 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
 
         final String DIGITS_ACCEPTABLE = "0123456789";
         String summaryStr = "";
-        String preferStr  = "";
+        String preferStr = "";
 
         switch (which) {
             case RTP_MIN_PORT:
@@ -256,21 +252,19 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
         etp.getEditText().setKeyListener(DigitsKeyListener.getInstance(DIGITS_ACCEPTABLE));
         etp.setSummary(preferStr);
         etp.setText(preferStr);
-        etp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                final int value;
-                try {
-                    value = Integer.valueOf(summary);
-                } catch (NumberFormatException e) {
-                    Log.e(LOG_TAG, "NumberFormatException");
-                    return false;
-                }
-                etp.setSummary(summary);
-                etp.setText(summary);
-                Log.d(LOG_TAG, "z66/z82 summary = " + summary);
-                return true;
+        etp.setOnPreferenceChangeListener((preference, newValue) -> {
+            final String summary = newValue.toString();
+            final int value;
+            try {
+                value = Integer.parseInt(summary);
+            } catch (NumberFormatException e) {
+                Log.e(LOG_TAG, "NumberFormatException");
+                return false;
             }
+            etp.setSummary(summary);
+            etp.setText(summary);
+            Log.d(LOG_TAG, "z66/z82 summary = " + summary);
+            return true;
         });
 
     }
@@ -278,23 +272,21 @@ public class SettingsActivity extends AbstractPermissionPreferenceActivity {
     private void setApnListener() {
         final String SUBSCRIPTION_KEY = "subscription";
         final String SUB_ID = "sub_id";
-        mApn.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(Settings.ACTION_APN_SETTINGS);
-                int subscription = 0;
-                try {
-                    subscription = Settings.Global.getInt(
-                            SettingsActivity.this.getContentResolver(),
-                            ApiHelper.MULTI_SIM_DATA_CALL_SUBSCRIPTION);
-                } catch (Exception e) {
-                    Log.d("SettingActivity", "Can't get subscription for Exception: " + e);
-                } finally {
-                    intent.putExtra(SUBSCRIPTION_KEY, subscription);
-                    intent.putExtra(SUB_ID, subscription);
-                }
-                startActivityForResult(intent, SELECT_APN);
-                return true;
+        mApn.setOnPreferenceClickListener(preference -> {
+            Intent intent = new Intent(Settings.ACTION_APN_SETTINGS);
+            int subscription = 0;
+            try {
+                subscription = Settings.Global.getInt(
+                        SettingsActivity.this.getContentResolver(),
+                        ApiHelper.MULTI_SIM_DATA_CALL_SUBSCRIPTION);
+            } catch (Exception e) {
+                Log.d("SettingActivity", "Can't get subscription for Exception: " + e);
+            } finally {
+                intent.putExtra(SUBSCRIPTION_KEY, subscription);
+                intent.putExtra(SUB_ID, subscription);
             }
+            startActivityForResult(intent, SELECT_APN);
+            return true;
         });
     }
 }

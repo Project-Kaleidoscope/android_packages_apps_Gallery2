@@ -16,9 +16,6 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,7 +24,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
-import android.util.Log;
+
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
 public class ImageFilterBorder extends ImageFilter {
     private static final float NINEPATCH_ICON_SCALING = 10;
@@ -35,15 +34,14 @@ public class ImageFilterBorder extends ImageFilter {
     private FilterImageBorderRepresentation mParameters = null;
     private Resources mResources = null;
 
-    private HashMap<Integer, WeakReference<Drawable>> mDrawables = new HashMap<Integer, WeakReference<Drawable>>();
+    private final HashMap<Integer, WeakReference<Drawable>> mDrawables = new HashMap<>();
 
     public ImageFilterBorder() {
         mName = "Border";
     }
 
     public void useRepresentation(FilterRepresentation representation) {
-        FilterImageBorderRepresentation parameters = (FilterImageBorderRepresentation) representation;
-        mParameters = parameters;
+        mParameters = (FilterImageBorderRepresentation) representation;
     }
 
     public FilterImageBorderRepresentation getParameters() {
@@ -51,10 +49,10 @@ public class ImageFilterBorder extends ImageFilter {
     }
 
     public void freeResources() {
-       mDrawables.clear();
+        mDrawables.clear();
     }
 
-    public Bitmap applyHelper(Bitmap bitmap, float scale1, float scale2 ) {
+    public Bitmap applyHelper(Bitmap bitmap, float scale1, float scale2) {
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
         Rect bounds = new Rect(0, 0, (int) (w * scale1), (int) (h * scale1));
@@ -89,12 +87,12 @@ public class ImageFilterBorder extends ImageFilter {
         if (drawable == null && mResources != null && rsc != 0) {
             DisplayMetrics dm = mResources.getDisplayMetrics();
             BitmapFactory.Options opt = new BitmapFactory.Options();
-            if(dm.densityDpi > DisplayMetrics.DENSITY_MEDIUM) {
+            if (dm.densityDpi > DisplayMetrics.DENSITY_MEDIUM) {
                 opt.inTargetDensity = DisplayMetrics.DENSITY_MEDIUM;
             }
             drawable = new BitmapDrawable(mResources, BitmapFactory.decodeResource(mResources, rsc, opt));
             //drawable = new BitmapDrawable(mResources, BitmapFactory.decodeResource(mResources, rsc));
-            mDrawables.put(rsc, new WeakReference<Drawable>(drawable));
+            mDrawables.put(rsc, new WeakReference<>(drawable));
         }
         return drawable;
     }

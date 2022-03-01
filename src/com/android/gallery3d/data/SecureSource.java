@@ -19,15 +19,16 @@ package com.android.gallery3d.data;
 import com.android.gallery3d.app.GalleryApp;
 
 public class SecureSource extends MediaSource {
-    private GalleryApp mApplication;
-    private static PathMatcher mMatcher = new PathMatcher();
     private static final int SECURE_ALBUM = 0;
     private static final int SECURE_UNLOCK = 1;
+    private static final PathMatcher mMatcher = new PathMatcher();
 
     static {
         mMatcher.add("/secure/all/*", SECURE_ALBUM);
         mMatcher.add("/secure/unlock", SECURE_UNLOCK);
     }
+
+    private final GalleryApp mApplication;
 
     public SecureSource(GalleryApp context) {
         super("secure");

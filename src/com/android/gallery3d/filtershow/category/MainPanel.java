@@ -16,13 +16,9 @@
 
 package com.android.gallery3d.filtershow.category;
 
-import android.content.res.Configuration;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,44 +27,28 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
-import org.json.JSONObject;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.EditorPanel;
-import com.android.gallery3d.filtershow.filters.FiltersManager;
 import com.android.gallery3d.filtershow.filters.HazeBusterActs;
 import com.android.gallery3d.filtershow.filters.SeeStraightActs;
 import com.android.gallery3d.filtershow.filters.SimpleMakeupImageFilter;
 import com.android.gallery3d.filtershow.filters.TrueScannerActs;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.state.StatePanel;
-import com.android.gallery3d.filtershow.tools.DualCameraEffect;
 import com.android.gallery3d.filtershow.tools.TruePortraitNativeEngine;
 import com.android.gallery3d.filtershow.ui.DoNotShowAgainDialog;
 import com.android.gallery3d.util.GalleryUtils;
+
+import org.codeaurora.gallery.R;
+import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelegate {
-
-    private static final String LOGTAG = "MainPanel";
-
-    private LinearLayout mMainView;
-    private View mBottomPanelView;
-    private ImageButton looksButton;
-    private ImageButton bordersButton;
-    private ImageButton geometryButton;
-    private ImageButton filtersButton;
-    private ImageButton dualCamButton;
-    private ImageButton makeupButton;
-    private ImageButton trueScannerButton;
-    private ImageButton hazeBusterButton;
-    private ImageButton seeStraightButton;
-    private ImageButton truePortraitButton;
-    private ImageButton waterMarkButton;
 
     public static final String FRAGMENT_TAG = "MainPanel";
     public static final String EDITOR_TAG = "coming-from-editor-panel";
@@ -84,13 +64,26 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
     public static final int SEESTRAIGHT = 9;
     public static final int TRUEPORTRAIT = 10;
     public static final int WATERMARK = 11;
-
+    private static final String TAG = "MainPanel";
+    private LinearLayout mMainView;
+    private View mBottomPanelView;
+    private ImageButton looksButton;
+    private ImageButton bordersButton;
+    private ImageButton geometryButton;
+    private ImageButton filtersButton;
+    private ImageButton dualCamButton;
+    private ImageButton makeupButton;
+    private ImageButton trueScannerButton;
+    private ImageButton hazeBusterButton;
+    private ImageButton seeStraightButton;
+    private ImageButton truePortraitButton;
+    private ImageButton waterMarkButton;
     private int mCurrentSelected = -1;
     private int mPreviousToggleVersions = -1;
 
     private void selection(int position, boolean value) {
         if (value) {
-            FilterShowActivity activity = (FilterShowActivity) getActivity();
+            FilterShowActivity activity = (FilterShowActivity) requireActivity();
             activity.setCurrentPanel(position);
         }
         switch (position) {
@@ -111,7 +104,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
                 break;
             }
             case MAKEUP: {
-                if(makeupButton != null) {
+                if (makeupButton != null) {
                     makeupButton.setSelected(value);
                 }
                 break;
@@ -162,14 +155,14 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         mMainView = (LinearLayout) inflater.inflate(
                 R.layout.filtershow_main_panel, null, false);
 
         getBottomPanelView(inflater);
         initBottomPanel();
 
-        FilterShowActivity activity = (FilterShowActivity) getActivity();
+        FilterShowActivity activity = (FilterShowActivity) requireActivity();
         showPanel(activity.getCurrentPanel());
         return mMainView;
     }
@@ -189,170 +182,109 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
         LinearLayout bottomPanel = (LinearLayout) inflater.inflate(
                 R.layout.filtershow_bottom_panel, null, false);
 
-        looksButton = (ImageButton) bottomPanel.findViewById(R.id.fxButton);
-        bordersButton = (ImageButton) bottomPanel.findViewById(R.id.borderButton);
-        geometryButton = (ImageButton) bottomPanel.findViewById(R.id.geometryButton);
-        filtersButton = (ImageButton) bottomPanel.findViewById(R.id.colorsButton);
-        dualCamButton = (ImageButton) bottomPanel.findViewById(R.id.dualCamButton);
+        looksButton = bottomPanel.findViewById(R.id.fxButton);
+        bordersButton = bottomPanel.findViewById(R.id.borderButton);
+        geometryButton = bottomPanel.findViewById(R.id.geometryButton);
+        filtersButton = bottomPanel.findViewById(R.id.colorsButton);
+        dualCamButton = bottomPanel.findViewById(R.id.dualCamButton);
 
         if (SimpleMakeupImageFilter.HAS_TS_MAKEUP) {
-            makeupButton = (ImageButton) bottomPanel.findViewById(R.id.makeupButton);
+            makeupButton = bottomPanel.findViewById(R.id.makeupButton);
             makeupButton.setVisibility(View.VISIBLE);
         }
 
         if (makeupButton != null) {
-            makeupButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showPanel(MAKEUP);
-                }
-            });
+            makeupButton.setOnClickListener(view -> showPanel(MAKEUP));
         }
-        trueScannerButton = (ImageButton) bottomPanel.findViewById(R.id.trueScannerButton);
+        trueScannerButton = bottomPanel.findViewById(R.id.trueScannerButton);
         if (!TrueScannerActs.isTrueScannerEnabled()) {
             trueScannerButton.setVisibility(View.GONE);
         }
 
-        hazeBusterButton = (ImageButton) bottomPanel.findViewById(R.id.hazeBusterButton);
+        hazeBusterButton = bottomPanel.findViewById(R.id.hazeBusterButton);
         if (!HazeBusterActs.isHazeBusterEnabled()) {
             hazeBusterButton.setVisibility(View.GONE);
         }
 
-        seeStraightButton = (ImageButton) bottomPanel.findViewById(R.id.seeStraightButton);
+        seeStraightButton = bottomPanel.findViewById(R.id.seeStraightButton);
         if (!SeeStraightActs.isSeeStraightEnabled()) {
             seeStraightButton.setVisibility(View.GONE);
         }
 
-        truePortraitButton = (ImageButton) bottomPanel.findViewById(R.id.truePortraitButton);
-        if(!TruePortraitNativeEngine.getInstance().isLibLoaded()) {
+        truePortraitButton = bottomPanel.findViewById(R.id.truePortraitButton);
+        if (!TruePortraitNativeEngine.getInstance().isLibLoaded()) {
             truePortraitButton.setVisibility(View.GONE);
         }
 
-        waterMarkButton = (ImageButton) bottomPanel.findViewById(R.id.waterMarkButton);
+        waterMarkButton = bottomPanel.findViewById(R.id.waterMarkButton);
 
-        waterMarkButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (MasterImage.getImage().getHistory().getItem(1) == null) {
-                    waterMarkButton.setVisibility(View.VISIBLE);
-                    showPanel(WATERMARK);
-                } else {
-                    Toast.makeText(getActivity(), "Watermark only support single edit",
-                            Toast.LENGTH_SHORT).show();
-                    waterMarkButton.setVisibility(View.GONE);
-                }
+        waterMarkButton.setOnClickListener(view -> {
+            if (MasterImage.getImage().getHistory().getItem(1) == null) {
+                waterMarkButton.setVisibility(View.VISIBLE);
+                showPanel(WATERMARK);
+            } else {
+                Toast.makeText(getActivity(), "Watermark only support single edit",
+                        Toast.LENGTH_SHORT).show();
+                waterMarkButton.setVisibility(View.GONE);
             }
         });
-        looksButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPanel(LOOKS);
-            }
-        });
-        bordersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPanel(BORDERS);
-            }
-        });
-        geometryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPanel(GEOMETRY);
-            }
-        });
-        filtersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPanel(FILTERS);
-            }
-        });
-        dualCamButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Context context = getActivity();
-                boolean skipIntro = GalleryUtils.getBooleanPref(context,
-                        context.getString(R.string.pref_dualcam_intro_show_key), false);
-                if (skipIntro) {
-                    showPanel(DUALCAM);
-                } else {
-                    DoNotShowAgainDialog dialog = new DoNotShowAgainDialog(
-                            R.string.dual_camera_effects, R.string.dual_camera_effects_intro,
-                            R.string.pref_dualcam_intro_show_key);
-                    dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            showPanel(DUALCAM);
-                        }
-                    });
-                    dialog.show(getFragmentManager(), "dualcam_intro");
-                }
+        looksButton.setOnClickListener(view -> showPanel(LOOKS));
+        bordersButton.setOnClickListener(view -> showPanel(BORDERS));
+        geometryButton.setOnClickListener(view -> showPanel(GEOMETRY));
+        filtersButton.setOnClickListener(view -> showPanel(FILTERS));
+        dualCamButton.setOnClickListener(view -> {
+            Context context = getActivity();
+            boolean skipIntro = GalleryUtils.getBooleanPref(context,
+                    context.getString(R.string.pref_dualcam_intro_show_key), false);
+            if (skipIntro) {
+                showPanel(DUALCAM);
+            } else {
+                DoNotShowAgainDialog dialog = new DoNotShowAgainDialog(
+                        R.string.dual_camera_effects, R.string.dual_camera_effects_intro,
+                        R.string.pref_dualcam_intro_show_key);
+                dialog.setOnDismissListener(dialog1 -> showPanel(DUALCAM));
+                dialog.show(getFragmentManager(), "dualcam_intro");
             }
         });
 
-        truePortraitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                Context context = getActivity();
-                boolean skipIntro = GalleryUtils.getBooleanPref(context,
-                        context.getString(R.string.pref_trueportrait_intro_show_key), false);
-                final boolean facesDetected = TruePortraitNativeEngine.getInstance().facesDetected();
-                if(skipIntro && facesDetected) {
-                    showPanel(TRUEPORTRAIT);
-                } else if(!skipIntro) {
-                    DoNotShowAgainDialog dialog = new DoNotShowAgainDialog(
-                            R.string.trueportrait, R.string.trueportrait_intro,
-                            R.string.pref_trueportrait_intro_show_key);
-                    dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            if(facesDetected) {
-                                showPanel(TRUEPORTRAIT);
-                            } else {
-                                v.setEnabled(false);
-                                TruePortraitNativeEngine.getInstance().showNoFaceDetectedDialog(getFragmentManager());
-                            }
-                        }
-                    });
-                    dialog.show(getFragmentManager(), "trueportrait_intro");
-                } else {
-                    v.setEnabled(false);
-                    TruePortraitNativeEngine.getInstance().showNoFaceDetectedDialog(getFragmentManager());
-                }
+        truePortraitButton.setOnClickListener(view -> {
+            Context context = requireContext();
+            boolean skipIntro = GalleryUtils.getBooleanPref(context,
+                    context.getString(R.string.pref_trueportrait_intro_show_key), false);
+            final boolean facesDetected = TruePortraitNativeEngine.getInstance().facesDetected();
+            if (skipIntro && facesDetected) {
+                showPanel(TRUEPORTRAIT);
+            } else if (!skipIntro) {
+                DoNotShowAgainDialog dialog = new DoNotShowAgainDialog(
+                        R.string.trueportrait, R.string.trueportrait_intro,
+                        R.string.pref_trueportrait_intro_show_key);
+                dialog.setOnDismissListener(dialog12 -> {
+                    if (facesDetected) {
+                        showPanel(TRUEPORTRAIT);
+                    } else {
+                        view.setEnabled(false);
+                        TruePortraitNativeEngine.getInstance().showNoFaceDetectedDialog(getFragmentManager());
+                    }
+                });
+                dialog.show(getFragmentManager(), "trueportrait_intro");
+            } else {
+                view.setEnabled(false);
+                TruePortraitNativeEngine.getInstance().showNoFaceDetectedDialog(getFragmentManager());
             }
         });
 
-        trueScannerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        trueScannerButton.setOnClickListener(view -> showPanel(TRUESCANNER));
 
-                showPanel(TRUESCANNER);
-            }
-        });
+        hazeBusterButton.setOnClickListener(view -> showPanel(HAZEBUSTER));
 
-        hazeBusterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPanel(HAZEBUSTER);
-            }
-        });
-
-        seeStraightButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPanel(SEESTRAIGHT);
-            }
-        });
+        seeStraightButton.setOnClickListener(view -> showPanel(SEESTRAIGHT));
 
         mBottomPanelView = bottomPanel;
         return bottomPanel;
     }
 
     private boolean isRightAnimation(int newPos) {
-        if (newPos < mCurrentSelected) {
-            return false;
-        }
-        return true;
+        return newPos >= mCurrentSelected;
     }
 
     private void setActionFragment(Fragment actionFragment, String tag) {
@@ -377,7 +309,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
 
     private void setCategoryFragment(Fragment category, boolean fromRight) {
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-        FilterShowActivity activity = (FilterShowActivity) getActivity();
+        FilterShowActivity activity = (FilterShowActivity) requireActivity();
         if (fromRight) {
             transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right);
         } else {
@@ -443,7 +375,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
     }
 
     public void loadCategoryTrueScannerPanel() {
-        final FilterShowActivity activity = (FilterShowActivity) getActivity();
+        final FilterShowActivity activity = (FilterShowActivity) requireActivity();
         CategoryAdapter adapter = activity.getCategoryTrueScannerAdapter();
         if (adapter.getCount() == 1) {
             activity.showRepresentation(adapter.getItem(0).getRepresentation());
@@ -459,7 +391,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
     }
 
     public void loadCategoryHazeBusterPanel() {
-        final FilterShowActivity activity = (FilterShowActivity) getActivity();
+        final FilterShowActivity activity = (FilterShowActivity) requireActivity();
         CategoryAdapter adapter = activity.getCategoryHazeBusterAdapter();
         if (adapter.getCount() == 1) {
             activity.showRepresentation(adapter.getItem(0).getRepresentation());
@@ -475,7 +407,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
     }
 
     public void loadCategorySeeStraightPanel() {
-        final FilterShowActivity activity = (FilterShowActivity) getActivity();
+        final FilterShowActivity activity = (FilterShowActivity) requireActivity();
         CategoryAdapter adapter = activity.getCategorySeeStraightAdapter();
         if (adapter.getCount() == 1) {
             activity.showRepresentation(adapter.getItem(0).getRepresentation());
@@ -507,7 +439,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
         if (mCurrentSelected == VERSIONS) {
             return;
         }
-        FilterShowActivity activity = (FilterShowActivity) getActivity();
+        FilterShowActivity activity = (FilterShowActivity) requireActivity();
         activity.updateVersions();
         boolean fromRight = isRightAnimation(VERSIONS);
         selection(mCurrentSelected, false);
@@ -613,7 +545,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
                         String result = WaterMarkView.convertStream2String(connection.getInputStream());
                         JSONObject resultJson = new JSONObject(result);
                         String weather = resultJson.getJSONArray("results").getJSONObject(0).getJSONArray("weather_data").getJSONObject(0).getString("date");
-                        temperature = weather.substring(weather.indexOf(":")+1, weather.indexOf(")"));
+                        temperature = weather.substring(weather.indexOf(":") + 1, weather.indexOf(")"));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -687,35 +619,28 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
                 break;
             }
         }
-        if (currentPanel > 0) {
-            activity.adjustCompareButton(true);
-        } else {
-            activity.adjustCompareButton(false);
-        }
+        activity.adjustCompareButton(currentPanel > 0);
     }
 
     public void setToggleVersionsPanelButton(ImageButton button) {
         if (button == null) {
             return;
         }
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mCurrentSelected == VERSIONS) {
-                    showPanel(mPreviousToggleVersions);
-                } else {
-                    mPreviousToggleVersions = mCurrentSelected;
-                    showPanel(VERSIONS);
-                }
+        button.setOnClickListener(view -> {
+            if (mCurrentSelected == VERSIONS) {
+                showPanel(mPreviousToggleVersions);
+            } else {
+                mPreviousToggleVersions = mCurrentSelected;
+                showPanel(VERSIONS);
             }
         });
     }
 
     public void showImageStatePanel(boolean show) {
         View container = mMainView.findViewById(R.id.state_panel_container);
-        FragmentTransaction transaction = null;
+        FragmentTransaction transaction;
         if (container == null) {
-            FilterShowActivity activity = (FilterShowActivity) getActivity();
+            FilterShowActivity activity = (FilterShowActivity) requireActivity();
             container = activity.getMainStatePanelContainer(R.id.state_panel_container);
         } else {
             transaction = getChildFragmentManager().beginTransaction();
@@ -730,7 +655,7 @@ public class MainPanel extends Fragment implements BottomPanel.BottomPanelDelega
             container.setVisibility(View.VISIBLE);
             StatePanel statePanel = new StatePanel();
             statePanel.setMainPanel(this);
-            FilterShowActivity activity = (FilterShowActivity) getActivity();
+            FilterShowActivity activity = (FilterShowActivity) requireActivity();
             activity.updateVersions();
             transaction.replace(R.id.state_panel_container, statePanel, StatePanel.FRAGMENT_TAG);
         } else {

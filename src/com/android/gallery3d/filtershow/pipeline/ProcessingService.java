@@ -27,22 +27,20 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 
-import org.codeaurora.gallery.R;
-import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FiltersManager;
 import com.android.gallery3d.filtershow.filters.ImageFilter;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.tools.SaveImage;
 
+import org.codeaurora.gallery.R;
+
 import java.io.File;
 
 public class ProcessingService extends Service {
-    private static final String LOGTAG = "ProcessingService";
+    private static final String TAG = "ProcessingService";
     private static final boolean SHOW_IMAGE = false;
     private int mNotificationId;
     private NotificationManager mNotifyMgr = null;
@@ -143,8 +141,8 @@ public class ProcessingService extends Service {
     }
 
     public static Intent getSaveIntent(Context context, ImagePreset preset, File destination,
-            Uri selectedImageUri, Uri sourceImageUri, boolean doFlatten, int quality,
-            float sizeFactor, boolean needsExit, long requestId) {
+                                       Uri selectedImageUri, Uri sourceImageUri, boolean doFlatten, int quality,
+                                       float sizeFactor, boolean needsExit, long requestId) {
         Intent processIntent = new Intent(context, ProcessingService.class);
         processIntent.putExtra(ProcessingService.SOURCE_URI,
                 sourceImageUri.toString());
@@ -240,20 +238,16 @@ public class ProcessingService extends Service {
     }
 
     public void handleSaveRequest(Uri sourceUri, Uri selectedUri,
-            File destinationFile, ImagePreset preset, Bitmap previewImage,
-            boolean flatten, int quality, float sizeFactor, boolean exit, long requestId) {
+                                  File destinationFile, ImagePreset preset, Bitmap previewImage,
+                                  boolean flatten, int quality, float sizeFactor, boolean exit, long requestId) {
         mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.cancelAll();
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String channelId = "GallerySavingRequest";
-            NotificationChannel channel = new NotificationChannel(channelId, channelId,
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            mNotifyMgr.createNotificationChannel(channel);
-            mBuilder = new Notification.Builder(this, channelId);
-        } else {
-            mBuilder = new Notification.Builder(this);
-        }
+        String channelId = "GallerySavingRequest";
+        NotificationChannel channel = new NotificationChannel(channelId, channelId,
+                NotificationManager.IMPORTANCE_DEFAULT);
+        mNotifyMgr.createNotificationChannel(channel);
+        mBuilder = new Notification.Builder(this, channelId);
         mBuilder.setSmallIcon(R.drawable.filtershow_button_fx)
                 .setContentTitle(getString(R.string.filtershow_notification_label))
                 .setContentText(getString(R.string.filtershow_notification_message));
@@ -278,9 +272,7 @@ public class ProcessingService extends Service {
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
-    public void completeSaveImage(Uri result, long requestId,
-                                  boolean exit, boolean releaseDualCam) {
-
+    public void completeSaveImage(Uri result, long requestId, boolean exit, boolean releaseDualCam) {
         if (SHOW_IMAGE) {
             // TODO: we should update the existing image in Gallery instead
             Intent viewImage = new Intent(Intent.ACTION_VIEW, result);

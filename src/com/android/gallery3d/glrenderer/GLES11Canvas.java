@@ -24,7 +24,6 @@ import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.util.IntArray;
 
@@ -53,24 +52,24 @@ public class GLES11Canvas implements GLCanvas {
             0, 0, 1, 1,              // used for drawing a line
             0, 0, 0, 1, 1, 1, 1, 0}; // used for drawing the outline of a rectangle
 
-    private GL11 mGL;
+    private final GL11 mGL;
 
-    private final float mMatrixValues[] = new float[16];
-    private final float mTextureMatrixValues[] = new float[16];
+    private final float[] mMatrixValues = new float[16];
+    private final float[] mTextureMatrixValues = new float[16];
 
     // The results of mapPoints are stored in this buffer, and the order is
     // x1, y1, x2, y2.
-    private final float mMapPointsBuffer[] = new float[4];
+    private final float[] mMapPointsBuffer = new float[4];
 
-    private final float mTextureColor[] = new float[4];
+    private final float[] mTextureColor = new float[4];
 
-    private int mBoxCoords;
+    private final int mBoxCoords;
 
-    private GLState mGLState;
-    private final ArrayList<RawTexture> mTargetStack = new ArrayList<RawTexture>();
+    private final GLState mGLState;
+    private final ArrayList<RawTexture> mTargetStack = new ArrayList<>();
 
     private float mAlpha;
-    private final ArrayList<ConfigState> mRestoreStack = new ArrayList<ConfigState>();
+    private final ArrayList<ConfigState> mRestoreStack = new ArrayList<>();
     private ConfigState mRecycledRestoreAction;
 
     private final RectF mDrawTextureSourceRect = new RectF();
@@ -80,9 +79,9 @@ public class GLES11Canvas implements GLCanvas {
     private final IntArray mDeleteBuffers = new IntArray();
     private int mScreenWidth;
     private int mScreenHeight;
-    private boolean mBlendEnabled = true;
-    private int mFrameBuffer[] = new int[1];
-    private static float[] sCropRect = new float[4];
+    private final boolean mBlendEnabled = true;
+    private final int[] mFrameBuffer = new int[1];
+    private static final float[] sCropRect = new float[4];
 
     private RawTexture mTargetTexture;
 
@@ -93,7 +92,7 @@ public class GLES11Canvas implements GLCanvas {
     int mCountTextureRect;
     int mCountTextureOES;
 
-    private static GLId mGLId = new GLES11IdImpl();
+    private static final GLId mGLId = new GLES11IdImpl();
 
     public GLES11Canvas(GL11 gl) {
         mGL = gl;
@@ -142,7 +141,7 @@ public class GLES11Canvas implements GLCanvas {
         gl.glMatrixMode(GL11.GL_MODELVIEW);
         gl.glLoadIdentity();
 
-        float matrix[] = mMatrixValues;
+        float[] matrix = mMatrixValues;
         Matrix.setIdentityM(matrix, 0);
         // to match the graphic coordinate system in android, we flip it vertically.
         if (mTargetTexture == null) {
@@ -256,7 +255,7 @@ public class GLES11Canvas implements GLCanvas {
     }
 
     @Override
-    public void multiplyMatrix(float matrix[], int offset) {
+    public void multiplyMatrix(float[] matrix, int offset) {
         float[] temp = mTempMatrix;
         Matrix.multiplyMM(temp, 0, mMatrixValues, 0, matrix, offset);
         System.arraycopy(temp, 0, mMatrixValues, 0, 16);
@@ -278,7 +277,7 @@ public class GLES11Canvas implements GLCanvas {
 
     @Override
     public void drawMesh(BasicTexture tex, int x, int y, int xyBuffer,
-            int uvBuffer, int indexBuffer, int indexCount) {
+                         int uvBuffer, int indexBuffer, int indexCount) {
         float alpha = mAlpha;
         if (!bindTexture(tex)) return;
 
@@ -315,7 +314,7 @@ public class GLES11Canvas implements GLCanvas {
 
     // Transforms two points by the given matrix m. The result
     // {x1', y1', x2', y2'} are stored in mMapPointsBuffer and also returned.
-    private float[] mapPoints(float m[], int x1, int y1, int x2, int y2) {
+    private float[] mapPoints(float[] m, int x1, int y1, int x2, int y2) {
         float[] r = mMapPointsBuffer;
 
         // Multiply m and (x1 y1 0 1) to produce (x3 y3 z3 w3). z3 is unused.
@@ -354,7 +353,7 @@ public class GLES11Canvas implements GLCanvas {
             textureRect(x, y, width, height);
         } else {
             // draw the rect from bottom-left to top-right
-            float points[] = mapPoints(
+            float[] points = mapPoints(
                     mMatrixValues, x, y + height, x + width, y);
             x = (int) (points[0] + 0.5f);
             y = (int) (points[1] + 0.5f);
@@ -374,7 +373,7 @@ public class GLES11Canvas implements GLCanvas {
     }
 
     private void drawTexture(BasicTexture texture,
-            int x, int y, int width, int height, float alpha) {
+                             int x, int y, int width, int height, float alpha) {
         if (width <= 0 || height <= 0) return;
 
         mGLState.setBlendEnabled(mBlendEnabled
@@ -405,7 +404,7 @@ public class GLES11Canvas implements GLCanvas {
 
     @Override
     public void drawTexture(BasicTexture texture, float[] mTextureTransform,
-            int x, int y, int w, int h) {
+                            int x, int y, int w, int h) {
         mGLState.setBlendEnabled(mBlendEnabled
                 && (!texture.isOpaque() || mAlpha < OPAQUE_ALPHA));
         if (!bindTexture(texture)) return;
@@ -418,7 +417,7 @@ public class GLES11Canvas implements GLCanvas {
     // It also clips the source and target coordinates if it is beyond the
     // bound of the texture.
     private static void convertCoordinate(RectF source, RectF target,
-            BasicTexture texture) {
+                                          BasicTexture texture) {
 
         int width = texture.getWidth();
         int height = texture.getHeight();
@@ -447,7 +446,7 @@ public class GLES11Canvas implements GLCanvas {
 
     @Override
     public void drawMixed(BasicTexture from,
-            int toColor, float ratio, int x, int y, int w, int h) {
+                          int toColor, float ratio, int x, int y, int w, int h) {
         drawMixed(from, toColor, ratio, x, y, w, h, mAlpha);
     }
 
@@ -510,7 +509,7 @@ public class GLES11Canvas implements GLCanvas {
 
     @Override
     public void drawMixed(BasicTexture from, int toColor, float ratio,
-            RectF source, RectF target) {
+                          RectF source, RectF target) {
         if (target.width() <= 0 || target.height() <= 0) return;
 
         if (ratio <= 0.01f) {
@@ -544,7 +543,7 @@ public class GLES11Canvas implements GLCanvas {
     }
 
     private void drawMixed(BasicTexture from, int toColor,
-            float ratio, int x, int y, int width, int height, float alpha) {
+                           float ratio, int x, int y, int width, int height, float alpha) {
         // change from 0 to 0.01f to prevent getting divided by zero below
         if (ratio <= 0.01f) {
             drawTexture(from, x, y, width, height, alpha);
@@ -574,7 +573,7 @@ public class GLES11Canvas implements GLCanvas {
     private static final int MSCALE_X = 0;
     private static final int MSCALE_Y = 5;
 
-    private static boolean isMatrixRotatedOrFlipped(float matrix[]) {
+    private static boolean isMatrixRotatedOrFlipped(float[] matrix) {
         final float eps = 1e-5f;
         return Math.abs(matrix[MSKEW_X]) > eps
                 || Math.abs(matrix[MSKEW_Y]) > eps
@@ -591,7 +590,7 @@ public class GLES11Canvas implements GLCanvas {
         private int mTextureTarget = GL11.GL_TEXTURE_2D;
         private boolean mBlendEnabled = true;
         private float mLineWidth = 1.0f;
-        private boolean mLineSmooth = false;
+        private final boolean mLineSmooth = false;
 
         public GLState(GL11 gl) {
             mGL = gl;
@@ -616,11 +615,7 @@ public class GLES11Canvas implements GLCanvas {
             gl.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
             // We use 565 or 8888 format, so set the alignment to 2 bytes/pixel.
-            if (ApiHelper.USE_888_PIXEL_FORMAT) {
-                gl.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 2);
-            } else {
-                gl.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-            }
+            gl.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 2);
         }
 
         public void setTexEnvMode(int mode) {
@@ -690,7 +685,7 @@ public class GLES11Canvas implements GLCanvas {
 
     @Override
     public void clearBuffer(float[] argb) {
-        if(argb != null && argb.length == 4) {
+        if (argb != null && argb.length == 4) {
             mGL.glClearColor(argb[1], argb[2], argb[3], argb[0]);
         } else {
             mGL.glClearColor(0, 0, 0, 1);
@@ -708,7 +703,7 @@ public class GLES11Canvas implements GLCanvas {
     }
 
     private void setTextureCoords(float left, float top,
-            float right, float bottom) {
+                                  float right, float bottom) {
         mGL.glMatrixMode(GL11.GL_TEXTURE);
         mTextureMatrixValues[0] = right - left;
         mTextureMatrixValues[5] = bottom - top;
@@ -809,7 +804,7 @@ public class GLES11Canvas implements GLCanvas {
 
     private static class ConfigState {
         float mAlpha;
-        float mMatrix[] = new float[16];
+        float[] mMatrix = new float[16];
         ConfigState mNextFree;
 
         public void restore(GLES11Canvas canvas) {
@@ -850,7 +845,7 @@ public class GLES11Canvas implements GLCanvas {
             gl11ep.glBindFramebufferOES(
                     GL11ExtensionPack.GL_FRAMEBUFFER_OES, mFrameBuffer[0]);
         }
-        if (mTargetTexture != null && texture  == null) {
+        if (mTargetTexture != null && texture == null) {
             gl11ep.glBindFramebufferOES(GL11ExtensionPack.GL_FRAMEBUFFER_OES, 0);
             gl11ep.glDeleteFramebuffersOES(1, mFrameBuffer, 0);
         }
@@ -957,7 +952,7 @@ public class GLES11Canvas implements GLCanvas {
 
     @Override
     public void texSubImage2D(BasicTexture texture, int xOffset, int yOffset, Bitmap bitmap,
-            int format, int type) {
+                              int format, int type) {
         int target = texture.getTarget();
         mGL.glBindTexture(target, texture.getId());
         GLUtils.texSubImage2D(target, 0, xOffset, yOffset, bitmap, format, type);

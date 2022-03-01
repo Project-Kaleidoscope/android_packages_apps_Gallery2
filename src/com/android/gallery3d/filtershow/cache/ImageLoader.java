@@ -25,12 +25,9 @@ import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -43,8 +40,6 @@ import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.exif.ExifInterface;
 import com.android.gallery3d.exif.ExifTag;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
-import com.android.gallery3d.filtershow.pipeline.FilterEnvironment;
-import com.android.gallery3d.filtershow.tools.XmpPresets;
 import com.android.gallery3d.util.XmpUtilHelper;
 
 import java.io.FileNotFoundException;
@@ -54,7 +49,7 @@ import java.util.List;
 
 public final class ImageLoader {
 
-    private static final String LOGTAG = "ImageLoader";
+    private static final String TAG = "ImageLoader";
 
     public static final String JPEG_MIME_TYPE = "image/jpeg";
     public static final int DEFAULT_COMPRESS_QUALITY = 95;
@@ -87,10 +82,8 @@ public final class ImageLoader {
 
     public static String getLocalPathFromUri(Context context, Uri uri) {
 
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
         // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
@@ -106,7 +99,7 @@ public final class ImageLoader {
 
                 final String id = DocumentsContract.getDocumentId(uri);
                 final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                        Uri.parse("content://downloads/public_downloads"), Long.parseLong(id));
 
                 return getDataColumn(context, contentUri, null, null);
             }
@@ -207,11 +200,7 @@ public final class ImageLoader {
                         return ORI_NORMAL;
                 }
             }
-        } catch (SQLiteException e) {
-            // Do nothing
-        } catch (IllegalArgumentException e) {
-            // Do nothing
-        } catch (IllegalStateException e) {
+        } catch (SQLiteException | IllegalArgumentException | IllegalStateException ignored) {
             // Do nothing
         } finally {
             Utils.closeSilently(cursor);
@@ -233,16 +222,16 @@ public final class ImageLoader {
             }
             return parseExif(exif);
         } catch (IOException e) {
-            Log.w(LOGTAG, "Failed to read EXIF orientation", e);
+            Log.w(TAG, "Failed to read EXIF orientation", e);
         } catch (NullPointerException e) {
-            Log.w(LOGTAG, "Invalid EXIF data", e);
+            Log.w(TAG, "Invalid EXIF data", e);
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException e) {
-                Log.w(LOGTAG, "Failed to close InputStream", e);
+                Log.w(TAG, "Failed to close InputStream", e);
             }
         }
         return ORI_NORMAL;
@@ -295,10 +284,8 @@ public final class ImageLoader {
         Matrix matrix = new Matrix();
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
-        if (ori == ORI_ROTATE_90 ||
-                ori == ORI_ROTATE_270 ||
-                ori == ORI_TRANSPOSE ||
-                ori == ORI_TRANSVERSE) {
+        if (ori == ORI_ROTATE_90 || ori == ORI_ROTATE_270 ||
+                ori == ORI_TRANSPOSE || ori == ORI_TRANSVERSE) {
             int tmp = w;
             w = h;
             h = tmp;
@@ -370,12 +357,10 @@ public final class ImageLoader {
                 cache.cache(reuse); // not reused, put back in cache
             }
             return bitmap;
-        } catch (FileNotFoundException e) {
-            Log.e(LOGTAG, "FileNotFoundException for " + uri, e);
         } catch (IOException e) {
-            Log.e(LOGTAG, "FileNotFoundException for " + uri, e);
+            Log.e(TAG, "FileNotFoundException for " + uri, e);
         } catch (IllegalArgumentException e) {
-            Log.e(LOGTAG, "exc, image decoded " + w + " x " + h + " bounds: "
+            Log.e(TAG, "exc, image decoded " + w + " x " + h + " bounds: "
                     + bounds.left + "," + bounds.top + " - "
                     + bounds.width() + "x" + bounds.height() + " exc: " + e);
         } finally {
@@ -418,7 +403,7 @@ public final class ImageLoader {
             is = context.getContentResolver().openInputStream(uri);
             return BitmapFactory.decodeStream(is, null, o);
         } catch (FileNotFoundException e) {
-            Log.e(LOGTAG, "FileNotFoundException for " + uri, e);
+            Log.e(TAG, "FileNotFoundException for " + uri, e);
         } finally {
             Utils.closeSilently(is);
         }
@@ -456,7 +441,7 @@ public final class ImageLoader {
         }
 
         // Find best downsampling size
-        int imageSide = 0;
+        int imageSide;
         if (useMin) {
             imageSide = Math.min(w, h);
         } else {
@@ -469,8 +454,7 @@ public final class ImageLoader {
         }
 
         // Make sure sample size is reasonable
-        if (sampleSize <= 0 ||
-                0 >= (int) (Math.min(w, h) / sampleSize)) {
+        if (sampleSize <= 0 || 0 >= (Math.min(w, h) / sampleSize)) {
             return null;
         }
         return loadDownsampledBitmap(context, uri, sampleSize);
@@ -641,9 +625,7 @@ public final class ImageLoader {
             }
 
             return false;
-        } catch (FileNotFoundException e) {
-            return false;
-        } catch (XMPException e) {
+        } catch (FileNotFoundException | XMPException e) {
             return false;
         } finally {
             Utils.closeSilently(is);
@@ -661,12 +643,11 @@ public final class ImageLoader {
             try {
                 ExifInterface exif = new ExifInterface();
                 exif.readExif(path);
-                List<ExifTag> taglist = exif.getAllTags();
-                return taglist;
+                return exif.getAllTags();
             } catch (IOException e) {
-                Log.w(LOGTAG, "Failed to read EXIF tags", e);
+                Log.w(TAG, "Failed to read EXIF tags", e);
             } catch (NullPointerException e) {
-                Log.e(LOGTAG, "Failed to read EXIF tags", e);
+                Log.e(TAG, "Failed to read EXIF tags", e);
             }
         }
         return null;

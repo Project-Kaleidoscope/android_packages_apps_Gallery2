@@ -16,9 +16,14 @@
 
 package com.android.gallery3d.data;
 
-import org.codeaurora.gallery.R;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.exif.ExifInterface;
 import com.android.gallery3d.exif.ExifTag;
+
+import org.codeaurora.gallery.R;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,12 +33,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 public class MediaDetails implements Iterable<Entry<Integer, Object>> {
-    @SuppressWarnings("unused")
-    private static final String TAG = "MediaDetails";
-
-    private TreeMap<Integer, Object> mDetails = new TreeMap<Integer, Object>();
-    private HashMap<Integer, Integer> mUnits = new HashMap<Integer, Integer>();
-
     public static final int INDEX_TITLE = 1;
     public static final int INDEX_DESCRIPTION = 2;
     public static final int INDEX_DATETIME = 3;
@@ -44,7 +43,6 @@ public class MediaDetails implements Iterable<Entry<Integer, Object>> {
     public static final int INDEX_DURATION = 8;
     public static final int INDEX_MIMETYPE = 9;
     public static final int INDEX_SIZE = 10;
-
     // for EXIF
     public static final int INDEX_DATETIME_ORIGINAL = 100;
     public static final int INDEX_MAKE = 101;
@@ -56,60 +54,17 @@ public class MediaDetails implements Iterable<Entry<Integer, Object>> {
     public static final int INDEX_SHUTTER_SPEED = 107;
     public static final int INDEX_EXPOSURE_TIME = 108;
     public static final int INDEX_ISO = 109;
-
     // Put this last because it may be long.
     public static final int INDEX_PATH = 200;
-
-    public static class FlashState {
-        private static int FLASH_FIRED_MASK = 1;
-        private static int FLASH_RETURN_MASK = 2 | 4;
-        private static int FLASH_MODE_MASK = 8 | 16;
-        private static int FLASH_FUNCTION_MASK = 32;
-        private static int FLASH_RED_EYE_MASK = 64;
-        private int mState;
-
-        public FlashState(int state) {
-            mState = state;
-        }
-
-        public boolean isFlashFired() {
-            return (mState & FLASH_FIRED_MASK) != 0;
-        }
-    }
-
-    public void addDetail(int index, Object value) {
-        mDetails.put(index, value);
-    }
-
-    public Object getDetail(int index) {
-        return mDetails.get(index);
-    }
-
-    public int size() {
-        return mDetails.size();
-    }
-
-    @Override
-    public Iterator<Entry<Integer, Object>> iterator() {
-        return mDetails.entrySet().iterator();
-    }
-
-    public void setUnit(int index, int unit) {
-        mUnits.put(index, unit);
-    }
-
-    public boolean hasUnit(int index) {
-        return mUnits.containsKey(index);
-    }
-
-    public int getUnit(int index) {
-        return mUnits.get(index);
-    }
+    @SuppressWarnings("unused")
+    private static final String TAG = "MediaDetails";
+    private final TreeMap<Integer, Object> mDetails = new TreeMap<>();
+    private final HashMap<Integer, Integer> mUnits = new HashMap<>();
 
     private static void setExifData(MediaDetails details, ExifTag tag,
-            int key) {
+                                    int key) {
         if (tag != null) {
-            String value = null;
+            String value;
             int type = tag.getDataType();
             if (type == ExifTag.TYPE_UNSIGNED_RATIONAL || type == ExifTag.TYPE_RATIONAL) {
                 value = String.valueOf(tag.getValueAsRational(0).toDouble());
@@ -120,7 +75,7 @@ public class MediaDetails implements Iterable<Entry<Integer, Object>> {
             }
             if (key == MediaDetails.INDEX_FLASH) {
                 MediaDetails.FlashState state = new MediaDetails.FlashState(
-                        Integer.valueOf(value.toString()));
+                        Integer.parseInt(value));
                 details.addDetail(key, state);
             } else {
                 details.addDetail(key, value);
@@ -176,7 +131,54 @@ public class MediaDetails implements Iterable<Entry<Integer, Object>> {
         if (latitudeTag != null && longitudeTag != null) {
             double latitude = latitudeTag.getValueAsRational(0).toDouble();
             double longitude = longitudeTag.getValueAsRational(0).toDouble();
-            details.addDetail(MediaDetails.INDEX_LOCATION, new double[] {latitude, longitude});
+            details.addDetail(MediaDetails.INDEX_LOCATION, new double[]{latitude, longitude});
+        }
+    }
+
+    public void addDetail(int index, Object value) {
+        mDetails.put(index, value);
+    }
+
+    public Object getDetail(int index) {
+        return mDetails.get(index);
+    }
+
+    public int size() {
+        return mDetails.size();
+    }
+
+    @NonNull
+    @Override
+    public Iterator<Entry<Integer, Object>> iterator() {
+        return mDetails.entrySet().iterator();
+    }
+
+    public void setUnit(int index, int unit) {
+        mUnits.put(index, unit);
+    }
+
+    public boolean hasUnit(int index) {
+        return mUnits.containsKey(index);
+    }
+
+    public int getUnit(int index) {
+        return mUnits.get(index);
+    }
+
+    public static class FlashState {
+        private static final int FLASH_FIRED_MASK = 1;
+        private static final int FLASH_RETURN_MASK = 2 | 4;
+        private static final int FLASH_MODE_MASK = 8 | 16;
+        private static final int FLASH_FUNCTION_MASK = 32;
+        private static final int FLASH_RED_EYE_MASK = 64;
+        private final int mState;
+
+        public FlashState(int state) {
+            mState = state;
+        }
+
+        public boolean isFlashFired() {
+            return (mState & FLASH_FIRED_MASK) != 0;
         }
     }
 }

@@ -73,13 +73,7 @@ public final class HttpClientFactory {
             ConnManagerParams.setTimeout(params, 60 * 1000);
 
             return client;
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
@@ -94,11 +88,7 @@ public final class HttpClientFactory {
             Class<?> clazz = client.getClass();
             Method method = clazz.getMethod("close", (Class<?>[]) null);
             method.invoke(client, (Object[]) null);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

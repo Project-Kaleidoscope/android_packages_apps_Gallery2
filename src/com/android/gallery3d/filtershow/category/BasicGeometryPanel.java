@@ -29,17 +29,19 @@
 
 package com.android.gallery3d.filtershow.category;
 
-
 import android.content.res.Configuration;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
+
 import org.codeaurora.gallery.R;
 
 public class BasicGeometryPanel extends Fragment {
@@ -54,16 +56,16 @@ public class BasicGeometryPanel extends Fragment {
     protected View[] mPanels;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        FilterShowActivity activity = (FilterShowActivity) getActivity();
+        FilterShowActivity activity = (FilterShowActivity) requireActivity();
         if (isLandscape() && activity.isShowEditCropPanel()) {
             mMainView = inflater.inflate(R.layout.filtershow_editor_crop_landscape,
                     container, false);
         } else {
             mMainView = inflater.inflate(R.layout.filtershow_category_geometry_panel,
                     container, false);
-            mEditorName = (TextView) mMainView.findViewById(R.id.editor_name);
+            mEditorName = mMainView.findViewById(R.id.editor_name);
         }
 
         initButtons();
@@ -72,29 +74,29 @@ public class BasicGeometryPanel extends Fragment {
 
         mBottomPanel = mMainView.findViewById(R.id.bottom_panel);
 
-        mExitButton = (ImageButton) mMainView.findViewById(R.id.cancel);
-        mApplyButton = (ImageButton) mMainView.findViewById(R.id.done);
+        mExitButton = mMainView.findViewById(R.id.cancel);
+        mApplyButton = mMainView.findViewById(R.id.done);
         return mMainView;
     }
 
     protected void initButtons() {
-        mButtons = new ImageButton[] {
-                (ImageButton) mMainView.findViewById(R.id.leftButton),
-                (ImageButton) mMainView.findViewById(R.id.centerButton),
-                (ImageButton) mMainView.findViewById(R.id.rightButton)
+        mButtons = new ImageButton[]{
+                mMainView.findViewById(R.id.leftButton),
+                mMainView.findViewById(R.id.centerButton),
+                mMainView.findViewById(R.id.rightButton)
         };
     }
 
     protected void initTexts() {
-        mTextViews = new TextView[] {
-                (TextView) mMainView.findViewById(R.id.leftText),
-                (TextView) mMainView.findViewById(R.id.centerText),
-                (TextView) mMainView.findViewById(R.id.rightText)
+        mTextViews = new TextView[]{
+                mMainView.findViewById(R.id.leftText),
+                mMainView.findViewById(R.id.centerText),
+                mMainView.findViewById(R.id.rightText)
         };
     }
 
     protected void initPanels() {
-        mPanels = new View[] {
+        mPanels = new View[]{
                 mMainView.findViewById(R.id.leftPanel),
                 mMainView.findViewById(R.id.centerPanel),
                 mMainView.findViewById(R.id.rightPanel)
@@ -103,7 +105,6 @@ public class BasicGeometryPanel extends Fragment {
 
     protected boolean isLandscape() {
         Configuration mConfiguration = this.getResources().getConfiguration();
-        return mConfiguration.orientation == Configuration.ORIENTATION_LANDSCAPE ?
-                true : false;
+        return mConfiguration.orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 }

@@ -26,7 +26,6 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaMuxer;
 import android.util.Log;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.util.SaveVideoFileInfo;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.TimeToSampleBox;
@@ -37,7 +36,6 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -49,37 +47,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class VideoUtils {
-    private static final String LOGTAG = "VideoUtils";
+    private static final String TAG = "VideoUtils";
     private static final int DEFAULT_BUFFER_SIZE = 1 * 1024 * 1024;
 
     /**
      * Remove the sound track.
      */
-    public static void startMute(String filePath, SaveVideoFileInfo dstFileInfo)
-            throws IOException {
-        if (ApiHelper.HAS_MEDIA_MUXER) {
-            genVideoUsingMuxer(filePath, dstFileInfo.mFile.getPath(), -1, -1,
-                    false, true);
-        } else {
-            startMuteUsingMp4Parser(filePath, dstFileInfo);
-        }
+    public static void startMute(String filePath, SaveVideoFileInfo dstFileInfo) throws IOException {
+        genVideoUsingMuxer(filePath, dstFileInfo.mFile.getPath(), -1, -1, false, true);
     }
 
     /**
      * Shortens/Crops tracks
      */
-    public static void startTrim(File src, File dst, int startMs, int endMs)
-            throws IOException {
-        if (ApiHelper.HAS_MEDIA_MUXER) {
-            genVideoUsingMuxer(src.getPath(), dst.getPath(), startMs, endMs,
-                    true, true);
-        } else {
-            trimUsingMp4Parser(src, dst, startMs, endMs);
-        }
+    public static void startTrim(File src, File dst, int startMs, int endMs) throws IOException {
+        genVideoUsingMuxer(src.getPath(), dst.getPath(), startMs, endMs, true, true);
     }
 
-    private static void startMuteUsingMp4Parser(String filePath,
-            SaveVideoFileInfo dstFileInfo) throws FileNotFoundException, IOException {
+    private static void startMuteUsingMp4Parser(String filePath, SaveVideoFileInfo dstFileInfo) throws IOException {
         File dst = dstFileInfo.mFile;
         File src = new File(filePath);
         RandomAccessFile randomAccessFile = new RandomAccessFile(src, "r");
@@ -98,8 +83,7 @@ public class VideoUtils {
         randomAccessFile.close();
     }
 
-    private static void writeMovieIntoFile(File dst, Movie movie)
-            throws IOException {
+    private static void writeMovieIntoFile(File dst, Movie movie) throws IOException {
         if (!dst.exists()) {
             dst.createNewFile();
         }
@@ -124,9 +108,8 @@ public class VideoUtils {
      * @param useVideo true if keep the video track from the source.
      * @throws IOException
      */
-    private static void genVideoUsingMuxer(String srcPath, String dstPath,
-            int startMs, int endMs, boolean useAudio, boolean useVideo)
-            throws IOException {
+    private static void genVideoUsingMuxer(String srcPath, String dstPath, int startMs, int endMs,
+                                           boolean useAudio, boolean useVideo) throws IOException {
         // Set up MediaExtractor to read from the source.
         MediaExtractor extractor = new MediaExtractor();
         extractor.setDataSource(srcPath);
@@ -139,8 +122,7 @@ public class VideoUtils {
 
         // Set up the tracks and retrieve the max buffer size for selected
         // tracks.
-        HashMap<Integer, Integer> indexMap = new HashMap<Integer,
-                Integer>(trackCount);
+        HashMap<Integer, Integer> indexMap = new HashMap<>(trackCount);
         int bufferSize = -1;
         for (int i = 0; i < trackCount; i++) {
             MediaFormat format = extractor.getTrackFormat(i);
@@ -161,10 +143,10 @@ public class VideoUtils {
                     indexMap.put(i, dstIndex);
                     if (format.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
                         int newSize = format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE);
-                        bufferSize = newSize > bufferSize ? newSize : bufferSize;
+                        bufferSize = Math.max(newSize, bufferSize);
                     }
                 } catch (IllegalArgumentException e) {
-                    Log.e(LOGTAG, "Unsupported format '" + mime + "'");
+                    Log.e(TAG, "Unsupported format '" + mime + "'");
                     throw new IOException("Muxer does not support " + mime);
                 }
             }
@@ -187,14 +169,14 @@ public class VideoUtils {
         }
 
         if (startMs > 0) {
-            extractor.seekTo(startMs * 1000, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+            extractor.seekTo(startMs * 1000L, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
         }
 
         // Copy the samples from MediaExtractor to MediaMuxer. We will loop
         // for copying each sample and stop when we get to the end of the source
         // file or exceed the end time of the trimming.
         int offset = 0;
-        int trackIndex = -1;
+        int trackIndex;
         ByteBuffer dstBuf = ByteBuffer.allocate(bufferSize);
         BufferInfo bufferInfo = new BufferInfo();
         try {
@@ -203,13 +185,13 @@ public class VideoUtils {
                 bufferInfo.offset = offset;
                 bufferInfo.size = extractor.readSampleData(dstBuf, offset);
                 if (bufferInfo.size < 0) {
-                    Log.d(LOGTAG, "Saw input EOS.");
+                    Log.d(TAG, "Saw input EOS.");
                     bufferInfo.size = 0;
                     break;
                 } else {
                     bufferInfo.presentationTimeUs = extractor.getSampleTime();
-                    if (endMs > 0 && bufferInfo.presentationTimeUs > (endMs * 1000)) {
-                        Log.d(LOGTAG, "The current sample is over the trim end time.");
+                    if (endMs > 0 && bufferInfo.presentationTimeUs > (endMs * 1000L)) {
+                        Log.d(TAG, "The current sample is over the trim end time.");
                         break;
                     } else {
                         bufferInfo.flags = extractor.getSampleFlags();
@@ -225,7 +207,7 @@ public class VideoUtils {
             muxer.stop();
         } catch (IllegalStateException e) {
             // Swallow the exception due to malformed source.
-            Log.w(LOGTAG, "The source video file is malformed");
+            Log.w(TAG, "The source video file is malformed");
             File f = new File(dstPath);
             if (f.exists()) {
                 f.delete();
@@ -234,11 +216,9 @@ public class VideoUtils {
         } finally {
             muxer.release();
         }
-        return;
     }
 
-    private static void trimUsingMp4Parser(File src, File dst, int startMs, int endMs)
-            throws FileNotFoundException, IOException {
+    private static void trimUsingMp4Parser(File src, File dst, int startMs, int endMs) throws IOException {
         RandomAccessFile randomAccessFile = new RandomAccessFile(src, "r");
         Movie movie = MovieCreator.build(randomAccessFile.getChannel());
 
@@ -307,8 +287,7 @@ public class VideoUtils {
         randomAccessFile.close();
     }
 
-    private static double correctTimeToSyncSample(Track track, double cutHere,
-            boolean next) {
+    private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
         double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
         long currentSample = 0;
         double currentTime = 0;

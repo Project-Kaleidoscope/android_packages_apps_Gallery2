@@ -1,23 +1,21 @@
 package com.android.gallery3d.util;
 
-import org.codeaurora.gallery.R;
-
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-public class ViewGifImage extends Activity {
-    private static final String TAG       = "ViewGifImage";
-    public  static final String VIEW_GIF_ACTION = "com.android.gallery3d.VIEW_GIF";
+import org.codeaurora.gallery.R;
 
-    public  static DisplayMetrics mDM;
+public class ViewGifImage extends Activity {
+    private static final String TAG = "ViewGifImage";
+    public static final String VIEW_GIF_ACTION = "com.android.gallery3d.VIEW_GIF";
+
+    public static DisplayMetrics mDM;
 
     private ImageView mGifView;
 
@@ -27,8 +25,7 @@ public class ViewGifImage extends Activity {
         setContentView(R.layout.view_gif_image);
         mDM = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(mDM);
-        if (getIntent().getAction() != null
-                && getIntent().getAction().equals(VIEW_GIF_ACTION)) {
+        if (getIntent().getAction() != null && getIntent().getAction().equals(VIEW_GIF_ACTION)) {
             Uri gifUri = getIntent().getData();
             showGifPicture(gifUri);
         }
@@ -54,7 +51,7 @@ public class ViewGifImage extends Activity {
         ((LinearLayout) findViewById(R.id.image_absoluteLayout)).addView(mGifView,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         if (((GIFView) mGifView).setDrawable(uri)) return;
-        
+
         finish();
 
     }

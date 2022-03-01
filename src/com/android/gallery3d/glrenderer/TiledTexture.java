@@ -52,7 +52,7 @@ public class TiledTexture implements Texture {
     private int mUploadIndex = 0;
 
     private final Tile[] mTiles;  // Can be modified in different threads.
-                                  // Should be protected by "synchronized."
+    // Should be protected by "synchronized."
     private final int mWidth;
     private final int mHeight;
     private final RectF mSrcRect = new RectF();
@@ -199,8 +199,8 @@ public class TiledTexture implements Texture {
         mHeight = bitmap.getHeight();
         ArrayList<Tile> list = new ArrayList<>();
 
-        for (int x = 0, w = mWidth; x < w; x += CONTENT_SIZE) {
-            for (int y = 0, h = mHeight; y < h; y += CONTENT_SIZE) {
+        for (int x = 0; x < mWidth; x += CONTENT_SIZE) {
+            for (int y = 0; y < mHeight; y += CONTENT_SIZE) {
                 Tile tile = obtainTile();
                 tile.offsetX = x;
                 tile.offsetY = y;
@@ -211,7 +211,7 @@ public class TiledTexture implements Texture {
                 list.add(tile);
             }
         }
-        mTiles = list.toArray(new Tile[list.size()]);
+        mTiles = list.toArray(new Tile[0]);
     }
 
     public boolean isReady() {
@@ -258,8 +258,8 @@ public class TiledTexture implements Texture {
     //      Texture                        +---------------+
     //                                          Canvas
     private static void mapRect(RectF output,
-            RectF src, float x0, float y0, float x, float y, float scaleX,
-            float scaleY) {
+                                RectF src, float x0, float y0, float x, float y, float scaleX,
+                                float scaleY) {
         output.set(x + (src.left - x0) * scaleX,
                 y + (src.top - y0) * scaleY,
                 x + (src.right - x0) * scaleX,
@@ -269,16 +269,15 @@ public class TiledTexture implements Texture {
     // Draws a mixed color of this texture and a specified color onto the
     // a rectangle. The used color is: from * (1 - ratio) + to * ratio.
     public void drawMixed(GLCanvas canvas, int color, float ratio,
-            int x, int y, int width, int height) {
+                          int x, int y, int width, int height) {
         RectF src = mSrcRect;
-        RectF dest = mDestRect;
         float scaleX = (float) width / mWidth;
         float scaleY = (float) height / mHeight;
         synchronized (mTiles) {
             for (Tile t : mTiles) {
                 src.set(0, 0, t.contentWidth, t.contentHeight);
                 src.offset(t.offsetX, t.offsetY);
-                mapRect(dest, src, 0, 0, x, y, scaleX, scaleY);
+                mapRect(mDestRect, src, 0, 0, x, y, scaleX, scaleY);
                 src.offset(BORDER_SIZE - t.offsetX, BORDER_SIZE - t.offsetY);
                 canvas.drawMixed(t, color, ratio, mSrcRect, mDestRect);
             }
@@ -289,14 +288,13 @@ public class TiledTexture implements Texture {
     @Override
     public void draw(GLCanvas canvas, int x, int y, int width, int height) {
         RectF src = mSrcRect;
-        RectF dest = mDestRect;
         float scaleX = (float) width / mWidth;
         float scaleY = (float) height / mHeight;
         synchronized (mTiles) {
             for (Tile t : mTiles) {
                 src.set(0, 0, t.contentWidth, t.contentHeight);
                 src.offset(t.offsetX, t.offsetY);
-                mapRect(dest, src, 0, 0, x, y, scaleX, scaleY);
+                mapRect(mDestRect, src, 0, 0, x, y, scaleX, scaleY);
                 src.offset(BORDER_SIZE - t.offsetX, BORDER_SIZE - t.offsetY);
                 canvas.drawTexture(t, mSrcRect, mDestRect);
             }

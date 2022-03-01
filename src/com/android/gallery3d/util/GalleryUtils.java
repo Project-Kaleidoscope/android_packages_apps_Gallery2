@@ -16,7 +16,6 @@
 
 package com.android.gallery3d.util;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -40,14 +39,13 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.GalleryActivity;
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.MediaItem;
 import com.android.gallery3d.ui.TiledScreenNail;
-import com.android.gallery3d.util.ThreadPool.CancelListener;
 import com.android.gallery3d.util.ThreadPool.JobContext;
+
+import org.codeaurora.gallery.R;
 
 import java.io.File;
 import java.util.Arrays;
@@ -74,7 +72,7 @@ public class GalleryUtils {
     private static final String KEY_CAMERA_UPDATE = "camera-update";
     private static final String KEY_HAS_CAMERA = "has-camera";
 
-    private static final String KEY_PACKAGES_VERSION  = "packages-version";
+    private static final String KEY_PACKAGES_VERSION = "packages-version";
 
     private static float sPixelDensity = -1f;
     private static boolean sCameraAvailableInitialized = false;
@@ -82,14 +80,11 @@ public class GalleryUtils {
 
     public static void initialize(Context context) {
         DisplayMetrics metrics = new DisplayMetrics();
-        WindowManager wm = (WindowManager)
-                context.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(metrics);
         sPixelDensity = metrics.density;
-        Resources r = context.getResources();
-        TiledScreenNail.setPlaceholderColor(r.getColor(
-                R.color.bitmap_screennail_placeholder));
-        initializeThumbnailSizes(metrics, r);
+        TiledScreenNail.setPlaceholderColor(context.getColor(R.color.bitmap_screennail_placeholder));
+        initializeThumbnailSizes(metrics, context.getResources());
     }
 
     private static void initializeThumbnailSizes(DisplayMetrics metrics, Resources r) {
@@ -101,11 +96,11 @@ public class GalleryUtils {
     }
 
     public static float[] intColorToFloatARGBArray(int from) {
-        return new float[] {
-            Color.alpha(from) / 255f,
-            Color.red(from) / 255f,
-            Color.green(from) / 255f,
-            Color.blue(from) / 255f
+        return new float[]{
+                Color.alpha(from) / 255f,
+                Color.red(from) / 255f,
+                Color.green(from) / 255f,
+                Color.blue(from) / 255f
         };
     }
 
@@ -155,30 +150,30 @@ public class GalleryUtils {
     private static final double EARTH_RADIUS_METERS = 6367000.0;
 
     public static double fastDistanceMeters(double latRad1, double lngRad1,
-            double latRad2, double lngRad2) {
-       if ((Math.abs(latRad1 - latRad2) > RAD_PER_DEG)
-             || (Math.abs(lngRad1 - lngRad2) > RAD_PER_DEG)) {
-           return accurateDistanceMeters(latRad1, lngRad1, latRad2, lngRad2);
-       }
-       // Approximate sin(x) = x.
-       double sineLat = (latRad1 - latRad2);
+                                            double latRad2, double lngRad2) {
+        if ((Math.abs(latRad1 - latRad2) > RAD_PER_DEG)
+                || (Math.abs(lngRad1 - lngRad2) > RAD_PER_DEG)) {
+            return accurateDistanceMeters(latRad1, lngRad1, latRad2, lngRad2);
+        }
+        // Approximate sin(x) = x.
+        double sineLat = (latRad1 - latRad2);
 
-       // Approximate sin(x) = x.
-       double sineLng = (lngRad1 - lngRad2);
+        // Approximate sin(x) = x.
+        double sineLng = (lngRad1 - lngRad2);
 
-       // Approximate cos(lat1) * cos(lat2) using
-       // cos((lat1 + lat2)/2) ^ 2
-       double cosTerms = Math.cos((latRad1 + latRad2) / 2.0);
-       cosTerms = cosTerms * cosTerms;
-       double trigTerm = sineLat * sineLat + cosTerms * sineLng * sineLng;
-       trigTerm = Math.sqrt(trigTerm);
+        // Approximate cos(lat1) * cos(lat2) using
+        // cos((lat1 + lat2)/2) ^ 2
+        double cosTerms = Math.cos((latRad1 + latRad2) / 2.0);
+        cosTerms = cosTerms * cosTerms;
+        double trigTerm = sineLat * sineLat + cosTerms * sineLng * sineLng;
+        trigTerm = Math.sqrt(trigTerm);
 
-       // Approximate arcsin(x) = x
-       return EARTH_RADIUS_METERS * trigTerm;
+        // Approximate arcsin(x) = x
+        return EARTH_RADIUS_METERS * trigTerm;
     }
 
     public static double accurateDistanceMeters(double lat1, double lng1,
-            double lat2, double lng2) {
+                                                double lat2, double lng2) {
         double dlat = Math.sin(0.5 * (lat2 - lat1));
         double dlng = Math.sin(0.5 * (lng2 - lng1));
         double x = dlat * dlat + dlng * dlng * Math.cos(lat1) * Math.cos(lat2);
@@ -187,19 +182,14 @@ public class GalleryUtils {
     }
 
 
-    public static final double toMile(double meter) {
+    public static double toMile(double meter) {
         return meter / 1609;
     }
 
     // For debugging, it will block the caller for timeout millis.
     public static void fakeBusy(JobContext jc, int timeout) {
         final ConditionVariable cv = new ConditionVariable();
-        jc.setCancelListener(new CancelListener() {
-            @Override
-            public void onCancel() {
-                cv.open();
-            }
-        });
+        jc.setCancelListener(cv::open);
         cv.block(timeout);
         jc.setCancelListener(null);
     }
@@ -216,8 +206,8 @@ public class GalleryUtils {
             List<ResolveInfo> infos = packageManager.queryIntentActivities(
                     new Intent(Intent.ACTION_EDIT).setType(mimeType), 0);
             prefs.edit().putInt(updateKey, version)
-                        .putBoolean(hasKey, !infos.isEmpty())
-                        .commit();
+                    .putBoolean(hasKey, !infos.isEmpty())
+                    .apply();
         }
 
         return prefs.getBoolean(hasKey, true);
@@ -231,8 +221,8 @@ public class GalleryUtils {
             List<ResolveInfo> infos = packageManager.queryIntentActivities(
                     new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA), 0);
             prefs.edit().putInt(KEY_CAMERA_UPDATE, version)
-                        .putBoolean(KEY_HAS_CAMERA, !infos.isEmpty())
-                        .commit();
+                    .putBoolean(KEY_HAS_CAMERA, !infos.isEmpty())
+                    .apply();
         }
         return prefs.getBoolean(KEY_HAS_CAMERA, true);
     }
@@ -263,7 +253,7 @@ public class GalleryUtils {
     public static void startGalleryActivity(Context context) {
         Intent intent = new Intent(context, GalleryActivity.class)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        | Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 
@@ -273,7 +263,7 @@ public class GalleryUtils {
     }
 
     public static String formatLatitudeLongitude(String format, double latitude,
-            double longitude) {
+                                                 double longitude) {
         // We need to specify the locale otherwise it may go wrong in some language
         // (e.g. Locale.FRENCH)
         return String.format(Locale.ENGLISH, format, latitude, longitude);
@@ -301,21 +291,16 @@ public class GalleryUtils {
                 context.startActivity(mapsIntent);
             } catch (ActivityNotFoundException ex) {
                 Log.e(TAG, "Map view activity not found! url = " + url, ex);
-                ((Activity)context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(context,
-                                context.getString(R.string.map_activity_not_found_err),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+                ((Activity) context).runOnUiThread(() -> Toast.makeText(context,
+                        context.getString(R.string.map_activity_not_found_err),
+                        Toast.LENGTH_SHORT).show());
 
             }
         }
     }
 
     public static void setViewPointMatrix(
-            float matrix[], float x, float y, float z) {
+            float[] matrix, float x, float y, float z) {
         // The matrix is
         // -z,  0,  x,  0
         //  0, -z,  y,  0
@@ -366,9 +351,8 @@ public class GalleryUtils {
         return durationValue;
     }
 
-    @TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB)
     public static int determineTypeBits(Context context, Intent intent) {
-        int typeBits = 0;
+        int typeBits;
         String type = intent.resolveType(context);
 
         if (MIME_TYPE_ALL.equals(type) ||
@@ -383,10 +367,8 @@ public class GalleryUtils {
             typeBits = DataManager.INCLUDE_ALL;
         }
 
-        if (ApiHelper.HAS_INTENT_EXTRA_LOCAL_ONLY) {
-            if (intent.getBooleanExtra(Intent.EXTRA_LOCAL_ONLY, false)) {
-                typeBits |= DataManager.INCLUDE_LOCAL_ONLY;
-            }
+        if (intent.getBooleanExtra(Intent.EXTRA_LOCAL_ONLY, false)) {
+            typeBits |= DataManager.INCLUDE_LOCAL_ONLY;
         }
 
         return typeBits;
@@ -410,7 +392,7 @@ public class GalleryUtils {
         String path = Environment.getExternalStorageDirectory().getPath();
         try {
             StatFs stat = new StatFs(path);
-            return stat.getAvailableBlocks() * (long) stat.getBlockSize() > size;
+            return stat.getAvailableBlocksLong() * stat.getBlockSizeLong() > size;
         } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);
         }
@@ -423,19 +405,20 @@ public class GalleryUtils {
         int h = item.getHeight();
         return (h > 0 && w / h >= 2);
     }
- // Newly added methods
+
+    // Newly added methods
     public static int getIntPref(Context context, String name, int def) {
         SharedPreferences prefs =
-            context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
+                context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
         return prefs.getInt(name, def);
     }
 
     public static void setIntPref(Context context, String name, int value) {
         SharedPreferences prefs =
-            context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
+                context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
         Editor ed = prefs.edit();
         ed.putInt(name, value);
-        ed.commit();
+        ed.apply();
     }
 
     public static boolean getBooleanPref(Context context, String name, boolean def) {
@@ -449,7 +432,7 @@ public class GalleryUtils {
                 context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
         Editor ed = prefs.edit();
         ed.putBoolean(name, value);
-        ed.commit();
+        ed.apply();
     }
 
     public static String getStringPref(Context context, String name, String def) {
@@ -463,7 +446,7 @@ public class GalleryUtils {
                 context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
         Editor ed = prefs.edit();
         ed.putString(name, value);
-        ed.commit();
+        ed.apply();
     }
 
     public static boolean isTelephonyCallInProgress(Context context) {

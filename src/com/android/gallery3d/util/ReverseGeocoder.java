@@ -138,7 +138,7 @@ public class ReverseGeocoder {
             }
         }
 
-        String closestCommonLocation = null;
+        String closestCommonLocation;
         String addr1Locality = checkNull(addr1.getLocality());
         String addr2Locality = checkNull(addr2.getLocality());
         String addr1AdminArea = checkNull(addr1.getAdminArea());
@@ -147,7 +147,7 @@ public class ReverseGeocoder {
         String addr2CountryCode = checkNull(addr2.getCountryCode());
 
         if (currentCity.equals(addr1Locality) || currentCity.equals(addr2Locality)) {
-            String otherCity = currentCity;
+            String otherCity;
             if (currentCity.equals(addr1Locality)) {
                 otherCity = addr2Locality;
                 if (otherCity.length() == 0) {
@@ -189,13 +189,11 @@ public class ReverseGeocoder {
         // Compare the locality.
         closestCommonLocation = valueIfEqual(addr1Locality, addr2Locality);
         if (closestCommonLocation != null && !("".equals(closestCommonLocation))) {
-            String adminArea = addr1AdminArea;
-            String countryCode = addr1CountryCode;
-            if (adminArea != null && adminArea.length() > 0) {
-                if (!countryCode.equals(currentCountry)) {
-                    closestCommonLocation += ", " + adminArea + " " + countryCode;
+            if (addr1AdminArea != null && addr1AdminArea.length() > 0) {
+                if (!addr1CountryCode.equals(currentCountry)) {
+                    closestCommonLocation += ", " + addr1AdminArea + " " + addr1CountryCode;
                 } else {
-                    closestCommonLocation += ", " + adminArea;
+                    closestCommonLocation += ", " + addr1AdminArea;
                 }
             }
             return closestCommonLocation;
@@ -242,10 +240,9 @@ public class ReverseGeocoder {
         // Check the administrative area.
         closestCommonLocation = valueIfEqual(addr1AdminArea, addr2AdminArea);
         if (closestCommonLocation != null && !("".equals(closestCommonLocation))) {
-            String countryCode = addr1CountryCode;
-            if (!countryCode.equals(currentCountry)) {
-                if (countryCode != null && countryCode.length() > 0) {
-                    closestCommonLocation += " " + countryCode;
+            if (!addr1CountryCode.equals(currentCountry)) {
+                if (addr1CountryCode != null && addr1CountryCode.length() > 0) {
+                    closestCommonLocation += " " + addr1CountryCode;
                 }
             }
             return closestCommonLocation;
@@ -286,13 +283,13 @@ public class ReverseGeocoder {
             return "";
         String localityAdminStr = addr.getLocality();
         if (localityAdminStr != null && !("null".equals(localityAdminStr))) {
-            if (approxLocation) {
-                // TODO: Uncomment these lines as soon as we may translations
-                // for Res.string.around.
-                // localityAdminStr =
-                // mContext.getResources().getString(Res.string.around) + " " +
-                // localityAdminStr;
-            }
+//            if (approxLocation) {
+            // TODO: Uncomment these lines as soon as we may translations
+            // for Res.string.around.
+            // localityAdminStr =
+            // mContext.getResources().getString(Res.string.around) + " " +
+            // localityAdminStr;
+//            }
             String adminArea = addr.getAdminArea();
             if (adminArea != null && adminArea.length() > 0) {
                 localityAdminStr += ", " + adminArea;
@@ -303,7 +300,7 @@ public class ReverseGeocoder {
     }
 
     public Address lookupAddress(final double latitude, final double longitude,
-            boolean useCache) {
+                                 boolean useCache) {
         try {
             long locationKey = (long) (((latitude + LAT_MAX) * 2 * LAT_MAX
                     + (longitude + LON_MAX)) * EARTH_RADIUS_METERS);
@@ -398,10 +395,10 @@ public class ReverseGeocoder {
     }
 
     private String valueIfEqual(String a, String b) {
-        return (a != null && b != null && a.equalsIgnoreCase(b)) ? a : null;
+        return (a != null && a.equalsIgnoreCase(b)) ? a : null;
     }
 
-    public static final void writeUTF(DataOutputStream dos, String string) throws IOException {
+    public static void writeUTF(DataOutputStream dos, String string) throws IOException {
         if (string == null) {
             dos.writeUTF("");
         } else {
@@ -409,7 +406,7 @@ public class ReverseGeocoder {
         }
     }
 
-    public static final String readUTF(DataInputStream dis) throws IOException {
+    public static String readUTF(DataInputStream dis) throws IOException {
         String retVal = dis.readUTF();
         if (retVal.length() == 0)
             return null;

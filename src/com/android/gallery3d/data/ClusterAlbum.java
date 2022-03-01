@@ -17,26 +17,25 @@
 package com.android.gallery3d.data;
 
 import java.util.ArrayList;
-import com.android.gallery3d.util.GalleryUtils;
 
 public class ClusterAlbum extends MediaSet implements ContentListener {
     @SuppressWarnings("unused")
     private static final String TAG = "ClusterAlbum";
-    private ArrayList<Path> mPaths = new ArrayList<Path>();
-    private String mName = "";
-    private DataManager mDataManager;
-    private MediaSet mClusterAlbumSet;
-    private MediaItem mCover;
     private final int INVALID_COUNT = -1;
+    private ArrayList<Path> mPaths = new ArrayList<>();
+    private String mName = "";
+    private final DataManager mDataManager;
+    private final MediaSet mClusterAlbumSet;
+    private MediaItem mCover;
     private int mImageCount = INVALID_COUNT;
     private int mVideoCount = INVALID_COUNT;
-    private int mKind = -1;
+    private final int mKind;
 
 
-    private TimeLineTitleMediaItem mTimelineTitleMediaItem;
+    private final TimeLineTitleMediaItem mTimelineTitleMediaItem;
 
     public ClusterAlbum(Path path, DataManager dataManager,
-            MediaSet clusterAlbumSet, int kind) {
+                        MediaSet clusterAlbumSet, int kind) {
         super(path, nextVersionNumber());
         mDataManager = dataManager;
         mClusterAlbumSet = clusterAlbumSet;
@@ -45,8 +44,24 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
         mTimelineTitleMediaItem = new TimeLineTitleMediaItem(path);
     }
 
-    public void setCoverMediaItem(MediaItem cover) {
-        mCover = cover;
+    public static ArrayList<MediaItem> getMediaItemFromPath(
+            ArrayList<Path> paths, int start, int count,
+            DataManager dataManager) {
+        if (start >= paths.size() || start < 0) {
+            return new ArrayList<>();
+        }
+        int end = Math.min(start + count, paths.size());
+        ArrayList<Path> subset = new ArrayList<>(paths.subList(start, end));
+        final MediaItem[] buf = new MediaItem[end - start];
+        ItemConsumer consumer = (index, item) -> buf[index] = item;
+        dataManager.mapMediaItems(subset, consumer, 0);
+        ArrayList<MediaItem> result = new ArrayList<>(end - start);
+        for (MediaItem mediaItem : buf) {
+            if (mediaItem != null) {
+                result.add(mediaItem);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -54,12 +69,21 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
         return mCover != null ? mCover : super.getCoverMediaItem();
     }
 
-    void setMediaItems(ArrayList<Path> paths) {
-        mPaths = paths;
+    public void setCoverMediaItem(MediaItem cover) {
+        mCover = cover;
     }
 
     public ArrayList<Path> getMediaItems() {
         return mPaths;
+    }
+
+    void setMediaItems(ArrayList<Path> paths) {
+        mPaths = paths;
+    }
+
+    @Override
+    public String getName() {
+        return mName;
     }
 
     public void setName(String name) {
@@ -71,14 +95,9 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
     }
 
     @Override
-    public String getName() {
-        return mName;
-    }
-
-    @Override
     public int getMediaItemCount() {
         if (MediaSet.isShowAlbumsetTimeTitle()) {
-            return mPaths.size()+1;
+            return mPaths.size() + 1;
         }
         return mPaths.size();
     }
@@ -86,20 +105,6 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
     @Override
     public int getSelectableItemCount() {
         return mPaths.size();
-    }
-
-    public void setImageItemCount(int count) {
-        mImageCount = count;
-        if (mTimelineTitleMediaItem != null && MediaSet.isShowAlbumsetTimeTitle()) {
-            mTimelineTitleMediaItem.setImageCount(count);
-        }
-    }
-
-    public void setVideoItemCount(int count) {
-        mVideoCount = count;
-        if (mTimelineTitleMediaItem != null && MediaSet.isShowAlbumsetTimeTitle()) {
-            mTimelineTitleMediaItem.setVideoCount(count);
-        }
     }
 
     private void updateItemCounts() {
@@ -114,8 +119,7 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
         if (MediaSet.isShowAlbumsetTimeTitle()) {
             if (mPaths.size() <= 0) return null;
             if (start == 0) {
-                ArrayList<MediaItem> mediaItemList = new ArrayList<MediaItem>();
-                mediaItemList.addAll(getMediaItemFromPath(mPaths, start, count - 1, mDataManager));
+                ArrayList<MediaItem> mediaItemList = new ArrayList<>(getMediaItemFromPath(mPaths, start, count - 1, mDataManager));
                 mediaItemList.add(0, mTimelineTitleMediaItem);
                 return mediaItemList;
             } else {
@@ -131,34 +135,23 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
         return mImageCount;
     }
 
+    public void setImageItemCount(int count) {
+        mImageCount = count;
+        if (mTimelineTitleMediaItem != null && MediaSet.isShowAlbumsetTimeTitle()) {
+            mTimelineTitleMediaItem.setImageCount(count);
+        }
+    }
+
     @Override
     public int getVideoItemCount() {
         return mVideoCount;
     }
 
-    public static ArrayList<MediaItem> getMediaItemFromPath(
-            ArrayList<Path> paths, int start, int count,
-            DataManager dataManager) {
-        if (start >= paths.size() || start < 0) {
-            return new ArrayList<MediaItem>();
+    public void setVideoItemCount(int count) {
+        mVideoCount = count;
+        if (mTimelineTitleMediaItem != null && MediaSet.isShowAlbumsetTimeTitle()) {
+            mTimelineTitleMediaItem.setVideoCount(count);
         }
-        int end = Math.min(start + count, paths.size());
-        ArrayList<Path> subset = new ArrayList<Path>(paths.subList(start, end));
-        final MediaItem[] buf = new MediaItem[end - start];
-        ItemConsumer consumer = new ItemConsumer() {
-            @Override
-            public void consume(int index, MediaItem item) {
-                buf[index] = item;
-            }
-        };
-        dataManager.mapMediaItems(subset, consumer, 0);
-        ArrayList<MediaItem> result = new ArrayList<MediaItem>(end - start);
-        for (int i = 0; i < buf.length; i++) {
-            if(buf[i] != null) {
-                result.add(buf[i]);
-            }
-        }
-        return result;
     }
 
     @Override
@@ -170,7 +163,7 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
     @Override
     public int getTotalMediaItemCount() {
         if (MediaSet.isShowAlbumsetTimeTitle()) {
-            return mPaths.size()+1;
+            return mPaths.size() + 1;
         }
         return mPaths.size();
     }
@@ -218,12 +211,9 @@ public class ClusterAlbum extends MediaSet implements ContentListener {
     @Override
     public void delete() {
         if ((getSupportedOperations() & MediaObject.SUPPORT_DELETE) == 0) return;
-        ItemConsumer consumer = new ItemConsumer() {
-            @Override
-            public void consume(int index, MediaItem item) {
-                if ((item.getSupportedOperations() & SUPPORT_DELETE) != 0) {
-                    item.delete();
-                }
+        ItemConsumer consumer = (index, item) -> {
+            if ((item.getSupportedOperations() & SUPPORT_DELETE) != 0) {
+                item.delete();
             }
         };
         mDataManager.mapMediaItems(mPaths, consumer, 0);

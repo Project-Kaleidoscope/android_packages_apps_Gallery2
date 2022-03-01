@@ -34,29 +34,27 @@ import java.util.ArrayList;
 
 public class ColorValueView extends View implements ColorListener {
 
-    private float mRadius;
-    private float mWidth;
-    private Paint mBarPaint1;
-    private Paint mLinePaint1;
-    private Paint mLinePaint2;
-    private float mHeight;
-    private int mBgcolor = 0;
-    private Paint mDotPaint;
-    private float dotRadus;
-    private float mBorder;
-
-    private float[] mHSVO = new float[4];
-    private int mSliderColor;
-    private float mDotX;
-    private float mDotY = mBorder;
     private final static float DOT_SIZE = ColorRectView.DOT_SIZE;
     private final static float BORDER_SIZE = ColorRectView.DOT_SIZE;
+    private float mRadius;
+    private float mWidth;
+    private final Paint mBarPaint1;
+    private final Paint mLinePaint1;
+    private final Paint mLinePaint2;
+    private float mHeight;
+    private final int mBgcolor = 0;
+    private final Paint mDotPaint;
+    private final float dotRadus;
+    private float mBorder;
+    private final float[] mHSVO = new float[4];
+    private final int mSliderColor;
+    private float mDotX;
+    private float mDotY = mBorder;
+    private final ArrayList<ColorListener> mColorListeners = new ArrayList<>();
 
-    private ArrayList<ColorListener> mColorListeners = new ArrayList<ColorListener>();
-
-    public ColorValueView(Context ctx, AttributeSet attrs) {
-        super(ctx, attrs);
-        DisplayMetrics metrics = ctx.getResources().getDisplayMetrics();
+    public ColorValueView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         float mDpToPix = metrics.density;
         dotRadus = DOT_SIZE * mDpToPix;
         mBorder = BORDER_SIZE * mDpToPix;
@@ -66,14 +64,14 @@ public class ColorValueView extends View implements ColorListener {
         mDotPaint = new Paint();
 
         mDotPaint.setStyle(Paint.Style.FILL);
-        mDotPaint.setColor(ctx.getResources().getColor(R.color.slider_dot_color));
+        mDotPaint.setColor(context.getColor(R.color.slider_dot_color));
 
         mBarPaint1.setStyle(Paint.Style.FILL);
 
         mLinePaint1 = new Paint();
         mLinePaint1.setColor(Color.GRAY);
         mLinePaint2 = new Paint();
-        mSliderColor = ctx.getResources().getColor(R.color.slider_line_color);
+        mSliderColor = context.getColor(R.color.slider_line_color);
         mLinePaint2.setColor(mSliderColor);
         mLinePaint2.setStrokeWidth(4);
     }
@@ -113,10 +111,9 @@ public class ColorValueView extends View implements ColorListener {
         float pos = mHSVO[2] * (mHeight - mBorder * 2);
         mDotY = pos + mBorder;
 
-        int[] colors3 = new int[] {
-                mSliderColor, mSliderColor, 0x66000000, 0 };
-        RadialGradient g = new RadialGradient(mDotX, mDotY, dotRadus, colors3, new float[] {
-        0, .3f, .31f, 1 }, Shader.TileMode.CLAMP);
+        int[] colors3 = new int[]{mSliderColor, mSliderColor, 0x66000000, 0};
+        RadialGradient g = new RadialGradient(mDotX, mDotY, dotRadus, colors3,
+                new float[]{0, .3f, .31f, 1}, Shader.TileMode.CLAMP);
         mDotPaint.setShader(g);
     }
 
@@ -130,8 +127,8 @@ public class ColorValueView extends View implements ColorListener {
     }
 
     private void updatePaint() {
-        float[] hsv = new float[] {
-                mHSVO[0], mHSVO[1], 0f };
+        float[] hsv = new float[]{
+                mHSVO[0], mHSVO[1], 0f};
         int color1 = Color.HSVToColor(hsv);
         hsv[2] = 1;
         int color2 = Color.HSVToColor(hsv);

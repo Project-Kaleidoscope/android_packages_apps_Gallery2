@@ -18,7 +18,6 @@ package com.android.gallery3d.exif;
 
 import android.util.Log;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -31,7 +30,7 @@ class ExifModifier {
     public static final boolean DEBUG = false;
     private final ByteBuffer mByteBuffer;
     private final ExifData mTagToModified;
-    private final List<TagOffset> mTagOffsets = new ArrayList<TagOffset>();
+    private final List<TagOffset> mTagOffsets = new ArrayList<>();
     private final ExifInterface mInterface;
     private int mOffsetBase;
 
@@ -153,7 +152,7 @@ class ExifModifier {
         mByteBuffer.position(offset + mOffsetBase);
         switch (tag.getDataType()) {
             case ExifTag.TYPE_ASCII:
-                byte buf[] = tag.getStringByte();
+                byte[] buf = tag.getStringByte();
                 if (buf.length == tag.getComponentCount()) {
                     buf[buf.length - 1] = 0;
                     mByteBuffer.put(buf);

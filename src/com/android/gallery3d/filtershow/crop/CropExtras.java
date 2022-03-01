@@ -35,22 +35,22 @@ public class CropExtras {
     public static final String KEY_SHOW_WHEN_LOCKED = "showWhenLocked";
     public static final String KEY_OUTPUT_FORMAT = "outputFormat";
 
-    private int mOutputX = 0;
-    private int mOutputY = 0;
-    private boolean mScaleUp = true;
-    private int mAspectX = 0;
-    private int mAspectY = 0;
-    private boolean mSetAsWallpaper = false;
-    private boolean mReturnData = false;
-    private Uri mExtraOutput = null;
-    private String mOutputFormat = null;
-    private boolean mShowWhenLocked = false;
-    private float mSpotlightX = 0;
-    private float mSpotlightY = 0;
+    private final int mOutputX;
+    private final int mOutputY;
+    private final boolean mScaleUp;
+    private final int mAspectX;
+    private final int mAspectY;
+    private final boolean mSetAsWallpaper;
+    private final boolean mReturnData;
+    private final Uri mExtraOutput;
+    private final String mOutputFormat;
+    private final boolean mShowWhenLocked;
+    private final float mSpotlightX;
+    private final float mSpotlightY;
 
     public CropExtras(int outputX, int outputY, boolean scaleUp, int aspectX, int aspectY,
-            boolean setAsWallpaper, boolean returnData, Uri extraOutput, String outputFormat,
-            boolean showWhenLocked, float spotlightX, float spotlightY) {
+                      boolean setAsWallpaper, boolean returnData, Uri extraOutput, String outputFormat,
+                      boolean showWhenLocked, float spotlightX, float spotlightY) {
         mOutputX = outputX;
         mOutputY = outputY;
         mScaleUp = scaleUp;

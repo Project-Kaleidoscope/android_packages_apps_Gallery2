@@ -16,35 +16,32 @@
 
 package com.android.gallery3d.ui;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.View;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.anim.CanvasAnimation;
 import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.glrenderer.BasicTexture;
 import com.android.gallery3d.glrenderer.GLCanvas;
-import com.android.gallery3d.glrenderer.GLES11Canvas;
 import com.android.gallery3d.glrenderer.GLES20Canvas;
 import com.android.gallery3d.glrenderer.UploadedTexture;
 import com.android.gallery3d.util.GalleryUtils;
 import com.android.gallery3d.util.MotionEventHelper;
 import com.android.gallery3d.util.Profile;
 
+import org.codeaurora.gallery.R;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -90,17 +87,17 @@ public class GLRootView extends GLSurfaceView
     private int mCompensation;
     // mCompensationMatrix maps the coordinates of touch events. It is kept sync
     // with mCompensation.
-    private Matrix mCompensationMatrix = new Matrix();
+    private final Matrix mCompensationMatrix = new Matrix();
     private int mDisplayRotation;
 
     private int mFlags = FLAG_NEED_LAYOUT;
     private volatile boolean mRenderRequested = false;
 
     private final ArrayList<CanvasAnimation> mAnimations =
-            new ArrayList<CanvasAnimation>();
+            new ArrayList<>();
 
     private final ArrayDeque<OnGLIdleListener> mIdleListeners =
-            new ArrayDeque<OnGLIdleListener>();
+            new ArrayDeque<>();
 
     private final IdleRunner mIdleRunner = new IdleRunner();
 
@@ -119,19 +116,11 @@ public class GLRootView extends GLSurfaceView
     public GLRootView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mFlags |= FLAG_INITIALIZED;
-        setBackgroundDrawable(null);
-        setEGLContextClientVersion(ApiHelper.HAS_GLES20_REQUIRED ? 2 : 1);
-        if (ApiHelper.USE_888_PIXEL_FORMAT) {
-            setEGLConfigChooser(8, 8, 8, 0, 0, 0);
-        } else {
-            setEGLConfigChooser(5, 6, 5, 0, 0, 0);
-        }
+        setBackground(null);
+        setEGLContextClientVersion(2);
+        setEGLConfigChooser(8, 8, 8, 0, 0, 0);
         setRenderer(this);
-        if (ApiHelper.USE_888_PIXEL_FORMAT) {
-            getHolder().setFormat(PixelFormat.RGB_888);
-        } else {
-            getHolder().setFormat(PixelFormat.RGB_565);
-        }
+        getHolder().setFormat(PixelFormat.RGB_888);
 
         // Uncomment this to enable gl error check.
         // setDebugFlags(DEBUG_CHECK_GL_ERROR);
@@ -190,19 +179,10 @@ public class GLRootView extends GLSurfaceView
         }
         if (mRenderRequested) return;
         mRenderRequested = true;
-        if (ApiHelper.HAS_POST_ON_ANIMATION) {
-            postOnAnimation(mRequestRenderOnAnimationFrame);
-        } else {
-            super.requestRender();
-        }
+        postOnAnimation(mRequestRenderOnAnimationFrame);
     }
 
-    private Runnable mRequestRenderOnAnimationFrame = new Runnable() {
-        @Override
-        public void run() {
-            superRequestRender();
-        }
-    };
+    private final Runnable mRequestRenderOnAnimationFrame = this::superRequestRender;
 
     private void superRequestRender() {
         super.requestRender();
@@ -230,8 +210,8 @@ public class GLRootView extends GLSurfaceView
 
         int w = getWidth();
         int h = getHeight();
-        int displayRotation = 0;
-        int compensation = 0;
+        int displayRotation;
+        int compensation;
 
         // Get the new orientation values
         if (mOrientationSource != null) {
@@ -291,7 +271,7 @@ public class GLRootView extends GLSurfaceView
         mRenderLock.lock();
         try {
             mGL = gl;
-            mCanvas = ApiHelper.HAS_GLES20_REQUIRED ? new GLES20Canvas() : new GLES11Canvas(gl);
+            mCanvas = new GLES20Canvas();
             BasicTexture.invalidateAllTextures();
         } finally {
             mRenderLock.unlock();
@@ -360,14 +340,11 @@ public class GLRootView extends GLSurfaceView
         // before the first draw.
         if (mFirstDraw) {
             mFirstDraw = false;
-            post(new Runnable() {
-                    @Override
-                    public void run() {
-                        View root = getRootView();
-                        View cover = root.findViewById(R.id.gl_root_cover);
-                        cover.setVisibility(GONE);
-                    }
-                });
+            post(() -> {
+                View root = getRootView();
+                View cover = root.findViewById(R.id.gl_root_cover);
+                cover.setVisibility(GONE);
+            });
         }
 
         if (DEBUG_PROFILE_SLOW_ONLY) {
@@ -406,7 +383,7 @@ public class GLRootView extends GLSurfaceView
         mCanvas.save(GLCanvas.SAVE_FLAG_ALL);
         rotateCanvas(-mCompensation);
         if (mContentView != null) {
-           mContentView.render(mCanvas);
+            mContentView.render(mCanvas);
         } else {
             // Make sure we always draw something to prevent displaying garbage
             mCanvas.clearBuffer();
@@ -566,13 +543,12 @@ public class GLRootView extends GLSurfaceView
 
 
     @Override
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void setLightsOutMode(boolean enabled) {
         if (!ApiHelper.HAS_SET_SYSTEM_UI_VISIBILITY) return;
 
         int flags = 0;
         if (enabled) {
-            flags = STATUS_BAR_HIDDEN;
+            flags = SYSTEM_UI_FLAG_LOW_PROFILE;
             if (ApiHelper.HAS_VIEW_SYSTEM_UI_FLAG_LAYOUT_STABLE) {
                 flags |= (SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_LAYOUT_STABLE);
             }

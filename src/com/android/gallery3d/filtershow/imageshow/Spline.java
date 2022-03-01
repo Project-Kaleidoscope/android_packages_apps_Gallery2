@@ -36,17 +36,17 @@ public class Spline {
     public static final int RED = 1;
     public static final int GREEN = 2;
     public static final int BLUE = 3;
-    private static final String LOGTAG = "Spline";
+    private static final String TAG = "Spline";
 
     private final Paint gPaint = new Paint();
     private ControlPoint mCurrentControlPoint = null;
 
     public Spline() {
-        mPoints = new Vector<ControlPoint>();
+        mPoints = new Vector<>();
     }
 
     public Spline(Spline spline) {
-        mPoints = new Vector<ControlPoint>();
+        mPoints = new Vector<>();
         for (int i = 0; i < spline.mPoints.size(); i++) {
             ControlPoint p = spline.mPoints.elementAt(i);
             ControlPoint newPoint = new ControlPoint(p);
@@ -126,10 +126,7 @@ public class Spline {
         if (mPoints.elementAt(0).x != 0 || mPoints.elementAt(0).y != 1) {
             return false;
         }
-        if (mPoints.elementAt(1).x != 1 || mPoints.elementAt(1).y != 0) {
-            return false;
-        }
-        return true;
+        return mPoints.elementAt(1).x == 1 && mPoints.elementAt(1).y == 0;
     }
 
     public void reset() {
@@ -168,8 +165,8 @@ public class Spline {
             curve[i] = 1.0f - points[points.length - 1].y;
         }
         for (int i = start; i < end; i++) {
-            ControlPoint cur = null;
-            ControlPoint next = null;
+            ControlPoint cur;
+            ControlPoint next;
             double x = i / 256.0;
             int pivot = 0;
             for (int j = 0; j < points.length - 1; j++) {
@@ -215,8 +212,8 @@ public class Spline {
         gPaint.setARGB(128, 150, 150, 150);
         gPaint.setStrokeWidth(1);
 
-        float stepH = h / 9;
-        float stepW = w / 9;
+        float stepH;
+        float stepW;
 
         // central diagonal
         gPaint.setARGB(255, 100, 100, 100);
@@ -238,7 +235,7 @@ public class Spline {
     }
 
     public void draw(Canvas canvas, int color, int canvasWidth, int canvasHeight,
-            boolean showHandles, boolean moving) {
+                     boolean showHandles, boolean moving) {
         float w = canvasWidth - mCurveHandleSize;
         float h = canvasHeight - mCurveHandleSize;
         float dx = mCurveHandleSize / 2;
@@ -336,9 +333,9 @@ public class Spline {
         paint.setColor(color);
         canvas.drawPath(path, paint);
         if (showHandles) {
-            for (int i = 0; i < points.length; i++) {
-                float x = points[i].x;
-                float y = points[i].y;
+            for (ControlPoint point : points) {
+                float x = point.x;
+                float y = point.y;
                 drawHandles(canvas, mCurveHandle, x, y);
             }
         }
@@ -440,10 +437,10 @@ public class Spline {
     }
 
     public void show() {
-        Log.v(LOGTAG, "show curve " + this);
+        Log.v(TAG, "show curve " + this);
         for (int i = 0; i < mPoints.size(); i++) {
             ControlPoint point = mPoints.elementAt(i);
-            Log.v(LOGTAG, "point " + i + " is (" + point.x + ", " + point.y + ")");
+            Log.v(TAG, "point " + i + " is (" + point.x + ", " + point.y + ")");
         }
     }
 

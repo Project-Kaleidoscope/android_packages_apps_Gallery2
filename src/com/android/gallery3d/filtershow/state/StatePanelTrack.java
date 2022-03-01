@@ -20,46 +20,45 @@ import android.animation.LayoutTransition;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
-import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.LinearLayout;
-import org.codeaurora.gallery.R;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.ImageOnlyEditor;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 
+import org.codeaurora.gallery.R;
+
 public class StatePanelTrack extends LinearLayout implements PanelTrack {
 
-    private static final String LOGTAG = "StatePanelTrack";
+    private static final String TAG = "StatePanelTrack";
     private Point mTouchPoint;
     private StateView mCurrentView;
     private StateView mCurrentSelectedView;
     private boolean mExited = false;
     private boolean mStartedDrag = false;
     private StateAdapter mAdapter;
-    private DragListener mDragListener = new DragListener(this);
-    private float mDeleteSlope = 0.2f;
-    private GestureDetector mGestureDetector;
-    private int mElemWidth;
-    private int mElemHeight;
-    private int mElemSize;
-    private int mElemEndSize;
-    private int mEndElemWidth;
-    private int mEndElemHeight;
+    private final DragListener mDragListener = new DragListener(this);
+    private final float mDeleteSlope = 0.2f;
+    private final GestureDetector mGestureDetector;
+    private final int mElemWidth;
+    private final int mElemHeight;
+    private final int mElemSize;
+    private final int mElemEndSize;
+    private final int mEndElemWidth;
+    private final int mEndElemHeight;
     private long mTouchTime;
-    private int mMaxTouchDelay = 300; // 300ms delay for touch
+    private final int mMaxTouchDelay = 300; // 300ms delay for touch
     private static final boolean ALLOWS_DRAG = false;
     private static final boolean ALLOWS_DUPLICATES = false;
-    private DataSetObserver mObserver = new DataSetObserver() {
+    private final DataSetObserver mObserver = new DataSetObserver() {
         @Override
         public void onChanged() {
             super.onChanged();
@@ -90,11 +89,12 @@ public class StatePanelTrack extends LinearLayout implements PanelTrack {
             mEndElemHeight = mElemEndSize;
         }
         GestureDetector.SimpleOnGestureListener simpleOnGestureListener
-                = new GestureDetector.SimpleOnGestureListener(){
+                = new GestureDetector.SimpleOnGestureListener() {
             @Override
             public void onLongPress(MotionEvent e) {
                 longPress(e);
             }
+
             @Override
             public boolean onDoubleTap(MotionEvent e) {
                 addDuplicate(e);
@@ -214,10 +214,7 @@ public class StatePanelTrack extends LinearLayout implements PanelTrack {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        if (mCurrentView != null) {
-            return true;
-        }
-        return false;
+        return mCurrentView != null;
     }
 
     @Override
@@ -249,7 +246,7 @@ public class StatePanelTrack extends LinearLayout implements PanelTrack {
             if (ALLOWS_DRAG && alpha < 0.7) {
                 setOnDragListener(mDragListener);
                 DragShadowBuilder shadowBuilder = new DragShadowBuilder(mCurrentView);
-                mCurrentView.startDrag(null, shadowBuilder, mCurrentView, 0);
+                mCurrentView.startDragAndDrop(null, shadowBuilder, mCurrentView, 0);
                 mStartedDrag = true;
             }
         }

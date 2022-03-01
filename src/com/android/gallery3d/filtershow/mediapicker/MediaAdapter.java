@@ -33,37 +33,38 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
-import androidx.cursoradapter.widget.CursorAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView.RecyclerListener;
 import android.widget.RelativeLayout;
 
-import java.util.ArrayList;
-import java.util.List;
+import androidx.cursoradapter.widget.CursorAdapter;
 
 import com.android.gallery3d.filtershow.mediapicker.imageloader.ImageLoaderStub;
+
 import org.codeaurora.gallery.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Adapter for display media item list.
  */
 public class MediaAdapter extends CursorAdapter implements RecyclerListener {
-    private ImageLoaderStub mMediaImageLoader;
+    private final ImageLoaderStub mMediaImageLoader;
     private Uri mMediaSelected;
     private int mItemHeight = 0;
     private int mNumColumns = 0;
-    private RelativeLayout.LayoutParams mImageViewLayoutParams;
-    private List<SelectedImageView> mImageViewSelected = new ArrayList<SelectedImageView>();
+    private final RelativeLayout.LayoutParams mImageViewLayoutParams;
+    private final List<SelectedImageView> mImageViewSelected = new ArrayList<>();
 
-    public MediaAdapter(Context context, Cursor c, int flags,
-                        ImageLoaderStub mediaImageLoader) {
+    public MediaAdapter(Context context, Cursor c, int flags, ImageLoaderStub mediaImageLoader) {
         this(context, c, flags, null, mediaImageLoader);
     }
 
-    public MediaAdapter(Context context, Cursor c, int flags,
-                        Uri mediaSelected, ImageLoaderStub mediaImageLoader) {
+    public MediaAdapter(Context context, Cursor c, int flags, Uri mediaSelected,
+                        ImageLoaderStub mediaImageLoader) {
         super(context, c, flags);
         mMediaSelected = mediaSelected;
         mMediaImageLoader = mediaImageLoader;
@@ -89,7 +90,7 @@ public class MediaAdapter extends CursorAdapter implements RecyclerListener {
     public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
         View root = View
                 .inflate(context, R.layout.mediapicker_list_item, null);
-        SelectedImageView imageView = (SelectedImageView) root.findViewById(R.id.thumbnail);
+        SelectedImageView imageView = root.findViewById(R.id.thumbnail);
 
         imageView.setLayoutParams(mImageViewLayoutParams);
         // Check the height matches our calculated column width
@@ -115,8 +116,7 @@ public class MediaAdapter extends CursorAdapter implements RecyclerListener {
         if (uri == null)
             return false;
         if (mMediaSelected != null) {
-            if (mMediaSelected.equals(uri))
-                return true;
+            return mMediaSelected.equals(uri);
         }
         return false;
     }
@@ -166,7 +166,7 @@ public class MediaAdapter extends CursorAdapter implements RecyclerListener {
 
     @Override
     public void onMovedToScrapHeap(View view) {
-        SelectedImageView imageView = (SelectedImageView) view
+        SelectedImageView imageView = view
                 .findViewById(R.id.thumbnail);
         mImageViewSelected.remove(imageView);
     }

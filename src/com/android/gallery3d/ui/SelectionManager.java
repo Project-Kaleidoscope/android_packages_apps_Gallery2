@@ -19,7 +19,6 @@ package com.android.gallery3d.ui;
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.app.AlbumSetDataLoader;
 import com.android.gallery3d.app.TimeLineDataLoader;
-import com.android.gallery3d.data.ContentListener;
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.MediaItem;
 import com.android.gallery3d.data.MediaObject;
@@ -30,7 +29,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SelectionManager implements TimeLineDataLoader.DataListener, AlbumSetDataLoader.DataListener{
+public class SelectionManager implements TimeLineDataLoader.DataListener, AlbumSetDataLoader.DataListener {
     @SuppressWarnings("unused")
     private static final String TAG = "SelectionManager";
 
@@ -38,17 +37,19 @@ public class SelectionManager implements TimeLineDataLoader.DataListener, AlbumS
     public static final int LEAVE_SELECTION_MODE = 2;
     public static final int SELECT_ALL_MODE = 3;
 
-    private Set<Path> mClickedSet;
+    private final Set<Path> mClickedSet;
     private MediaSet mSourceMediaSet;
     private SelectionListener mListener;
-    private DataManager mDataManager;
+    private final DataManager mDataManager;
     private boolean mInverseSelection;
-    private boolean mIsAlbumSet;
+    private final boolean mIsAlbumSet;
     private boolean mInSelectionMode;
     private boolean mAutoLeave = true;
     private int mTotal;
-    /** mTotalSelectable is the count of items
-     * exclude not selectable such as Title item in TimeLine. */
+    /**
+     * mTotalSelectable is the count of items
+     * exclude not selectable such as Title item in TimeLine.
+     */
     private int mTotalSelectable;
     private TimeLineDataLoader mTimeLineDataLoader;
     private AlbumSetDataLoader mAlbumSetDataLoader;
@@ -72,13 +73,14 @@ public class SelectionManager implements TimeLineDataLoader.DataListener, AlbumS
     }
 
     public interface SelectionListener {
-        public void onSelectionModeChange(int mode);
-        public void onSelectionChange(Path path, boolean selected);
+        void onSelectionModeChange(int mode);
+
+        void onSelectionChange(Path path, boolean selected);
     }
 
     public SelectionManager(AbstractGalleryActivity activity, boolean isAlbumSet) {
         mDataManager = activity.getDataManager();
-        mClickedSet = new HashSet<Path>();
+        mClickedSet = new HashSet<>();
         mIsAlbumSet = isAlbumSet;
         mTotal = -1;
         mTotalSelectable = -1;
@@ -205,7 +207,7 @@ public class SelectionManager implements TimeLineDataLoader.DataListener, AlbumS
 
     public void toggleTimeLineSet(ArrayList<Path> paths) {
         if (mClickedSet.containsAll(paths))
-            mClickedSet.removeAll(paths);
+            paths.forEach(mClickedSet::remove);
         else {
             enterSelectionMode();
             mClickedSet.addAll(paths);
@@ -213,10 +215,12 @@ public class SelectionManager implements TimeLineDataLoader.DataListener, AlbumS
         int count = getSelectedCount();
         if (count == (mSourceMediaSet.getMediaItemCount() - mSourceMediaSet.getSubMediaSetCount()))
             selectAll();
-        if (mListener != null) mListener.onSelectionChange(paths.get(0), isItemSelected(paths.get(0)));
+        if (mListener != null)
+            mListener.onSelectionChange(paths.get(0), isItemSelected(paths.get(0)));
         if (count == 0 && mAutoLeave)
             leaveSelectionMode();
     }
+
     private static boolean expandMediaSet(ArrayList<Path> items, MediaSet set, int maxSelection) {
         int subCount = set.getSubMediaSetCount();
         for (int i = 0; i < subCount; i++) {
@@ -250,7 +254,7 @@ public class SelectionManager implements TimeLineDataLoader.DataListener, AlbumS
     }
 
     public ArrayList<Path> getSelected(boolean expandSet, int maxSelection) {
-        ArrayList<Path> selected = new ArrayList<Path>();
+        ArrayList<Path> selected = new ArrayList<>();
         if (mIsAlbumSet) {
             if (mInverseSelection) {
                 int total = getTotalCount();

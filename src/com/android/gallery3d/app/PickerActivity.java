@@ -24,8 +24,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.ui.GLRootView;
+
+import org.codeaurora.gallery.R;
 
 public class PickerActivity extends AbstractGalleryActivity
         implements OnClickListener {

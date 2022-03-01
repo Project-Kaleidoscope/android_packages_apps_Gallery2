@@ -22,16 +22,29 @@ import android.view.View;
 import android.widget.Adapter;
 
 public interface PanelTrack {
-    public int getOrientation();
-    public void onTouch(MotionEvent event, StateView view);
-    public StateView getCurrentView();
-    public void setCurrentView(View view);
-    public Point getTouchPoint();
-    public View findChildAt(int x, int y);
-    public int findChild(View view);
-    public Adapter getAdapter();
-    public void fillContent(boolean value);
-    public View getChildAt(int pos);
-    public void setExited(boolean value);
-    public void checkEndState();
+
+    int getOrientation();
+
+    void onTouch(MotionEvent event, StateView view);
+
+    StateView getCurrentView();
+
+    void setCurrentView(View view);
+
+    Point getTouchPoint();
+
+    View findChildAt(int x, int y);
+
+    int findChild(View view);
+
+    Adapter getAdapter();
+
+    void fillContent(boolean value);
+
+    View getChildAt(int pos);
+
+    void setExited(boolean value);
+
+    void checkEndState();
+
 }

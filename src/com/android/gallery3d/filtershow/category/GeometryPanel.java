@@ -37,7 +37,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
@@ -49,39 +51,38 @@ public class GeometryPanel extends BasicGeometryPanel {
 
     ArrayList<FilterRepresentation> mFiltersRepresentations;
 
-    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             int index = (int) v.getTag();
             if (index >= 0 && index < mButtons.length) {
-                final FilterShowActivity activity = (FilterShowActivity) getActivity();
+                final FilterShowActivity activity = (FilterShowActivity) requireActivity();
                 activity.showRepresentation(mFiltersRepresentations.get(index));
             }
         }
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         FiltersManager filtersManager = FiltersManager.getManager();
         mFiltersRepresentations = filtersManager.getTools();
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
     protected void initButtons() {
         super.initButtons();
-        Resources res = getActivity().getResources();
+        Resources res = requireContext().getResources();
         int size = mButtons.length;
         for (int i = 0; i < size; i++) {
             ImageButton view = mButtons[i];
             if (mFiltersRepresentations.size() > 0) {
-                view.setImageDrawable(res.getDrawable(mFiltersRepresentations.get(i).getOverlayId()));
+                view.setImageDrawable(ResourcesCompat.getDrawable(res, mFiltersRepresentations.get(i).getOverlayId(), null));
             }
             // ues tag to store index.
             view.setTag(i);
@@ -92,7 +93,7 @@ public class GeometryPanel extends BasicGeometryPanel {
     @Override
     protected void initTexts() {
         super.initTexts();
-        Resources res = getActivity().getResources();
+        Resources res = requireContext().getResources();
         int size = mTextViews.length;
         for (int i = 0; i < size; i++) {
             TextView view = mTextViews[i];

@@ -30,7 +30,7 @@ public class ImageRotate extends ImageShow {
     private EditorRotate mEditorRotate;
     private static final String TAG = ImageRotate.class.getSimpleName();
     private FilterRotateRepresentation mLocalRep = new FilterRotateRepresentation();
-    private GeometryHolder mDrawHolder = new GeometryHolder();
+    private final GeometryHolder mDrawHolder = new GeometryHolder();
 
     public ImageRotate(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -72,8 +72,8 @@ public class ImageRotate extends ImageShow {
         }
         toggleComparisonButtonVisibility();
         GeometryMathUtils.initializeHolder(mDrawHolder, mLocalRep);
-        GeometryMathUtils.drawTransformedCropped(mDrawHolder, canvas, image, canvas.getWidth(),
-                canvas.getHeight());
+        GeometryMathUtils.drawTransformedCropped(mDrawHolder, canvas, image, getWidth(),
+                getHeight());
     }
 
     public void setEditor(EditorRotate editorRotate) {

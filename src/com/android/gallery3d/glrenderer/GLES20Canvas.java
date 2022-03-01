@@ -23,7 +23,6 @@ import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.util.IntArray;
 
 import java.nio.Buffer;
@@ -63,8 +62,8 @@ public class GLES20Canvas implements GLCanvas {
     };
 
     private static final float[] BOUNDS_COORDINATES = {
-        0, 0, 0, 1,
-        1, 1, 0, 1,
+            0, 0, 0, 1,
+            1, 1, 0, 1,
     };
 
     private static final String POSITION_ATTRIBUTE = "aPosition";
@@ -139,7 +138,7 @@ public class GLES20Canvas implements GLCanvas {
     // Keep track of restore state
     private float[] mMatrices = new float[INITIAL_RESTORE_STATE_SIZE * MATRIX_SIZE];
     private float[] mAlphas = new float[INITIAL_RESTORE_STATE_SIZE];
-    private IntArray mSaveFlags = new IntArray();
+    private final IntArray mSaveFlags = new IntArray();
 
     private int mCurrentAlphaIndex = 0;
     private int mCurrentMatrixIndex = 0;
@@ -149,20 +148,20 @@ public class GLES20Canvas implements GLCanvas {
     private int mHeight;
 
     // Projection matrix
-    private float[] mProjectionMatrix = new float[MATRIX_SIZE];
+    private final float[] mProjectionMatrix = new float[MATRIX_SIZE];
 
     // Screen size for when we aren't bound to a texture
     private int mScreenWidth;
     private int mScreenHeight;
 
     // GL programs
-    private int mDrawProgram;
-    private int mTextureProgram;
-    private int mOesTextureProgram;
-    private int mMeshProgram;
+    private final int mDrawProgram;
+    private final int mTextureProgram;
+    private final int mOesTextureProgram;
+    private final int mMeshProgram;
 
     // GL buffer containing BOX_COORDINATES
-    private int mBoxCoordinates;
+    private final int mBoxCoordinates;
 
     // Handle indices -- common
     private static final int INDEX_POSITION = 0;
@@ -252,10 +251,10 @@ public class GLES20Canvas implements GLCanvas {
 
     // Buffer for framebuffer IDs -- we keep track so we can switch the attached
     // texture.
-    private int[] mFrameBuffer = new int[1];
+    private final int[] mFrameBuffer = new int[1];
 
     // Bound textures.
-    private ArrayList<RawTexture> mTargetTextures = new ArrayList<RawTexture>();
+    private final ArrayList<RawTexture> mTargetTextures = new ArrayList<>();
 
     // Temporary variables used within calculations
     private final float[] mTempMatrix = new float[32];
@@ -293,11 +292,7 @@ public class GLES20Canvas implements GLCanvas {
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         checkError();
 
-        if (ApiHelper.USE_888_PIXEL_FORMAT) {
-            GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 2);
-        } else {
-            GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 1);
-        }
+        GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 2);
     }
 
     private static FloatBuffer createBuffer(float[] values) {
@@ -329,8 +324,8 @@ public class GLES20Canvas implements GLCanvas {
             GLES20.glDeleteProgram(program);
             program = 0;
         }
-        for (int i = 0; i < params.length; i++) {
-            params[i].loadHandle(program);
+        for (ShaderParameter param : params) {
+            param.loadHandle(program);
         }
         return program;
     }
@@ -408,7 +403,7 @@ public class GLES20Canvas implements GLCanvas {
     public void translate(float x, float y) {
         int index = mCurrentMatrixIndex;
         float[] m = mMatrices;
-        m[index + 12] += m[index + 0] * x + m[index + 4] * y;
+        m[index + 12] += m[index] * x + m[index + 4] * y;
         m[index + 13] += m[index + 1] * x + m[index + 5] * y;
         m[index + 14] += m[index + 2] * x + m[index + 6] * y;
         m[index + 15] += m[index + 3] * x + m[index + 7] * y;
@@ -496,12 +491,12 @@ public class GLES20Canvas implements GLCanvas {
     }
 
     private void draw(int type, int offset, int count, float x, float y, float width, float height,
-            GLPaint paint) {
+                      GLPaint paint) {
         draw(type, offset, count, x, y, width, height, paint.getColor(), paint.getLineWidth());
     }
 
     private void draw(int type, int offset, int count, float x, float y, float width, float height,
-            int color, float lineWidth) {
+                      int color, float lineWidth) {
         prepareDraw(offset, color, lineWidth);
         draw(mDrawParameters, type, count, x, y, width, height);
     }
@@ -559,7 +554,7 @@ public class GLES20Canvas implements GLCanvas {
     }
 
     private void draw(ShaderParameter[] params, int type, int count, float x, float y, float width,
-            float height) {
+                      float height) {
         setMatrix(params, x, y, width, height);
         int positionHandle = params[INDEX_POSITION].handle;
         GLES20.glEnableVertexAttribArray(positionHandle);
@@ -624,7 +619,7 @@ public class GLES20Canvas implements GLCanvas {
 
     @Override
     public void drawTexture(BasicTexture texture, float[] textureTransform, int x, int y, int w,
-            int h) {
+                            int h) {
         if (w <= 0 || h <= 0) {
             return;
         }
@@ -721,7 +716,7 @@ public class GLES20Canvas implements GLCanvas {
 
     @Override
     public void drawMesh(BasicTexture texture, int x, int y, int xyBuffer, int uvBuffer,
-            int indexBuffer, int indexCount) {
+                         int indexBuffer, int indexCount) {
         prepareTexture(texture, mMeshProgram, mMeshParameters);
 
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -826,8 +821,7 @@ public class GLES20Canvas implements GLCanvas {
 
     @Override
     public void dumpStatisticsAndClear() {
-        String line = String.format("MESH:%d, TEX_RECT:%d, FILL_RECT:%d, LINE:%d", mCountDrawMesh,
-                mCountTextureRect, mCountFillRect, mCountDrawLine);
+        String line = String.format("MESH:%d, TEX_RECT:%d, FILL_RECT:%d, LINE:%d", mCountDrawMesh, mCountTextureRect, mCountFillRect, mCountDrawLine);
         mCountDrawMesh = 0;
         mCountTextureRect = 0;
         mCountFillRect = 0;
@@ -938,7 +932,7 @@ public class GLES20Canvas implements GLCanvas {
 
     @Override
     public void texSubImage2D(BasicTexture texture, int xOffset, int yOffset, Bitmap bitmap,
-            int format, int type) {
+                              int format, int type) {
         int target = texture.getTarget();
         GLES20.glBindTexture(target, texture.getId());
         checkError();

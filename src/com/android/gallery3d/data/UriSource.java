@@ -17,9 +17,7 @@
 package com.android.gallery3d.data;
 
 import android.content.ContentResolver;
-//import android.drm.DrmHelper;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import com.android.gallery3d.app.GalleryApp;
@@ -35,7 +33,7 @@ class UriSource extends MediaSource {
     private static final String IMAGE_TYPE_ANY = "image/*";
     private static final String CHARSET_UTF_8 = "utf-8";
 
-    private GalleryApp mApplication;
+    private final GalleryApp mApplication;
 
     public UriSource(GalleryApp context) {
         super("uri");
@@ -44,7 +42,7 @@ class UriSource extends MediaSource {
 
     @Override
     public MediaObject createMediaObject(Path path) {
-        String segment[] = path.split();
+        String[] segment = path.split();
         if (segment.length != 3) {
             throw new RuntimeException("bad path: " + path);
         }
@@ -99,7 +97,7 @@ class UriSource extends MediaSource {
             try {
                 return Path.fromString("/uri/"
                         + URLEncoder.encode(uri.toString(), CHARSET_UTF_8)
-                        + "/" +URLEncoder.encode(type, CHARSET_UTF_8));
+                        + "/" + URLEncoder.encode(type, CHARSET_UTF_8));
             } catch (UnsupportedEncodingException e) {
                 throw new AssertionError(e);
             }

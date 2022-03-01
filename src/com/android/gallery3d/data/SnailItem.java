@@ -22,7 +22,6 @@ import android.net.Uri;
 
 import com.android.gallery3d.ui.ScreenNail;
 import com.android.gallery3d.util.ThreadPool.Job;
-import com.android.gallery3d.util.ThreadPool.JobContext;
 
 // SnailItem is a MediaItem which can provide a ScreenNail. This is
 // used so we can show an foreign component (like an
@@ -39,23 +38,13 @@ public class SnailItem extends MediaItem {
     @Override
     public Job<Bitmap> requestImage(int type) {
         // nothing to return
-        return new Job<Bitmap>() {
-            @Override
-            public Bitmap run(JobContext jc) {
-                return null;
-            }
-        };
+        return jc -> null;
     }
 
     @Override
     public Job<BitmapRegionDecoder> requestLargeImage() {
         // nothing to return
-        return new Job<BitmapRegionDecoder>() {
-            @Override
-            public BitmapRegionDecoder run(JobContext jc) {
-                return null;
-            }
-        };
+        return jc -> null;
     }
 
     // We do not provide requestImage or requestLargeImage, instead we
@@ -63,6 +52,10 @@ public class SnailItem extends MediaItem {
     @Override
     public ScreenNail getScreenNail() {
         return mScreenNail;
+    }
+
+    public void setScreenNail(ScreenNail screenNail) {
+        mScreenNail = screenNail;
     }
 
     @Override
@@ -82,17 +75,13 @@ public class SnailItem extends MediaItem {
         return 0;
     }
 
-    @Override
-    public Uri getContentUri() {
-        return null;
-    }
-
     //////////////////////////////////////////////////////////////////////////
     //  Extra methods for SnailItem
     //////////////////////////////////////////////////////////////////////////
 
-    public void setScreenNail(ScreenNail screenNail) {
-        mScreenNail = screenNail;
+    @Override
+    public Uri getContentUri() {
+        return null;
     }
 
     public void updateVersion() {

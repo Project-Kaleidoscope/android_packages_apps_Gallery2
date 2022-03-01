@@ -19,6 +19,7 @@ package com.android.gallery3d.jpegstream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 public class JPEGOutputStream extends FilterOutputStream {
     private long JNIPointer = 0; // Used by JNI code. Don't touch.
 

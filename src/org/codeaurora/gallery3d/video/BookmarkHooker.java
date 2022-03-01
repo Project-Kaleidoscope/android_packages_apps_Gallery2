@@ -23,10 +23,8 @@ public class BookmarkHooker extends MovieHooker {
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         super.onCreateOptionsMenu(menu);
-        mMenuBookmarkAdd = menu.add(0, getMenuActivityId(MENU_BOOKMARK_ADD), 0,
-                R.string.bookmark_add);
-        mMenuBookmarks = menu.add(0, getMenuActivityId(MENU_BOOKMARK_DISPLAY), 0,
-                R.string.bookmark_display);
+        mMenuBookmarkAdd = menu.add(0, getMenuActivityId(MENU_BOOKMARK_ADD), 0, R.string.bookmark_add);
+        mMenuBookmarks = menu.add(0, getMenuActivityId(MENU_BOOKMARK_DISPLAY), 0, R.string.bookmark_display);
         return true;
     }
 

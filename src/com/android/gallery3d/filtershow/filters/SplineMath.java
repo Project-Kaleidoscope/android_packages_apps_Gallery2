@@ -2,10 +2,23 @@ package com.android.gallery3d.filtershow.filters;
 
 
 public class SplineMath {
-    double[][] mPoints = new double[6][2];
+    double[][] mPoints;
     double[] mDerivatives;
+
     SplineMath(int n) {
         mPoints = new double[n][2];
+    }
+
+    public static void main(String[] args) {
+        SplineMath s = new SplineMath(10);
+        for (int i = 0; i < 10; i++) {
+            s.setPoint(i, i, i);
+        }
+        float[][] curve = s.calculatetCurve(40);
+
+        for (float[] floats : curve) {
+            System.out.println(floats[0] + "," + floats[1]);
+        }
     }
 
     public void setPoint(int index, double x, double y) {
@@ -35,8 +48,8 @@ public class SplineMath {
 
         for (int i = 0; i < curve.length; i++) {
 
-            double[] cur = null;
-            double[] next = null;
+            double[] cur;
+            double[] next;
             double x = start + i * (end - start) / (curve.length - 1);
             int pivot = 0;
             for (int j = 0; j < points.length - 1; j++) {
@@ -75,8 +88,8 @@ public class SplineMath {
     }
 
     public double getValue(double x) {
-        double[] cur = null;
-        double[] next = null;
+        double[] cur;
+        double[] next;
         if (mDerivatives == null)
             mDerivatives = solveSystem(mPoints);
         int pivot = 0;
@@ -103,9 +116,8 @@ public class SplineMath {
         double tb = b * y2;
         double tc = (a * a * a - a) * mDerivatives[pivot];
         double td = (b * b * b - b) * mDerivatives[pivot + 1];
-        double y = ta + tb + (delta2 / 6) * (tc + td);
 
-        return y;
+        return ta + tb + (delta2 / 6) * (tc + td);
 
     }
 
@@ -150,17 +162,5 @@ public class SplineMath {
             solution[i] = (result[i] - system[i][2] * solution[i + 1]) / system[i][1];
         }
         return solution;
-    }
-
-    public static void main(String[] args) {
-        SplineMath s = new SplineMath(10);
-        for (int i = 0; i < 10; i++) {
-            s.setPoint(i, i, i);
-        }
-        float[][] curve = s.calculatetCurve(40);
-
-        for (int j = 0; j < curve.length; j++) {
-            System.out.println(curve[j][0] + "," + curve[j][1]);
-        }
     }
 }

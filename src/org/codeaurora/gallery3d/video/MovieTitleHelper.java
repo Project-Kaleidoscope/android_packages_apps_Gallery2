@@ -24,14 +24,12 @@ public class MovieTitleHelper {
             final String where = "_data LIKE '%" + data.replaceFirst("file:///", "") + "'";
             cursor = context.getContentResolver().query(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                    new String[] {
-                        OpenableColumns.DISPLAY_NAME
+                    new String[]{
+                            OpenableColumns.DISPLAY_NAME
                     }, where, null, null);
             if (LOG) {
-                Log.v(
-                        TAG,
-                        "setInfoFromMediaData() cursor="
-                                + (cursor == null ? "null" : cursor.getCount()));
+                Log.v(TAG, "setInfoFromMediaData() cursor="
+                        + (cursor == null ? "null" : cursor.getCount()));
             }
             if (cursor != null && cursor.moveToFirst()) {
                 title = cursor.getString(0);
@@ -51,21 +49,15 @@ public class MovieTitleHelper {
 
     public static String getTitleFromDisplayName(final Context context, final Uri uri) {
         String title = null;
-        Cursor cursor = null;
-        try {
-            cursor = context.getContentResolver().query(uri,
-                    new String[] {
+        try (Cursor cursor = context.getContentResolver().query(uri,
+                new String[]{
                         OpenableColumns.DISPLAY_NAME
-                    }, null, null, null);
+                }, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 title = cursor.getString(0);
             }
         } catch (final SQLiteException ex) {
             ex.printStackTrace();
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         if (LOG) {
             Log.v(TAG, "getTitleFromDisplayName() return " + title);
@@ -83,22 +75,16 @@ public class MovieTitleHelper {
 
     public static String getTitleFromData(final Context context, final Uri uri) {
         String title = null;
-        Cursor cursor = null;
-        try {
-            cursor = context.getContentResolver().query(uri,
-                    new String[] {
+        try (Cursor cursor = context.getContentResolver().query(uri,
+                new String[]{
                         "_data"
-                    }, null, null, null);
+                }, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 final File file = new File(cursor.getString(0));
                 title = file.getName();
             }
         } catch (final SQLiteException ex) {
             ex.printStackTrace();
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         if (LOG) {
             Log.v(TAG, "getTitleFromData() return " + title);

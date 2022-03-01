@@ -20,7 +20,7 @@ import android.graphics.Bitmap;
 
 public class SharedBuffer {
 
-    private static final String LOGTAG = "SharedBuffer";
+    private static final String TAG = "SharedBuffer";
 
     private volatile Buffer mProducer = null;
     private volatile Buffer mConsumer = null;
@@ -30,8 +30,7 @@ public class SharedBuffer {
     private volatile boolean mNeedsRepaint = true;
 
     public synchronized void setProducer(Bitmap producer) {
-        if (mProducer != null
-                && !mProducer.isSameSize(producer)) {
+        if (mProducer != null && !mProducer.isSameSize(producer)) {
             mProducer.remove();
             mProducer = null;
         }
@@ -80,17 +79,17 @@ public class SharedBuffer {
     }
 
     public synchronized void reset() {
-        if(mProducer != null) {
+        if (mProducer != null) {
             mProducer.remove();
         }
         mProducer = null;
 
-        if(mConsumer != null) {
+        if (mConsumer != null) {
             mConsumer.remove();
         }
         mConsumer = null;
 
-        if(mIntermediate != null) {
+        if (mIntermediate != null) {
             mIntermediate.remove();
         }
         mIntermediate = null;

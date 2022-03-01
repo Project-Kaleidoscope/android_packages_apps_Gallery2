@@ -28,6 +28,9 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
+
+import androidx.core.content.res.ResourcesCompat;
+
 import org.codeaurora.gallery.R;
 
 public class IconView extends View {
@@ -35,14 +38,14 @@ public class IconView extends View {
     public static final int VERTICAL = 0;
     public static final int HORIZONTAL = 1;
 
-    private Paint mPaint = new Paint();
+    private final Paint mPaint = new Paint();
     private int mTextColor;
     private int mBackgroundColor;
     private int mMargin = 16;
     private int mOrientation = HORIZONTAL;
     private int mTextSize = 32;
     private int mBottomRectHeight;
-    private Rect mTextBounds = new Rect();
+    private final Rect mTextBounds = new Rect();
     private Bitmap mBitmap;
     private Rect mBitmapBounds;
     private String mText;
@@ -50,7 +53,7 @@ public class IconView extends View {
 
     public IconView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setup(context);
+        setup();
         int bitmapRsc = attrs.getAttributeResourceValue(
                 "http://schemas.android.com/apk/res/android", "src", 0);
         Resources res = context.getResources();
@@ -61,13 +64,13 @@ public class IconView extends View {
 
     public IconView(Context context) {
         super(context);
-        setup(context);
+        setup();
     }
 
-    private void setup(Context context) {
+    private void setup() {
         Resources res = getResources();
-        mTextColor = res.getColor(R.color.filtershow_categoryview_text);
-        mBackgroundColor = res.getColor(android.R.color.transparent);
+        mTextColor = ResourcesCompat.getColor(res, R.color.filtershow_categoryview_text, null);
+        mBackgroundColor = ResourcesCompat.getColor(res, android.R.color.transparent, null);
         mMargin = res.getDimensionPixelOffset(R.dimen.category_panel_margin);
         mTextSize = res.getDimensionPixelSize(R.dimen.category_panel_text_size);
         mBottomRectHeight = res.getDimensionPixelOffset(R.dimen.category_panel_bottom_rect_height);
@@ -79,7 +82,6 @@ public class IconView extends View {
         }
         mPaint.setTextSize(mTextSize);
         if (getOrientation() == VERTICAL) {
-//            text = text.toUpperCase();
             // TODO: set this in xml
             mPaint.setTypeface(Typeface.DEFAULT_BOLD);
         }
@@ -87,10 +89,7 @@ public class IconView extends View {
     }
 
     public boolean needsCenterText() {
-        if (mOrientation == HORIZONTAL) {
-            return true;
-        }
-        return false;
+        return mOrientation == HORIZONTAL;
     }
 
     protected void drawText(Canvas canvas, String text) {
@@ -98,7 +97,7 @@ public class IconView extends View {
             return;
         }
         float textWidth = mPaint.measureText(text);
-        int x = (int) (canvas.getWidth() - textWidth - 2*mMargin);
+        int x = (int) (canvas.getWidth() - textWidth - 2 * mMargin);
         if (needsCenterText()) {
             x = (int) ((canvas.getWidth() - textWidth) / 2.0f);
         }
@@ -111,10 +110,10 @@ public class IconView extends View {
         canvas.drawText(text, x, y, mPaint);
     }
 
-    private int getTextHeight(Paint paint){
+    private int getTextHeight(Paint paint) {
         paint.setTextSize(mTextSize);
         Paint.FontMetrics fontMetrics = paint.getFontMetrics();
-        return (int)(Math.ceil(fontMetrics.descent - fontMetrics.ascent) + 2);
+        return (int) (Math.ceil(fontMetrics.descent - fontMetrics.ascent) + 2);
     }
 
     protected void drawOutlinedText(Canvas canvas, String text) {
@@ -159,12 +158,12 @@ public class IconView extends View {
         return mBackgroundColor;
     }
 
-    public void setText(String text) {
-        mText = text;
-    }
-
     public String getText() {
         return mText;
+    }
+
+    public void setText(String text) {
+        mText = text;
     }
 
     public void setBitmap(Bitmap bitmap) {
@@ -180,7 +179,7 @@ public class IconView extends View {
     }
 
     @Override
-    public CharSequence getContentDescription () {
+    public CharSequence getContentDescription() {
         return mText;
     }
 

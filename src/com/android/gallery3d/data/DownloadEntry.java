@@ -15,6 +15,8 @@
  */
 package com.android.gallery3d.data;
 
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.common.Entry;
 import com.android.gallery3d.common.EntrySchema;
 
@@ -22,51 +24,43 @@ import com.android.gallery3d.common.EntrySchema;
 @Entry.Table("download")
 public class DownloadEntry extends Entry {
     public static final EntrySchema SCHEMA = new EntrySchema(DownloadEntry.class);
-
-    public static interface Columns extends Entry.Columns {
-        public static final String HASH_CODE = "hash_code";
-        public static final String CONTENT_URL = "content_url";
-        public static final String CONTENT_SIZE = "_size";
-        public static final String ETAG = "etag";
-        public static final String LAST_ACCESS = "last_access";
-        public static final String LAST_UPDATED = "last_updated";
-        public static final String DATA = "_data";
-    }
-
     @Column(value = "hash_code", indexed = true)
     public long hashCode;
-
     @Column("content_url")
     public String contentUrl;
-
     @Column("_size")
     public long contentSize;
-
     @Column("etag")
     public String eTag;
-
     @Column(value = "last_access", indexed = true)
     public long lastAccessTime;
-
     @Column(value = "last_updated")
     public long lastUpdatedTime;
-
     @Column("_data")
     public String path;
 
+    @NonNull
     @Override
     public String toString() {
         // Note: THIS IS REQUIRED. We used all the fields here. Otherwise,
         //       ProGuard will remove these UNUSED fields. However, these
         //       fields are needed to generate database.
-        return new StringBuilder()
-                .append("hash_code: ").append(hashCode).append(", ")
-                .append("content_url").append(contentUrl).append(", ")
-                .append("_size").append(contentSize).append(", ")
-                .append("etag").append(eTag).append(", ")
-                .append("last_access").append(lastAccessTime).append(", ")
-                .append("last_updated").append(lastUpdatedTime).append(",")
-                .append("_data").append(path)
-                .toString();
+        return "hash_code: " + hashCode + ", " +
+                "content_url" + contentUrl + ", " +
+                "_size" + contentSize + ", " +
+                "etag" + eTag + ", " +
+                "last_access" + lastAccessTime + ", " +
+                "last_updated" + lastUpdatedTime + "," +
+                "_data" + path;
+    }
+
+    public interface Columns extends Entry.Columns {
+        String HASH_CODE = "hash_code";
+        String CONTENT_URL = "content_url";
+        String CONTENT_SIZE = "_size";
+        String ETAG = "etag";
+        String LAST_ACCESS = "last_access";
+        String LAST_UPDATED = "last_updated";
+        String DATA = "_data";
     }
 }

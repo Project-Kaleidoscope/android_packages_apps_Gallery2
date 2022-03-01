@@ -41,10 +41,7 @@ public class ControlPoint implements Comparable {
         if (Float.floatToIntBits(x) != Float.floatToIntBits(other.x)) {
             return false;
         }
-        if (Float.floatToIntBits(y) != Float.floatToIntBits(other.y)) {
-            return false;
-        }
-        return true;
+        return Float.floatToIntBits(y) == Float.floatToIntBits(other.y);
     }
 
     public ControlPoint copy() {

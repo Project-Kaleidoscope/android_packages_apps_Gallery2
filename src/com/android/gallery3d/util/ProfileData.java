@@ -39,6 +39,7 @@ public class ProfileData {
         public Node parent;
         public int sampleCount;
         public ArrayList<Node> children;
+
         public Node(Node parent, int id) {
             this.parent = parent;
             this.id = id;
@@ -53,7 +54,7 @@ public class ProfileData {
 
     public ProfileData() {
         mRoot = new Node(null, -1);  // The id of the root node is unused.
-        mNameToId = new HashMap<String, Integer>();
+        mNameToId = new HashMap<>();
     }
 
     public void reset() {
@@ -80,7 +81,7 @@ public class ProfileData {
         Node node = mRoot;
         for (int i = stack.length - 1; i >= 0; i--) {
             if (node.children == null) {
-                node.children = new ArrayList<Node>();
+                node.children = new ArrayList<>();
             }
 
             int id = ids[i];

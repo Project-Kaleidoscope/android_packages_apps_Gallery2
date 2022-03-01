@@ -32,15 +32,15 @@ package com.android.gallery3d.filtershow.editors;
 import android.content.Context;
 import android.widget.FrameLayout;
 
-import org.codeaurora.gallery.R;
-
 import com.android.gallery3d.filtershow.filters.FilterDualCamBasicRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.ImageDualCamera;
 
+import org.codeaurora.gallery.R;
+
 public class EditorDualCamSketch extends ImageOnlyEditor {
     public static final int ID = R.id.editorDualCamSketch;
-    private static final String LOGTAG = "EditorDualCamSketch";
+    private static final String TAG = "EditorDualCamSketch";
     private ImageDualCamera mImageDualCam;
 
     public EditorDualCamSketch() {
@@ -61,7 +61,7 @@ public class EditorDualCamSketch extends ImageOnlyEditor {
     public void reflectCurrentFilter() {
         super.reflectCurrentFilter();
         FilterRepresentation rep = getLocalRepresentation();
-        if (rep != null && rep instanceof FilterDualCamBasicRepresentation) {
+        if (rep instanceof FilterDualCamBasicRepresentation) {
             FilterDualCamBasicRepresentation dualRep = (FilterDualCamBasicRepresentation) rep;
             mImageDualCam.setRepresentation(dualRep);
         }

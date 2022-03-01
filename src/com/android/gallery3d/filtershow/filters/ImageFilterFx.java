@@ -19,10 +19,10 @@ package com.android.gallery3d.filtershow.filters;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import com.android.gallery3d.app.Log;
+import android.util.Log;
 
 public class ImageFilterFx extends ImageFilter {
-    private static final String LOGTAG = "ImageFilterFx";
+    private static final String TAG = "ImageFilterFx";
     private FilterFxRepresentation mParameters = null;
     private Bitmap mFxBitmap = null;
     private Resources mResources = null;
@@ -43,8 +43,7 @@ public class ImageFilterFx extends ImageFilter {
     }
 
     public void useRepresentation(FilterRepresentation representation) {
-        FilterFxRepresentation parameters = (FilterFxRepresentation) representation;
-        mParameters = parameters;
+        mParameters = (FilterFxRepresentation) representation;
     }
 
     public FilterFxRepresentation getParameters() {
@@ -76,7 +75,7 @@ public class ImageFilterFx extends ImageFilter {
             if (mFxBitmapId != 0) {
                 mFxBitmap = BitmapFactory.decodeResource(mResources, mFxBitmapId, o);
             } else {
-                Log.w(LOGTAG, "bad resource for filter: " + mName);
+                Log.w(TAG, "bad resource for filter: " + mName);
             }
         }
 
@@ -91,13 +90,12 @@ public class ImageFilterFx extends ImageFilter {
         int max = stride * h;
         int increment = stride * 256; // 256 lines
         for (int i = 0; i < max; i += increment) {
-            int start = i;
             int end = i + increment;
             if (end > max) {
                 end = max;
             }
             if (!getEnvironment().needsStop()) {
-                nativeApplyFilter(bitmap, w, h, mFxBitmap, fxw, fxh, start, end);
+                nativeApplyFilter(bitmap, w, h, mFxBitmap, fxw, fxh, i, end);
             }
         }
 

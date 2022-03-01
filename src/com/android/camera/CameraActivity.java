@@ -15,14 +15,16 @@
  */
 package com.android.camera;
 
-import com.android.gallery3d.util.GalleryUtils;
-import com.android.gallery3d.util.IntentHelper;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-/** Trampoline activity that launches the new Camera activity defined in IntentHelper. */
+import com.android.gallery3d.util.GalleryUtils;
+import com.android.gallery3d.util.IntentHelper;
+
+/**
+ * Trampoline activity that launches the new Camera activity defined in IntentHelper.
+ */
 public class CameraActivity extends Activity {
     @Override
     public void onCreate(Bundle icicle) {

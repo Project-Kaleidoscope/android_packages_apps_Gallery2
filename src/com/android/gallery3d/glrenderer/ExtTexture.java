@@ -20,7 +20,7 @@ package com.android.gallery3d.glrenderer;
 // Before drawing, setSize() should be called.
 public class ExtTexture extends BasicTexture {
 
-    private int mTarget;
+    private final int mTarget;
 
     public ExtTexture(GLCanvas canvas, int target) {
         GLId glId = canvas.getGLId();

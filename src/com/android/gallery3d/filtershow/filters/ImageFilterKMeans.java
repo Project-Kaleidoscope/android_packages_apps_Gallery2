@@ -22,7 +22,7 @@ import org.codeaurora.gallery.R;
 
 public class ImageFilterKMeans extends SimpleImageFilter {
     private static final String SERIALIZATION_NAME = "KMEANS";
-    private int mSeed = 0;
+    private int mSeed;
 
     public ImageFilterKMeans() {
         mName = "KMeans";
@@ -47,8 +47,8 @@ public class ImageFilterKMeans extends SimpleImageFilter {
     }
 
     native protected void nativeApplyFilter(Bitmap bitmap, int width, int height,
-            Bitmap large_ds_bm, int lwidth, int lheight, Bitmap small_ds_bm,
-            int swidth, int sheight, int p, int seed);
+                                            Bitmap large_ds_bm, int lwidth, int lheight, Bitmap small_ds_bm,
+                                            int swidth, int sheight, int p, int seed);
 
     @Override
     public Bitmap apply(Bitmap bitmap, float scaleFactor, int quality) {

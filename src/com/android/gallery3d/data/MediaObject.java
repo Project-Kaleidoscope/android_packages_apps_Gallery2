@@ -17,12 +17,10 @@
 package com.android.gallery3d.data;
 
 import android.net.Uri;
+import android.util.Log;
 
 public abstract class MediaObject {
-    @SuppressWarnings("unused")
-    private static final String TAG = "MediaObject";
     public static final long INVALID_DATA_VERSION = -1;
-
     // These are the bits returned from getSupportedOperations():
     public static final int SUPPORT_DELETE = 1 << 0;
     public static final int SUPPORT_ROTATE = 1 << 1;
@@ -44,7 +42,6 @@ public abstract class MediaObject {
     public static final int SUPPORT_PRINT = 1 << 17;
     public static final int SUPPORT_DRM_INFO = 1 << 18;
     public static final int SUPPORT_ALL = 0xffffffff;
-
     // These are the bits returned from getMediaType():
     public static final int MEDIA_TYPE_UNKNOWN = 1;
     public static final int MEDIA_TYPE_IMAGE = 2;
@@ -53,33 +50,24 @@ public abstract class MediaObject {
     public static final int MEDIA_TYPE_DRM_IMAGE = 6;
     public static final int MEDIA_TYPE_ALL = MEDIA_TYPE_IMAGE | MEDIA_TYPE_VIDEO;
     //TYPE for Timeline Title
-    public static final int MEDIA_TYPE_TIMELINE_TITLE= 7;
-
+    public static final int MEDIA_TYPE_TIMELINE_TITLE = 7;
     public static final String MEDIA_TYPE_IMAGE_STRING = "image";
     public static final String MEDIA_TYPE_VIDEO_STRING = "video";
     public static final String MEDIA_TYPE_ALL_STRING = "all";
-
     // These are flags for cache() and return values for getCacheFlag():
     public static final int CACHE_FLAG_NO = 0;
     public static final int CACHE_FLAG_SCREENNAIL = 1;
     public static final int CACHE_FLAG_FULL = 2;
-
     // These are return values for getCacheStatus():
     public static final int CACHE_STATUS_NOT_CACHED = 0;
     public static final int CACHE_STATUS_CACHING = 1;
     public static final int CACHE_STATUS_CACHED_SCREENNAIL = 2;
     public static final int CACHE_STATUS_CACHED_FULL = 3;
-
+    @SuppressWarnings("unused")
+    private static final String TAG = "MediaObject";
     private static long sVersionSerial = 0;
-
-    protected long mDataVersion;
-
     protected final Path mPath;
-
-    public interface PanoramaSupportCallback {
-        void panoramaInfoAvailable(MediaObject mediaObject, boolean isPanorama,
-                boolean isPanorama360);
-    }
+    protected long mDataVersion;
 
     public MediaObject(Path path, long version) {
         path.setObject(this);
@@ -89,6 +77,29 @@ public abstract class MediaObject {
 
     public MediaObject(Path path) {
         mPath = path;
+    }
+
+    public static synchronized long nextVersionNumber() {
+        return ++MediaObject.sVersionSerial;
+    }
+
+    public static int getTypeFromString(String s) {
+        if (MEDIA_TYPE_ALL_STRING.equals(s)) return MediaObject.MEDIA_TYPE_ALL;
+        if (MEDIA_TYPE_IMAGE_STRING.equals(s)) return MediaObject.MEDIA_TYPE_IMAGE;
+        if (MEDIA_TYPE_VIDEO_STRING.equals(s)) return MediaObject.MEDIA_TYPE_VIDEO;
+        throw new IllegalArgumentException(s);
+    }
+
+    public static String getTypeString(int type) {
+        switch (type) {
+            case MEDIA_TYPE_IMAGE:
+                return MEDIA_TYPE_IMAGE_STRING;
+            case MEDIA_TYPE_VIDEO:
+                return MEDIA_TYPE_VIDEO_STRING;
+            case MEDIA_TYPE_ALL:
+                return MEDIA_TYPE_ALL_STRING;
+        }
+        throw new IllegalArgumentException();
     }
 
     public Path getPath() {
@@ -130,8 +141,7 @@ public abstract class MediaObject {
     }
 
     public MediaDetails getDetails() {
-        MediaDetails details = new MediaDetails();
-        return details;
+        return new MediaDetails();
     }
 
     public long getDataVersion() {
@@ -154,31 +164,15 @@ public abstract class MediaObject {
         throw new UnsupportedOperationException();
     }
 
-    public static synchronized long nextVersionNumber() {
-        return ++MediaObject.sVersionSerial;
-    }
-
-    public static int getTypeFromString(String s) {
-        if (MEDIA_TYPE_ALL_STRING.equals(s)) return MediaObject.MEDIA_TYPE_ALL;
-        if (MEDIA_TYPE_IMAGE_STRING.equals(s)) return MediaObject.MEDIA_TYPE_IMAGE;
-        if (MEDIA_TYPE_VIDEO_STRING.equals(s)) return MediaObject.MEDIA_TYPE_VIDEO;
-        throw new IllegalArgumentException(s);
-    }
-
-    public static String getTypeString(int type) {
-        switch (type) {
-            case MEDIA_TYPE_IMAGE: return MEDIA_TYPE_IMAGE_STRING;
-            case MEDIA_TYPE_VIDEO: return MEDIA_TYPE_VIDEO_STRING;
-            case MEDIA_TYPE_ALL: return MEDIA_TYPE_ALL_STRING;
-        }
-        throw new IllegalArgumentException();
-    }
-
-    /** Some Media Item is not selectable such as Title item in TimeLine. */
+    /**
+     * Some Media Item is not selectable such as Title item in TimeLine.
+     */
     public boolean isSelectable() {
-        if (getMediaType() == MediaObject.MEDIA_TYPE_TIMELINE_TITLE) {
-            return false;
-        }
-        return true;
+        return getMediaType() != MediaObject.MEDIA_TYPE_TIMELINE_TITLE;
+    }
+
+    public interface PanoramaSupportCallback {
+        void panoramaInfoAvailable(MediaObject mediaObject, boolean isPanorama,
+                                   boolean isPanorama360);
     }
 }

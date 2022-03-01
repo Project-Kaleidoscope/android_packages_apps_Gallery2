@@ -23,9 +23,9 @@ import com.android.gallery3d.common.Utils;
 import java.util.StringTokenizer;
 
 public class Face implements Comparable<Face> {
-    private String mName;
-    private String mPersonId;
-    private Rect mPosition;
+    private final String mName;
+    private final String mPersonId;
+    private final Rect mPosition;
 
     public Face(String name, String personId, String rect) {
         mName = name;

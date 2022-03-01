@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import com.android.gallery3d.common.Utils;
@@ -53,9 +54,11 @@ public class AlbumDataLoader {
     private final long[] mItemVersion;
     private final long[] mSetVersion;
 
-    public static interface DataListener {
-        public void onContentChanged(int index);
-        public void onSizeChanged(int size);
+    public interface DataListener {
+
+        void onContentChanged(int index);
+        void onSizeChanged(int size);
+
     }
 
     private int mActiveStart = 0;
@@ -173,14 +176,14 @@ public class AlbumDataLoader {
         long[] itemVersion = mItemVersion;
         long[] setVersion = mSetVersion;
         if (contentStart >= end || start >= contentEnd) {
-            for (int i = start, n = end; i < n; ++i) {
+            for (int i = start; i < end; ++i) {
                 clearSlot(i % DATA_CACHE_SIZE);
             }
         } else {
             for (int i = start; i < contentStart; ++i) {
                 clearSlot(i % DATA_CACHE_SIZE);
             }
-            for (int i = contentEnd, n = end; i < n; ++i) {
+            for (int i = contentEnd; i < end; ++i) {
                 clearSlot(i % DATA_CACHE_SIZE);
             }
         }
@@ -225,7 +228,7 @@ public class AlbumDataLoader {
     }
 
     private <T> T executeAndWait(Callable<T> callable) {
-        FutureTask<T> task = new FutureTask<T>(callable);
+        FutureTask<T> task = new FutureTask<>(callable);
         mMainHandler.sendMessage(
                 mMainHandler.obtainMessage(MSG_RUN_OBJECT, task));
         try {
@@ -260,13 +263,11 @@ public class AlbumDataLoader {
                 return null;
             }
             UpdateInfo info = new UpdateInfo();
-            long version = mVersion;
             info.version = mSourceVersion;
             info.size = mSize;
-            long setVersion[] = mSetVersion;
             for (int i = mContentStart, n = mContentEnd; i < n; ++i) {
                 int index = i % DATA_CACHE_SIZE;
-                if (setVersion[index] != version) {
+                if (mSetVersion[index] != mVersion) {
                     info.reloadStart = i;
                     info.reloadCount = Math.min(MAX_LOAD_COUNT, n - i);
                     return info;

@@ -44,7 +44,7 @@ public class GifDecoder extends Thread {
 
     private boolean mIsShow = false;
 
-    private byte[] mBlock = new byte[256]; // current data block
+    private final byte[] mBlock = new byte[256]; // current data block
     private int mBlockSize = 0; // block size
     private int mDispose = 0;
     private int mLastDispose = 0;
@@ -64,7 +64,7 @@ public class GifDecoder extends Thread {
     private GifFrame mGifFrame; // frames read from current file
     private int mFrameCount;
 
-    private GifAction mGifAction = null;
+    private GifAction mGifAction;
 
     private byte[] mGifData = null;
 
@@ -263,7 +263,7 @@ public class GifDecoder extends Thread {
     }
 
     public GifFrame next() {
-        if (mIsShow == false) {
+        if (!mIsShow) {
             mIsShow = true;
             return mGifFrame;
         } else {
@@ -352,7 +352,7 @@ public class GifDecoder extends Thread {
 
         // Decode GIF pixel stream.
         datum = bits = count = first = top = pi = bi = 0;
-        for (i = 0; i < npix;) {
+        for (i = 0; i < npix; ) {
             if (top == 0) {
                 if (bits < code_size) {
                     // Load bytes until there are enough bits for a code.
@@ -456,7 +456,7 @@ public class GifDecoder extends Thread {
         int n = 0;
         if (mBlockSize > 0) {
             try {
-                int count = 0;
+                int count;
                 while (n < mBlockSize) {
                     count = mIS.read(mBlock, n, mBlockSize - n);
                     if (count == -1) {
@@ -517,11 +517,11 @@ public class GifDecoder extends Thread {
                             break;
                         case 0xff: // application extension
                             readBlock();
-                            String app = "";
+                            StringBuilder app = new StringBuilder();
                             for (int i = 0; i < 11; i++) {
-                                app += (char) mBlock[i];
+                                app.append((char) mBlock[i]);
                             }
-                            if (app.equals("NETSCAPE2.0")) {
+                            if (app.toString().equals("NETSCAPE2.0")) {
                                 readNetscapeExt();
                             } else {
                                 skip(); // don't care
@@ -556,11 +556,11 @@ public class GifDecoder extends Thread {
     }
 
     private void readHeader() {
-        String id = "";
+        StringBuilder id = new StringBuilder();
         for (int i = 0; i < 6; i++) {
-            id += (char) read();
+            id.append((char) read());
         }
-        if (!id.startsWith("GIF")) {
+        if (!id.toString().startsWith("GIF")) {
             mStatus = STATUS_FORMAT_ERROR;
             return;
         }
@@ -610,7 +610,7 @@ public class GifDecoder extends Thread {
             }
             mFrameCount++;
             // create new image to receive frame data
-            mImage = Bitmap.createBitmap(mWidth, mHeight, Config.ARGB_4444);
+            mImage = Bitmap.createBitmap(mWidth, mHeight, Config.ARGB_8888);
             // createImage(mWidth, mHeight);
             setPixels(); // transfer pixel data to image
             if (mGifFrame == null) {
@@ -634,7 +634,7 @@ public class GifDecoder extends Thread {
                 mGifAction.parseOk(true, mFrameCount);
             }
         } catch (OutOfMemoryError e) {
-            Log.e("GifDecoder", ">>> log  : " + e.toString());
+            Log.e("GifDecoder", ">>> log  : " + e);
             e.printStackTrace();
         }
     }

@@ -21,20 +21,23 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import androidx.collection.LongSparseArray;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.WindowManager;
+
+import androidx.annotation.NonNull;
+import androidx.collection.LongSparseArray;
 
 import com.android.gallery3d.app.GalleryContext;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.DecodeUtils;
-import com.android.photos.data.GalleryBitmapPool;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.glrenderer.UploadedTexture;
 import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.ThreadPool;
 import com.android.gallery3d.util.ThreadPool.CancelListener;
 import com.android.gallery3d.util.ThreadPool.JobContext;
+import com.android.photos.data.GalleryBitmapPool;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -95,7 +98,7 @@ public class TileImageView extends GLView {
     private final RectF mSourceRect = new RectF();
     private final RectF mTargetRect = new RectF();
 
-    private final LongSparseArray<Tile> mActiveTiles = new LongSparseArray<Tile>();
+    private final LongSparseArray<Tile> mActiveTiles = new LongSparseArray<>();
 
     // The following three queue is guarded by TileImageView.this
     private final TileQueue mRecycledQueue = new TileQueue();
@@ -113,7 +116,7 @@ public class TileImageView extends GLView {
 
     // Temp variables to avoid memory allocation
     private final Rect mTileRange = new Rect();
-    private final Rect mActiveRange[] = {new Rect(), new Rect()};
+    private final Rect[] mActiveRange = {new Rect(), new Rect()};
 
     private final TileUploader mTileUploader = new TileUploader();
     private boolean mIsTextureFreed;
@@ -121,11 +124,15 @@ public class TileImageView extends GLView {
     private final ThreadPool mThreadPool;
     private boolean mBackgroundTileUploaded;
 
-    public static interface TileSource {
-        public int getLevelCount();
-        public ScreenNail getScreenNail();
-        public int getImageWidth();
-        public int getImageHeight();
+    public interface TileSource {
+
+        int getLevelCount();
+
+        ScreenNail getScreenNail();
+
+        int getImageWidth();
+
+        int getImageHeight();
 
         // The tile returned by this method can be specified this way: Assuming
         // the image size is (width, height), first take the intersection of (0,
@@ -138,7 +145,8 @@ public class TileImageView extends GLView {
         // still refers to the coordinate on the original image.
         //
         // The method would be called in another thread.
-        public Bitmap getTile(int level, int x, int y, int tileSize);
+        Bitmap getTile(int level, int x, int y, int tileSize);
+
     }
 
     public static boolean isHighResolution(Context context) {
@@ -146,7 +154,7 @@ public class TileImageView extends GLView {
         WindowManager wm = (WindowManager)
                 context.getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(metrics);
-        return metrics.heightPixels > 2048 ||  metrics.widthPixels > 2048;
+        return metrics.heightPixels > 2048 || metrics.widthPixels > 2048;
     }
 
     public TileImageView(GalleryContext context) {
@@ -233,7 +241,7 @@ public class TileImageView extends GLView {
         fromLevel = Math.max(0, Math.min(fromLevel, mLevelCount - 2));
         endLevel = Math.min(fromLevel + 2, mLevelCount);
 
-        Rect range[] = mActiveRange;
+        Rect[] range = mActiveRange;
         for (int i = fromLevel; i < endLevel; ++i) {
             getRange(range[i - fromLevel], centerX, centerY, i, rotation);
         }
@@ -298,7 +306,7 @@ public class TileImageView extends GLView {
     // (cX, cY) is the point on the original bitmap which will be put in the
     // center of the ImageViewer.
     private void getRange(Rect out,
-            int cX, int cY, int level, float scale, int rotation) {
+                          int cX, int cY, int level, float scale, int rotation) {
 
         double radians = Math.toRadians(-rotation);
         double w = getWidth();
@@ -587,7 +595,7 @@ public class TileImageView extends GLView {
     // Draw the tile to a square at canvas that locates at (x, y) and
     // has a side length of length.
     public void drawTile(GLCanvas canvas,
-            int tx, int ty, int level, float x, float y, float length) {
+                         int tx, int ty, int level, float x, float y, float length) {
         RectF source = mSourceRect;
         RectF target = mTargetRect;
         target.set(x, y, x + length, y + length);
@@ -720,6 +728,7 @@ public class TileImageView extends GLView {
             return getTile(x, y, mTileLevel + 1);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return String.format("tile(%s, %s, %s / %s)",
@@ -750,12 +759,9 @@ public class TileImageView extends GLView {
 
     private class TileDecoder implements ThreadPool.Job<Void> {
 
-        private CancelListener mNotifier = new CancelListener() {
-            @Override
-            public void onCancel() {
-                synchronized (TileImageView.this) {
-                    TileImageView.this.notifyAll();
-                }
+        private CancelListener mNotifier = () -> {
+            synchronized (TileImageView.this) {
+                TileImageView.this.notifyAll();
             }
         };
 
@@ -764,8 +770,8 @@ public class TileImageView extends GLView {
             jc.setMode(ThreadPool.MODE_NONE);
             jc.setCancelListener(mNotifier);
             while (!jc.isCancelled()) {
-                Tile tile = null;
-                synchronized(TileImageView.this) {
+                Tile tile;
+                synchronized (TileImageView.this) {
                     tile = mDecodeQueue.pop();
                     if (tile == null && !jc.isCancelled()) {
                         Utils.waitWithoutInterrupt(TileImageView.this);

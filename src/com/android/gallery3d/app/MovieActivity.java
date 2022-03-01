@@ -18,7 +18,6 @@ package com.android.gallery3d.app;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
-import android.app.ActionBar.OnMenuVisibilityListener;
 import android.app.KeyguardManager;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
@@ -26,15 +25,13 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
-//import android.drm.DrmHelper;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -42,6 +39,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -50,9 +48,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.common.Utils;
+
+import org.codeaurora.gallery.R;
 import org.codeaurora.gallery3d.ext.IActivityHooker;
 import org.codeaurora.gallery3d.ext.IMovieItem;
 import org.codeaurora.gallery3d.ext.MovieItem;
@@ -69,15 +68,15 @@ import org.codeaurora.gallery3d.video.MovieTitleHelper;
  */
 public class MovieActivity extends AbstractPermissionActivity {
     @SuppressWarnings("unused")
-    private static final String  TAG = "MovieActivity";
+    private static final String TAG = "MovieActivity";
     private static final boolean LOG = false;
-    public  static final String  KEY_LOGO_BITMAP = "logo-bitmap";
-    public  static final String  KEY_TREAT_UP_AS_BACK = "treat-up-as-back";
-    private static final String  VIDEO_SDP_MIME_TYPE = "application/sdp";
-    private static final String  VIDEO_SDP_TITLE = "rtsp://";
-    private static final String  VIDEO_FILE_SCHEMA = "file";
-    private static final String  VIDEO_MIME_TYPE = "video/*";
-    private static final String  SHARE_HISTORY_FILE = "video_share_history_file";
+    public static final String KEY_LOGO_BITMAP = "logo-bitmap";
+    public static final String KEY_TREAT_UP_AS_BACK = "treat-up-as-back";
+    private static final String VIDEO_SDP_MIME_TYPE = "application/sdp";
+    private static final String VIDEO_SDP_TITLE = "rtsp://";
+    private static final String VIDEO_FILE_SCHEMA = "file";
+    private static final String VIDEO_MIME_TYPE = "video/*";
+    private static final String SHARE_HISTORY_FILE = "video_share_history_file";
 
     private MoviePlayer mPlayer;
     private boolean     mFinishOnCompletion;
@@ -96,7 +95,6 @@ public class MovieActivity extends AbstractPermissionActivity {
     private Intent mShareIntent;
     private PowerManager.WakeLock mWakeLock = null;
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void setSystemUiVisibility(View rootView) {
         if (ApiHelper.HAS_VIEW_SYSTEM_UI_FLAG_LAYOUT_STABLE) {
             rootView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -173,12 +171,7 @@ public class MovieActivity extends AbstractPermissionActivity {
         win.setBackgroundDrawable(null);
         initMovieHooker(intent, savedInstanceState);
 
-        mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mPlayer.onPrepared(mp);
-            }
-        });
+        mPlayer.setOnPreparedListener(mp -> mPlayer.onPrepared(mp));
     }
 
     private void initMovieHooker(Intent intent, Bundle savedInstanceState) {
@@ -228,15 +221,12 @@ public class MovieActivity extends AbstractPermissionActivity {
                 ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
         actionBar.setBackgroundDrawable(new ColorDrawable(Color.argb(66, 0, 0, 0)));
 
-        actionBar.addOnMenuVisibilityListener(new OnMenuVisibilityListener() {
-            @Override
-            public void onMenuVisibilityChanged(boolean isVisible) {
-                if (mPlayer != null) {
-                    if (isVisible) {
-                        mPlayer.cancelHidingController();
-                    } else {
-                        mPlayer.restartHidingController();
-                    }
+        actionBar.addOnMenuVisibilityListener(isVisible -> {
+            if (mPlayer != null) {
+                if (isVisible) {
+                    mPlayer.cancelHidingController();
+                } else {
+                    mPlayer.restartHidingController();
                 }
             }
         });
@@ -278,16 +268,13 @@ public class MovieActivity extends AbstractPermissionActivity {
         MenuItem shareMenu = menu.findItem(R.id.action_share);
         shareMenu.setVisible(false);
         if (shareMenu != null) {
-            shareMenu.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    if (mShareIntent != null) {
-                        Intent intent = Intent.createChooser(mShareIntent, null);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        getApplicationContext().startActivity(mShareIntent);
-                    }
-                    return true;
+            shareMenu.setOnMenuItemClickListener(item -> {
+                if (mShareIntent != null) {
+                    Intent intent = Intent.createChooser(mShareIntent, null);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getApplicationContext().startActivity(mShareIntent);
                 }
+                return true;
             });
         }
 
@@ -578,7 +565,7 @@ public class MovieActivity extends AbstractPermissionActivity {
                 if (movieItem == mMovieItem) {
                     setActionBarTitle(result);
                 }
-            };
+            }
         }.execute();
         if (LOG) {
             Log.v(TAG, "enhanceActionBar() " + mMovieItem);
@@ -598,9 +585,9 @@ public class MovieActivity extends AbstractPermissionActivity {
     public void onBackPressed() {
         finishActivity();
     }
+
     private void finishActivity(){
         MovieActivity.this.finish();
         overridePendingTransition(0,0);
-        return;
     }
 }

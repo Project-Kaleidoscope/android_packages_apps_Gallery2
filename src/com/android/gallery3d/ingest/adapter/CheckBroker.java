@@ -16,52 +16,49 @@
 
 package com.android.gallery3d.ingest.adapter;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * Helper to keep checked state in sync.
  */
-@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
 public abstract class CheckBroker {
-  private Collection<OnCheckedChangedListener> mListeners =
-      new ArrayList<OnCheckedChangedListener>();
+    private final Collection<OnCheckedChangedListener> mListeners = new ArrayList<>();
 
-  /**
-   * Listener for item checked state changes.
-   */
-  public interface OnCheckedChangedListener {
-    public void onCheckedChanged(int position, boolean isChecked);
+    /**
+     * Listener for item checked state changes.
+     */
+    public interface OnCheckedChangedListener {
 
-    public void onBulkCheckedChanged();
-  }
+        void onCheckedChanged(int position, boolean isChecked);
 
-  public abstract void setItemChecked(int position, boolean checked);
+        void onBulkCheckedChanged();
 
-  public void onCheckedChange(int position, boolean checked) {
-    if (isItemChecked(position) != checked) {
-      for (OnCheckedChangedListener l : mListeners) {
-        l.onCheckedChanged(position, checked);
-      }
     }
-  }
 
-  public void onBulkCheckedChange() {
-    for (OnCheckedChangedListener l : mListeners) {
-      l.onBulkCheckedChanged();
+    public abstract void setItemChecked(int position, boolean checked);
+
+    public void onCheckedChange(int position, boolean checked) {
+        if (isItemChecked(position) != checked) {
+            for (OnCheckedChangedListener l : mListeners) {
+                l.onCheckedChanged(position, checked);
+            }
+        }
     }
-  }
 
-  public abstract boolean isItemChecked(int position);
+    public void onBulkCheckedChange() {
+        for (OnCheckedChangedListener l : mListeners) {
+            l.onBulkCheckedChanged();
+        }
+    }
 
-  public void registerOnCheckedChangeListener(OnCheckedChangedListener l) {
-    mListeners.add(l);
-  }
+    public abstract boolean isItemChecked(int position);
 
-  public void unregisterOnCheckedChangeListener(OnCheckedChangedListener l) {
-    mListeners.remove(l);
-  }
+    public void registerOnCheckedChangeListener(OnCheckedChangedListener l) {
+        mListeners.add(l);
+    }
+
+    public void unregisterOnCheckedChangeListener(OnCheckedChangedListener l) {
+        mListeners.remove(l);
+    }
 }

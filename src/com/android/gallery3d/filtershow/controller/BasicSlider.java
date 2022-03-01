@@ -21,16 +21,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.Editor;
 
+import org.codeaurora.gallery.R;
+
 public class BasicSlider implements Control {
+    Editor mEditor;
     private SeekBar mSeekBar;
     private ParameterInteger mParameter;
-    Editor mEditor;
 
     @Override
     public void setUp(ViewGroup container, Parameter parameter, Editor editor) {
@@ -38,36 +38,28 @@ public class BasicSlider implements Control {
         mEditor = editor;
         final Context context = container.getContext();
         mParameter = (ParameterInteger) parameter;
-        LayoutInflater inflater =
-                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View lp = inflater.inflate(
-                R.layout.filtershow_seekbar, container, true);
-        mSeekBar = (SeekBar) lp.findViewById(R.id.primarySeekBar);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View lp = inflater.inflate(R.layout.filtershow_seekbar, container, true);
+        mSeekBar = lp.findViewById(R.id.primarySeekBar);
         mSeekBar.setVisibility(View.VISIBLE);
         View saveButton = lp.findViewById(R.id.slider_save);
         if (saveButton != null) {
-            saveButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    FilterShowActivity activity = (FilterShowActivity) context;
-                    mEditor.finalApplyCalled();
-                    activity.leaveSeekBarPanel();
-                }
+            saveButton.setOnClickListener(view -> {
+                FilterShowActivity activity = (FilterShowActivity) context;
+                mEditor.finalApplyCalled();
+                activity.leaveSeekBarPanel();
             });
         }
         View cancelButton = lp.findViewById(R.id.slider_cancel);
         if (cancelButton != null) {
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    FilterShowActivity activity = (FilterShowActivity) context;
-                    activity.cancelCurrentFilter();
-                    activity.leaveSeekBarPanel();
-                }
+            cancelButton.setOnClickListener(v -> {
+                FilterShowActivity activity = (FilterShowActivity) context;
+                activity.cancelCurrentFilter();
+                activity.leaveSeekBarPanel();
             });
         }
         updateUI();
-        mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {

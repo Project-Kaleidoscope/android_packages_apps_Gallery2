@@ -21,48 +21,41 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ActionMode;
 import android.widget.PopupMenu;
-import org.codeaurora.gallery.R;
 
-import com.android.gallery3d.app.Log;
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
-import com.android.gallery3d.filtershow.filters.FilterWatermarkRepresentation;
 import com.android.gallery3d.filtershow.ui.SelectionRenderer;
 
-import java.util.ArrayList;
+import org.codeaurora.gallery.R;
 
 public class CategoryView extends IconView
-        implements View.OnClickListener, SwipableView,View.OnLongClickListener,PopupMenu.OnMenuItemClickListener{
+        implements View.OnClickListener, SwipableView, View.OnLongClickListener, PopupMenu.OnMenuItemClickListener {
 
-    private static final String LOGTAG = "CategoryView";
     public static final int VERTICAL = 0;
     public static final int HORIZONTAL = 1;
-    private Paint mPaint = new Paint();
-    private Action mAction;
-    private Paint mSelectPaint;
+    private static final String TAG = "CategoryView";
+    private final Paint mPaint = new Paint();
+    private final Paint mSelectPaint;
+    private final int mSelectionStroke;
+    private final Paint mBorderPaint;
+    private final int mBorderStroke;
+    private final Context mContext;
+    private final float mDeleteSlope = 20;
+    private final long mDoubleTapDelay = 250;
     CategoryAdapter mAdapter;
-    private int mSelectionStroke;
-    private Paint mBorderPaint;
-    private int mBorderStroke;
-    private Context mContext;
+    private Action mAction;
     private float mStartTouchX = 0;
     private float mStartTouchY = 0;
-    private float mDeleteSlope = 20;
-    private int mSelectionColor = Color.WHITE;
-    private int mSpacerColor = Color.WHITE;
+    private final int mSelectionColor;
+    private final int mSpacerColor;
     private boolean mCanBeRemoved = false;
     private long mDoubleActionLast = 0;
-    private long mDoubleTapDelay = 250;
 
     public CategoryView(Context context) {
         super(context);
@@ -90,10 +83,7 @@ public class CategoryView extends IconView
         if (mAction.getType() == Action.CROP_VIEW) {
             return true;
         }
-        if (mAction.getType() == Action.ADD_ACTION) {
-            return true;
-        }
-        return false;
+        return mAction.getType() == Action.ADD_ACTION;
     }
 
     private boolean canBeRemoved() {
@@ -161,8 +151,8 @@ public class CategoryView extends IconView
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
                     R.drawable.filtershow_add_new);
             setBitmap(bitmap);
-         //   setUseOnlyDrawable(true);
-         //   setText(getResources().getString(R.string.filtershow_add_button_looks));
+            //   setUseOnlyDrawable(true);
+            //   setText(getResources().getString(R.string.filtershow_add_button_looks));
         } else {
             setBitmap(mAction.getImage());
         }
@@ -213,7 +203,7 @@ public class CategoryView extends IconView
             if (getOrientation() == CategoryView.VERTICAL) {
                 delta = event.getX() - mStartTouchX;
             }
-           if (Math.abs(delta) > mDeleteSlope) {
+            if (Math.abs(delta) > mDeleteSlope) {
                 activity.setHandlesSwipeForView(this, mStartTouchX, mStartTouchY);
             }
         }
@@ -221,11 +211,11 @@ public class CategoryView extends IconView
     }
 
     @Override
-    public boolean onLongClick(View view){
-        if (canBeRemoved()){
+    public boolean onLongClick(View view) {
+        if (canBeRemoved()) {
             mAdapter.setSelected(this);
-            PopupMenu popup = new PopupMenu((FilterShowActivity)getContext(),view);
-            popup.getMenuInflater().inflate(R.menu.filtershow_menu_edit,popup.getMenu());
+            PopupMenu popup = new PopupMenu(getContext(), view);
+            popup.getMenuInflater().inflate(R.menu.filtershow_menu_edit, popup.getMenu());
             popup.setOnMenuItemClickListener(this);
             popup.show();
             return true;
@@ -234,14 +224,14 @@ public class CategoryView extends IconView
     }
 
     @Override
-    public boolean onMenuItemClick (MenuItem item) {
+    public boolean onMenuItemClick(MenuItem item) {
         FilterShowActivity activity = (FilterShowActivity) getContext();
         switch (item.getItemId()) {
             case R.id.deleteButton:
-                activity.handlePreset(mAction,this,R.id.deleteButton);
+                activity.handlePreset(mAction, this, R.id.deleteButton);
                 return true;
             case R.id.renameButton:
-                activity.handlePreset(mAction,this,R.id.renameButton);
+                activity.handlePreset(mAction, this, R.id.renameButton);
                 return true;
         }
         return false;
@@ -277,12 +267,10 @@ public class CategoryView extends IconView
         }
     }
 
-    private boolean checkPreset () {
+    private boolean checkPreset() {
         FilterRepresentation filterRepresentation = mAction.getRepresentation();
         if (filterRepresentation != null) {
-            if (filterRepresentation.getFilterType() == FilterRepresentation.TYPE_PRESETFILTER) {
-                return true;
-            }
+            return filterRepresentation.getFilterType() == FilterRepresentation.TYPE_PRESETFILTER;
         }
         return false;
     }

@@ -18,8 +18,8 @@ package com.android.photos;
 
 import android.app.Activity;
 import android.os.Bundle;
-import com.android.photos.views.TiledImageView;
 
+import com.android.photos.views.TiledImageView;
 
 public class FullscreenViewer extends Activity {
 

@@ -30,14 +30,9 @@ package org.codeaurora.gallery3d.video;
 
 import android.content.Context;
 
-import com.android.gallery3d.app.MovieActivity;
 import org.codeaurora.gallery.R;
-
 import org.codeaurora.gallery3d.ext.ActivityHookerGroup;
 import org.codeaurora.gallery3d.ext.IActivityHooker;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ExtensionHelper {
 
@@ -50,20 +45,20 @@ public class ExtensionHelper {
         boolean playlist = context.getResources().getBoolean(R.bool.playlist);
         boolean speaker = context.getResources().getBoolean(R.bool.speaker);
 
-        if (loop == true) {
+        if (loop) {
             group.addHooker(new LoopVideoHooker()); // add it for common feature.
         }
-        if (stereo == true) {
+        if (stereo) {
             group.addHooker(new StereoAudioHooker()); // add it for common feature.
         }
-        if (streaming == true) {
+        if (streaming) {
             group.addHooker(new StreamingHooker());
            // group.addHooker(new BookmarkHooker());
         }
-        if (playlist == true) {
+        if (playlist) {
             group.addHooker(new MovieListHooker()); // add it for common feature.
         }
-        if (speaker == true) {
+        if (speaker) {
             group.addHooker(new SpeakerHooker());
         }
         return group;

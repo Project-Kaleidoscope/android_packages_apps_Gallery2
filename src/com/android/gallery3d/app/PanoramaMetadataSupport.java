@@ -48,7 +48,7 @@ public class PanoramaMetadataSupport implements FutureListener<PanoramaMetadata>
                         mPanoramaMetadata.mIsPanorama360);
             } else {
                 if (mCallbacksWaiting == null) {
-                    mCallbacksWaiting = new ArrayList<PanoramaSupportCallback>();
+                    mCallbacksWaiting = new ArrayList<>();
                     mGetPanoMetadataTask = app.getThreadPool().submit(
                             new PanoramaMetadataJob(app.getAndroidContext(),
                                     mMediaObject.getContentUri()), this);

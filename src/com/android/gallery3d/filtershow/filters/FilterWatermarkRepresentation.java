@@ -149,20 +149,20 @@ public class FilterWatermarkRepresentation extends FilterRepresentation {
         return currentMarkView;
     }
 
-    public void setMarkType(int markType) {
-        this.markType = markType;
-    }
-
     public int getMarkType() {
         return markType;
     }
 
-    public void setTextHint(String textHint) {
-        this.textHint = textHint;
+    public void setMarkType(int markType) {
+        this.markType = markType;
     }
 
     public String getTextHint() {
         return textHint;
+    }
+
+    public void setTextHint(String textHint) {
+        this.textHint = textHint;
     }
 
     public void reset() {
@@ -176,6 +176,7 @@ public class FilterWatermarkRepresentation extends FilterRepresentation {
         protected int marginBottom;
         protected int gravity;
         protected boolean isDip;
+
         public PositionInfo() {
             this(0, 0, 0, 0, Gravity.NO_GRAVITY, false);
         }

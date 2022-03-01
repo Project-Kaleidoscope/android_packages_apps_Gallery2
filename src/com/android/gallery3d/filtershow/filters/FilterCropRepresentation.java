@@ -20,8 +20,9 @@ import android.graphics.RectF;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.EditorCrop;
+
+import org.codeaurora.gallery.R;
 
 import java.io.IOException;
 
@@ -31,7 +32,7 @@ public class FilterCropRepresentation extends FilterRepresentation {
             "C0", "C1", "C2", "C3"
     };
     private static final String TAG = FilterCropRepresentation.class.getSimpleName();
-
+    private static final RectF sNilRect = new RectF(0, 0, 1, 1);
     RectF mCrop = getNil();
 
     public FilterCropRepresentation(RectF crop) {
@@ -55,43 +56,6 @@ public class FilterCropRepresentation extends FilterRepresentation {
         this(sNilRect);
     }
 
-    public void set(FilterCropRepresentation r) {
-        mCrop.set(r.mCrop);
-    }
-
-    @Override
-    public boolean equals(FilterRepresentation rep) {
-        if (!(rep instanceof FilterCropRepresentation)) {
-            return false;
-        }
-        FilterCropRepresentation crop = (FilterCropRepresentation) rep;
-        if (crop.isNil()) {
-            return true;
-        }
-        if (mCrop.bottom != crop.mCrop.bottom
-            || mCrop.left != crop.mCrop.left
-            || mCrop.right != crop.mCrop.right
-            || mCrop.top != crop.mCrop.top) {
-            return false;
-        }
-        return true;
-    }
-
-    public RectF getCrop() {
-        return new RectF(mCrop);
-    }
-
-    public void getCrop(RectF r) {
-        r.set(mCrop);
-    }
-
-    public void setCrop(RectF crop) {
-        if (crop == null) {
-            throw new IllegalArgumentException("Argument to setCrop is null");
-        }
-        mCrop.set(crop);
-    }
-
     /**
      * Takes a crop rect contained by [0, 0, 1, 1] and scales it by the height
      * and width of the image rect.
@@ -112,6 +76,44 @@ public class FilterCropRepresentation extends FilterRepresentation {
         crop.top /= bitmapHeight;
         crop.right /= bitmapWidth;
         crop.bottom /= bitmapHeight;
+    }
+
+    public static RectF getNil() {
+        return new RectF(sNilRect);
+    }
+
+    public void set(FilterCropRepresentation r) {
+        mCrop.set(r.mCrop);
+    }
+
+    @Override
+    public boolean equals(FilterRepresentation rep) {
+        if (!(rep instanceof FilterCropRepresentation)) {
+            return false;
+        }
+        FilterCropRepresentation crop = (FilterCropRepresentation) rep;
+        if (crop.isNil()) {
+            return true;
+        }
+        return mCrop.bottom == crop.mCrop.bottom
+                && mCrop.left == crop.mCrop.left
+                && mCrop.right == crop.mCrop.right
+                && mCrop.top == crop.mCrop.top;
+    }
+
+    public RectF getCrop() {
+        return new RectF(mCrop);
+    }
+
+    public void setCrop(RectF crop) {
+        if (crop == null) {
+            throw new IllegalArgumentException("Argument to setCrop is null");
+        }
+        mCrop.set(crop);
+    }
+
+    public void getCrop(RectF r) {
+        r.set(mCrop);
     }
 
     @Override
@@ -141,15 +143,9 @@ public class FilterCropRepresentation extends FilterRepresentation {
         setCrop(((FilterCropRepresentation) a).mCrop);
     }
 
-    private static final RectF sNilRect = new RectF(0, 0, 1, 1);
-
     @Override
     public boolean isNil() {
         return mCrop.equals(sNilRect);
-    }
-
-    public static RectF getNil() {
-        return new RectF(sNilRect);
     }
 
     @Override

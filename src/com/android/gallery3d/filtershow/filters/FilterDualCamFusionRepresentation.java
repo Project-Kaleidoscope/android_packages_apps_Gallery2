@@ -29,23 +29,24 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import java.io.IOException;
-
 import android.graphics.Point;
 import android.net.Uri;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.editors.EditorDualCamFusion;
 
 import org.codeaurora.gallery.R;
 
+import java.io.IOException;
+
 
 public class FilterDualCamFusionRepresentation extends FilterDualCamBasicRepresentation
         implements FilterFusionRepresentation {
-    private static final String LOGTAG = "FilterFusionRepresentation";
     public static final String SERIALIZATION_NAME = "FUSION";
-
+    private static final String TAG = "FilterFusionRepresentation";
     private static final String SERIAL_UNDERLAY_IMAGE = "image";
     private static final String SERIAL_POINT = "point";
 
@@ -88,23 +89,31 @@ public class FilterDualCamFusionRepresentation extends FilterDualCamBasicReprese
         }
         if (representation instanceof FilterDualCamFusionRepresentation) {
             FilterDualCamFusionRepresentation fusion = (FilterDualCamFusionRepresentation) representation;
-            if (fusion.mPoint.equals(mPoint) && fusion.mUri.equals(mUri)) {
-                return true;
-            }
+            return fusion.mPoint.equals(mPoint) && fusion.mUri.equals(mUri);
         }
         return false;
     }
 
     public void setPoint(int x, int y) {
-        mPoint = new Point(x,y);
+        mPoint = new Point(x, y);
+    }
+
+    public Point getPoint() {
+        return mPoint;
     }
 
     public void setPoint(Point point) {
         mPoint = point;
     }
 
-    public Point getPoint() {
-        return mPoint;
+    @Override
+    public boolean hasUnderlay() {
+        return (mUri != null) && (!mUri.isEmpty());
+    }
+
+    @Override
+    public String getUnderlay() {
+        return mUri;
     }
 
     @Override
@@ -124,16 +133,7 @@ public class FilterDualCamFusionRepresentation extends FilterDualCamBasicReprese
             mUri = "";
     }
 
-    @Override
-    public boolean hasUnderlay() {
-        return (mUri != null) && (!mUri.isEmpty());
-    }
-
-    @Override
-    public String getUnderlay() {
-        return mUri;
-    }
-
+    @NonNull
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

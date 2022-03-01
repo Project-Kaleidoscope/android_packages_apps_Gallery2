@@ -27,17 +27,10 @@ import android.widget.Button;
 public class SwapButton extends Button implements GestureDetector.OnGestureListener {
 
     public static int ANIM_DURATION = 200;
-
-    public interface SwapButtonListener {
-        public void swapLeft(MenuItem item);
-        public void swapRight(MenuItem item);
-    }
-
-    private GestureDetector mDetector;
+    private final GestureDetector mDetector;
     private SwapButtonListener mListener;
     private Menu mMenu;
     private int mCurrentMenuIndex;
-
     public SwapButton(Context context, AttributeSet attrs) {
         super(context, attrs);
         mDetector = new GestureDetector(context, this);
@@ -107,5 +100,11 @@ public class SwapButton extends Button implements GestureDetector.OnGestureListe
             }
         }
         return true;
+    }
+
+    public interface SwapButtonListener {
+        void swapLeft(MenuItem item);
+
+        void swapRight(MenuItem item);
     }
 }

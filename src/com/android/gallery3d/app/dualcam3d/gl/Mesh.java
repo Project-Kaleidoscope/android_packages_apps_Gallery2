@@ -30,9 +30,6 @@ package com.android.gallery3d.app.dualcam3d.gl;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
-import android.util.Log;
-
-import com.android.gallery3d.filtershow.tools.DualCameraEffect;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -51,20 +48,6 @@ class Mesh {
     private IntBuffer indices;
 
     private int indexLength;
-
-    public void render(Shader shader) {
-        if (vertices == null || textures == null || indices == null || indices.capacity() == 0)
-            return;
-        shader.setMesh(this);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, indexLength, GLES20.GL_UNSIGNED_INT, indices);
-    }
-
-    private void rewindBuffers() {
-        vertices.position(0);
-        colors.position(0);
-        textures.position(0);
-        indices.position(0);
-    }
 
     private static ByteBuffer allocateBuffer(int capacity) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(capacity);
@@ -92,6 +75,20 @@ class Mesh {
 
     private static float getVertexScale(float depth) {
         return ((depth + Settings.CAMERA_POSITION) * TAN_HALF_FOV);
+    }
+
+    public void render(Shader shader) {
+        if (vertices == null || textures == null || indices == null || indices.capacity() == 0)
+            return;
+        shader.setMesh(this);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, indexLength, GLES20.GL_UNSIGNED_INT, indices);
+    }
+
+    private void rewindBuffers() {
+        vertices.position(0);
+        colors.position(0);
+        textures.position(0);
+        indices.position(0);
     }
 
     public void update(Bitmap depthMap, int width, int height, float depth) {

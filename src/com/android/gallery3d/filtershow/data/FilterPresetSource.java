@@ -27,15 +27,15 @@ import android.util.Log;
 import com.android.gallery3d.filtershow.data.FilterPresetDBHelper.FilterPreset;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 public class FilterPresetSource {
-    private static final String LOGTAG = "FilterStackSource";
-
-    private SQLiteDatabase database = null;
+    private static final String TAG = "FilterStackSource";
     private final FilterPresetDBHelper dbHelper;
-    private Context mContext;
+    private final Context mContext;
+    private SQLiteDatabase database = null;
 
     public FilterPresetSource(Context context) {
         mContext = context;
@@ -47,7 +47,7 @@ public class FilterPresetSource {
         try {
             database = dbHelper.getWritableDatabase();
         } catch (SQLiteException e) {
-            Log.w(LOGTAG, "could not open database", e);
+            Log.w(TAG, "could not open database", e);
         }
     }
 
@@ -56,14 +56,8 @@ public class FilterPresetSource {
         dbHelper.close();
     }
 
-    public static class SaveOption {
-        public int _id;
-        public String name;
-        public String Uri;
-    }
-
     public boolean insertPreset(String presetName, String presetUri) {
-        boolean ret = true;
+        boolean ret;
         ContentValues val = new ContentValues();
         val.put(FilterPreset.PRESET_ID, presetName);
         val.put(FilterPreset.FILTER_PRESET, presetUri);
@@ -82,8 +76,8 @@ public class FilterPresetSource {
         val.put(FilterPreset.PRESET_ID, presetName);
         database.beginTransaction();
         try {
-            database.update(FilterPreset.TABLE, val,FilterPreset._ID + " = ?",
-                    new String[] { "" + id});
+            database.update(FilterPreset.TABLE, val, FilterPreset._ID + " = ?",
+                    new String[]{"" + id});
             database.setTransactionSuccessful();
         } finally {
             database.endTransaction();
@@ -91,11 +85,11 @@ public class FilterPresetSource {
     }
 
     public boolean removePreset(int id) {
-        boolean ret = true;
+        boolean ret;
         database.beginTransaction();
         try {
             ret = (0 != database.delete(FilterPreset.TABLE, FilterPreset._ID + " = ?",
-                    new String[] { "" + id }));
+                    new String[]{"" + id}));
             database.setTransactionSuccessful();
         } finally {
             database.endTransaction();
@@ -104,20 +98,18 @@ public class FilterPresetSource {
     }
 
     public ArrayList<SaveOption> getAllUserPresets() {
-        ArrayList<SaveOption> ret = new ArrayList<SaveOption>();
-        Cursor c = null;
+        ArrayList<SaveOption> ret = new ArrayList<>();
         database.beginTransaction();
-        try {
-            c = database.query(FilterPreset.TABLE,
-                    new String[] { FilterPreset._ID,
-                            FilterPreset.PRESET_ID,
-                            FilterPreset.FILTER_PRESET },
-                    null, null, null, null, null, null);
+        try (Cursor c = database.query(FilterPreset.TABLE,
+                new String[]{FilterPreset._ID,
+                        FilterPreset.PRESET_ID,
+                        FilterPreset.FILTER_PRESET},
+                null, null, null, null, null, null)) {
             if (c != null) {
                 boolean loopCheck = c.moveToFirst();
                 while (loopCheck) {
-                    String id = (c.isNull(0)) ?  null : c.getString(0);
-                    String name = (c.isNull(1)) ?  null : c.getString(1);
+                    String id = (c.isNull(0)) ? null : c.getString(0);
+                    String name = (c.isNull(1)) ? null : c.getString(1);
                     String filterUri = (c.isNull(2)) ? null : c.getString(2);
                     SaveOption so = new SaveOption();
                     try {
@@ -138,9 +130,6 @@ public class FilterPresetSource {
             }
             database.setTransactionSuccessful();
         } finally {
-            if (c != null) {
-                c.close();
-            }
             database.endTransaction();
         }
         return ret;
@@ -150,13 +139,18 @@ public class FilterPresetSource {
         boolean ret = true;
         if (uriStr == null) return false;
         Uri uri = Uri.parse(uriStr);
-        try {
-            InputStream is = mContext.getContentResolver().openInputStream(uri);
-        } catch (FileNotFoundException e) {
+        try(InputStream is = mContext.getContentResolver().openInputStream(uri)) {
+        } catch (IOException e) {
             ret = false;
             e.printStackTrace();
-            Log.e(LOGTAG, "FileNotFoundException for " + uri, e);
+            Log.e(TAG, "FileNotFoundException for " + uri, e);
         }
         return ret;
-        }
     }
+
+    public static class SaveOption {
+        public int _id;
+        public String name;
+        public String Uri;
+    }
+}

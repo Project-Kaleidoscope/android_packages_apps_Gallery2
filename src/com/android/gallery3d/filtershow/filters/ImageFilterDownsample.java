@@ -17,17 +17,17 @@
 package com.android.gallery3d.filtershow.filters;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
+
+import org.codeaurora.gallery.R;
 
 public class ImageFilterDownsample extends SimpleImageFilter {
     private static final String SERIALIZATION_NAME = "DOWNSAMPLE";
     private static final int ICON_DOWNSAMPLE_FRACTION = 8;
-    private ImageLoader mImageLoader;
+    private final ImageLoader mImageLoader;
 
     public ImageFilterDownsample(ImageLoader loader) {
         mName = "Downsample";

@@ -16,7 +16,6 @@
 
 package com.android.gallery3d.data;
 
-import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,8 +31,6 @@ import android.mtp.MtpObjectInfo;
 import android.mtp.MtpStorageInfo;
 import android.util.Log;
 
-import com.android.gallery3d.common.ApiHelper;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +40,6 @@ import java.util.List;
  * It listens for MTP devices being attached and removed from the USB host bus
  * and notifies the application when the MTP device list changes.
  */
-@TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB_MR1)
 public class MtpClient {
 
     private static final String TAG = "MtpClient";
@@ -53,18 +49,18 @@ public class MtpClient {
 
     private final Context mContext;
     private final UsbManager mUsbManager;
-    private final ArrayList<Listener> mListeners = new ArrayList<Listener>();
+    private final ArrayList<Listener> mListeners = new ArrayList<>();
     // mDevices contains all MtpDevices that have been seen by our client,
     // so we can inform when the device has been detached.
     // mDevices is also used for synchronization in this class.
-    private final HashMap<String, MtpDevice> mDevices = new HashMap<String, MtpDevice>();
+    private final HashMap<String, MtpDevice> mDevices = new HashMap<>();
     // List of MTP devices we should not try to open for which we are currently
     // asking for permission to open.
-    private final ArrayList<String> mRequestPermissionDevices = new ArrayList<String>();
+    private final ArrayList<String> mRequestPermissionDevices = new ArrayList<>();
     // List of MTP devices we should not try to open.
     // We add devices to this list if the user canceled a permission request or we were
     // unable to open the device.
-    private final ArrayList<String> mIgnoredDevices = new ArrayList<String>();
+    private final ArrayList<String> mIgnoredDevices = new ArrayList<>();
 
     private final PendingIntent mPermissionIntent;
 
@@ -72,7 +68,7 @@ public class MtpClient {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            UsbDevice usbDevice = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+            UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             String deviceName = usbDevice.getDeviceName();
 
             synchronized (mDevices) {
@@ -120,23 +116,19 @@ public class MtpClient {
     };
 
     /**
-     * An interface for being notified when MTP or PTP devices are attached
-     * or removed.  In the current implementation, only PTP devices are supported.
+     * MtpClient constructor
+     *
+     * @param context the {@link android.content.Context} to use for the MtpClient
      */
-    public interface Listener {
-        /**
-         * Called when a new device has been added
-         *
-         * @param device the new device that was added
-         */
-        public void deviceAdded(MtpDevice device);
-
-        /**
-         * Called when a new device has been removed
-         *
-         * @param device the device that was removed
-         */
-        public void deviceRemoved(MtpDevice device);
+    public MtpClient(Context context) {
+        mContext = context;
+        mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+        mPermissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        filter.addAction(ACTION_USB_PERMISSION);
+        context.registerReceiver(mUsbReceiver, filter);
     }
 
     /**
@@ -157,22 +149,6 @@ public class MtpClient {
             }
         }
         return false;
-    }
-
-    /**
-     * MtpClient constructor
-     *
-     * @param context the {@link android.content.Context} to use for the MtpClient
-     */
-    public MtpClient(Context context) {
-        mContext = context;
-        mUsbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
-        mPermissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        filter.addAction(ACTION_USB_PERMISSION);
-        context.registerReceiver(mUsbReceiver, filter);
     }
 
     /**
@@ -285,7 +261,7 @@ public class MtpClient {
                 }
             }
 
-            return new ArrayList<MtpDevice>(mDevices.values());
+            return new ArrayList<>(mDevices.values());
         }
     }
 
@@ -307,9 +283,9 @@ public class MtpClient {
         }
 
         int length = storageIds.length;
-        ArrayList<MtpStorageInfo> storageList = new ArrayList<MtpStorageInfo>(length);
-        for (int i = 0; i < length; i++) {
-            MtpStorageInfo info = device.getStorageInfo(storageIds[i]);
+        ArrayList<MtpStorageInfo> storageList = new ArrayList<>(length);
+        for (int storageId : storageIds) {
+            MtpStorageInfo info = device.getStorageInfo(storageId);
             if (info == null) {
                 Log.w(TAG, "getStorageInfo failed");
             } else {
@@ -324,7 +300,7 @@ public class MtpClient {
      * the MTP or PTP device with the given USB device name with the given
      * object handle
      *
-     * @param deviceName the name of the USB device
+     * @param deviceName   the name of the USB device
      * @param objectHandle handle of the object to query
      * @return the MtpObjectInfo
      */
@@ -339,7 +315,7 @@ public class MtpClient {
     /**
      * Deletes an object on the MTP or PTP device with the given USB device name.
      *
-     * @param deviceName the name of the USB device
+     * @param deviceName   the name of the USB device
      * @param objectHandle handle of the object to delete
      * @return true if the deletion succeeds
      */
@@ -359,8 +335,8 @@ public class MtpClient {
      * will be returned. Otherwise, all immediate children of the object will be returned.
      * If the storage ID is also zero, then all objects on all storage units will be returned.
      *
-     * @param deviceName the name of the USB device
-     * @param storageId the ID of the storage unit to query, or zero for all
+     * @param deviceName   the name of the USB device
+     * @param storageId    the ID of the storage unit to query, or zero for all
      * @param objectHandle the handle of the parent object to query, or zero for the storage root
      * @return the list of MtpObjectInfo
      */
@@ -379,9 +355,9 @@ public class MtpClient {
         }
 
         int length = handles.length;
-        ArrayList<MtpObjectInfo> objectList = new ArrayList<MtpObjectInfo>(length);
-        for (int i = 0; i < length; i++) {
-            MtpObjectInfo info = device.getObjectInfo(handles[i]);
+        ArrayList<MtpObjectInfo> objectList = new ArrayList<>(length);
+        for (int handle : handles) {
+            MtpObjectInfo info = device.getObjectInfo(handle);
             if (info == null) {
                 Log.w(TAG, "getObjectInfo failed");
             } else {
@@ -394,10 +370,10 @@ public class MtpClient {
     /**
      * Returns the data for an object as a byte array.
      *
-     * @param deviceName the name of the USB device containing the object
+     * @param deviceName   the name of the USB device containing the object
      * @param objectHandle handle of the object to read
-     * @param objectSize the size of the object (this should match
-     *      {@link android.mtp.MtpObjectInfo#getCompressedSize}
+     * @param objectSize   the size of the object (this should match
+     *                     {@link android.mtp.MtpObjectInfo#getCompressedSize}
      * @return the object's data, or null if reading fails
      */
     public byte[] getObject(String deviceName, int objectHandle, int objectSize) {
@@ -411,7 +387,7 @@ public class MtpClient {
     /**
      * Returns the thumbnail data for an object as a byte array.
      *
-     * @param deviceName the name of the USB device containing the object
+     * @param deviceName   the name of the USB device containing the object
      * @param objectHandle handle of the object to read
      * @return the object's thumbnail, or null if reading fails
      */
@@ -426,11 +402,11 @@ public class MtpClient {
     /**
      * Copies the data for an object to a file in external storage.
      *
-     * @param deviceName the name of the USB device containing the object
+     * @param deviceName   the name of the USB device containing the object
      * @param objectHandle handle of the object to read
-     * @param destPath path to destination for the file transfer.
-     *      This path should be in the external storage as defined by
-     *      {@link android.os.Environment#getExternalStorageDirectory}
+     * @param destPath     path to destination for the file transfer.
+     *                     This path should be in the external storage as defined by
+     *                     {@link android.os.Environment#getExternalStorageDirectory}
      * @return true if the file transfer succeeds
      */
     public boolean importFile(String deviceName, int objectHandle, String destPath) {
@@ -439,5 +415,25 @@ public class MtpClient {
             return false;
         }
         return device.importFile(objectHandle, destPath);
+    }
+
+    /**
+     * An interface for being notified when MTP or PTP devices are attached
+     * or removed.  In the current implementation, only PTP devices are supported.
+     */
+    public interface Listener {
+        /**
+         * Called when a new device has been added
+         *
+         * @param device the new device that was added
+         */
+        void deviceAdded(MtpDevice device);
+
+        /**
+         * Called when a new device has been removed
+         *
+         * @param device the device that was removed
+         */
+        void deviceRemoved(MtpDevice device);
     }
 }

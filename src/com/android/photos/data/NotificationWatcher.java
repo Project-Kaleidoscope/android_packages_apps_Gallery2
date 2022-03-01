@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * ContentObservers, so PhotoProvider allows this alternative for testing.
  */
 public class NotificationWatcher implements ChangeNotification {
-    private ArrayList<Uri> mUris = new ArrayList<Uri>();
+    private final ArrayList<Uri> mUris = new ArrayList<>();
     private boolean mSyncToNetwork = false;
 
     @Override

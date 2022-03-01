@@ -18,9 +18,9 @@ package com.android.gallery3d.ui;
 
 import android.graphics.Bitmap;
 
-import com.android.photos.data.GalleryBitmapPool;
 import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.FutureListener;
+import com.android.photos.data.GalleryBitmapPool;
 
 // We use this class to
 //     1.) load bitmaps in background.
@@ -104,5 +104,6 @@ public abstract class BitmapLoader implements FutureListener<Bitmap> {
     }
 
     abstract protected Future<Bitmap> submitBitmapTask(FutureListener<Bitmap> l);
+
     abstract protected void onLoadComplete(Bitmap bitmap);
 }

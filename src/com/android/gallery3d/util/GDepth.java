@@ -33,6 +33,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Base64;
+import android.util.Log;
 import android.util.Xml;
 
 import com.android.gallery3d.common.Utils;
@@ -179,7 +180,7 @@ public class GDepth {
         private static final int EXTEND = 2;
         private static final int END = 3;
 
-        private CountedDataInputStream stream;
+        private final CountedDataInputStream stream;
         private String extended;
         private int status = START;
         private int chunk = 0;
@@ -252,7 +253,7 @@ public class GDepth {
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             if (chunk > 0) {
-                int l = chunk > len ? len : chunk;
+                int l = Math.min(chunk, len);
                 chunk -= l;
                 return stream.read(b, off, l);
             }
@@ -263,7 +264,7 @@ public class GDepth {
                 return -1;
             }
             if (next() && chunk > 0) {
-                int l = chunk > len ? len : chunk;
+                int l = Math.min(chunk, len);
                 chunk -= l;
                 return stream.read(b, off, l);
             }

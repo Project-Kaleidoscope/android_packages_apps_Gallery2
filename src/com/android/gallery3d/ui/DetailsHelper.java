@@ -20,34 +20,48 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.View.MeasureSpec;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.data.MediaDetails;
 import com.android.gallery3d.ui.DetailsAddressResolver.AddressResolvingListener;
 
+import org.codeaurora.gallery.R;
+
 public class DetailsHelper {
     private static DetailsAddressResolver sAddressResolver;
-    private DetailsViewContainer mContainer;
+    private final DetailsViewContainer mContainer;
 
     public interface DetailsSource {
-        public int size();
-        public int setIndex();
-        public MediaDetails getDetails();
+
+        int size();
+
+        int setIndex();
+
+        MediaDetails getDetails();
+
     }
 
     public interface CloseListener {
-        public void onClose();
+
+        void onClose();
+
     }
 
     public interface DetailsViewContainer {
-        public void reloadDetails();
-        public void setCloseListener(CloseListener listener);
-        public void show();
-        public void hide();
+
+        void reloadDetails();
+
+        void setCloseListener(CloseListener listener);
+
+        void show();
+
+        void hide();
+
     }
 
     public interface ResolutionResolvingListener {
-        public void onResolutionAvailable(int width, int height);
+
+        void onResolutionAvailable(int width, int height);
+
     }
 
     public DetailsHelper(AbstractGalleryActivity activity, GLView rootPane, DetailsSource source) {
@@ -57,8 +71,7 @@ public class DetailsHelper {
     public void layout(int left, int top, int right, int bottom) {
         if (mContainer instanceof GLView) {
             GLView view = (GLView) mContainer;
-            view.measure(MeasureSpec.UNSPECIFIED,
-                    MeasureSpec.makeMeasureSpec(bottom - top, MeasureSpec.AT_MOST));
+            view.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.makeMeasureSpec(bottom - top, MeasureSpec.AT_MOST));
             view.layout(0, top, view.getMeasuredWidth(), top + view.getMeasuredHeight());
         }
     }
@@ -72,7 +85,7 @@ public class DetailsHelper {
     }
 
     public static String resolveAddress(AbstractGalleryActivity activity, double[] latlng,
-            AddressResolvingListener listener) {
+                                        AddressResolvingListener listener) {
         if (sAddressResolver == null) {
             sAddressResolver = new DetailsAddressResolver(activity);
         } else {

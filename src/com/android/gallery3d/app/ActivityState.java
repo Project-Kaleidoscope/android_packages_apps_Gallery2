@@ -32,12 +32,13 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.anim.StateTransitionAnimation;
 import com.android.gallery3d.glrenderer.RawTexture;
 import com.android.gallery3d.ui.GLView;
 import com.android.gallery3d.ui.PreparePageFadeoutTexture;
 import com.android.gallery3d.util.GalleryUtils;
+
+import org.codeaurora.gallery.R;
 
 abstract public class ActivityState {
     protected static final int FLAG_HIDE_ACTION_BAR = 1;
@@ -125,7 +126,7 @@ abstract public class ActivityState {
 
     protected void onCreate(Bundle data, Bundle storedState) {
         mBackgroundColor = GalleryUtils.intColorToFloatARGBArray(
-                mActivity.getResources().getColor(getBackgroundColorId()));
+                mActivity.getColor(getBackgroundColorId()));
     }
 
     protected void clearStateResult() {
@@ -192,7 +193,7 @@ abstract public class ActivityState {
 
     protected void onPause() {
         if (0 != (mFlags & FLAG_SCREEN_ON_WHEN_PLUGGED)) {
-            ((Activity) mActivity).unregisterReceiver(mPowerIntentReceiver);
+            mActivity.unregisterReceiver(mPowerIntentReceiver);
         }
         if (mNextTransition != StateTransitionAnimation.Transition.None) {
             mActivity.getTransitionStore().put(KEY_TRANSITION_IN, mNextTransition);

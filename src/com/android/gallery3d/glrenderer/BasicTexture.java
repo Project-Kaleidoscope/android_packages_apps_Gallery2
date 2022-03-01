@@ -38,7 +38,7 @@ public abstract class BasicTexture implements Texture {
     // Log a warning if a texture is larger along a dimension
     private static final int MAX_TEXTURE_SIZE = 4096;
 
-    protected int mId = -1;
+    protected int mId;
     protected int mState;
 
     protected int mWidth = UNSPECIFIED;
@@ -50,9 +50,9 @@ public abstract class BasicTexture implements Texture {
     private boolean mHasBorder;
 
     protected GLCanvas mCanvasRef = null;
-    private static WeakHashMap<BasicTexture, Object> sAllTextures
-            = new WeakHashMap<BasicTexture, Object>();
-    private static ThreadLocal sInFinalizer = new ThreadLocal();
+    private static final WeakHashMap<BasicTexture, Object> sAllTextures
+            = new WeakHashMap<>();
+    private static final ThreadLocal sInFinalizer = new ThreadLocal();
 
     protected BasicTexture(GLCanvas canvas, int id, int state) {
         setAssociatedCanvas(canvas);
@@ -87,7 +87,7 @@ public abstract class BasicTexture implements Texture {
     }
 
     public boolean isFlippedVertically() {
-      return false;
+        return false;
     }
 
     public int getId() {

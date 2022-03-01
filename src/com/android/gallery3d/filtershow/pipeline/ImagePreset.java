@@ -16,13 +16,6 @@
 
 package com.android.gallery3d.filtershow.pipeline;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Vector;
-
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.renderscript.Allocation;
@@ -30,7 +23,6 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
 import com.android.gallery3d.filtershow.filters.BaseFiltersManager;
 import com.android.gallery3d.filtershow.filters.FilterCropRepresentation;
@@ -52,12 +44,21 @@ import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.state.State;
 import com.android.gallery3d.filtershow.state.StateAdapter;
 
+import org.codeaurora.gallery.R;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Vector;
+
 public class ImagePreset {
 
-    private static final String LOGTAG = "ImagePreset";
+    private static final String TAG = "ImagePreset";
     public static final String JASON_SAVED = "Saved";
 
-    private Vector<FilterRepresentation> mFilters = new Vector<FilterRepresentation>();
+    private final Vector<FilterRepresentation> mFilters = new Vector<>();
 
     private boolean mDoApplyGeometry = true;
     private boolean mDoApplyFilters = true;
@@ -278,13 +279,10 @@ public class ImagePreset {
         for (int i = 0; i < preset.mFilters.size(); i++) {
             FilterRepresentation a = preset.mFilters.elementAt(i);
             FilterRepresentation b = mFilters.elementAt(i);
-            boolean isGeometry = false;
-            if (a instanceof FilterRotateRepresentation
+            boolean isGeometry = a instanceof FilterRotateRepresentation
                     || a instanceof FilterMirrorRepresentation
                     || a instanceof FilterCropRepresentation
-                    || a instanceof FilterStraightenRepresentation) {
-                isGeometry = true;
-            }
+                    || a instanceof FilterStraightenRepresentation;
             boolean evaluate = true;
             if (!isGeometry && mDoApplyGeometry && !mDoApplyFilters) {
                 evaluate = false;
@@ -318,13 +316,13 @@ public class ImagePreset {
     }
 
     public void showFilters() {
-        Log.v(LOGTAG, "\\\\\\ showFilters -- " + mFilters.size() + " filters");
+        Log.v(TAG, "\\\\\\ showFilters -- " + mFilters.size() + " filters");
         int n = 0;
         for (FilterRepresentation representation : mFilters) {
-            Log.v(LOGTAG, " filter " + n + " : " + representation.toString());
+            Log.v(TAG, " filter " + n + " : " + representation.toString());
             n++;
         }
-        Log.v(LOGTAG, "/// showFilters -- " + mFilters.size() + " filters");
+        Log.v(TAG, "/// showFilters -- " + mFilters.size() + " filters");
     }
 
     public FilterRepresentation getLastRepresentation() {
@@ -344,7 +342,7 @@ public class ImagePreset {
                     mFilters.remove(i);
 
                     // reset fusion underlay image.
-                    if(filter instanceof FilterDualCamFusionRepresentation ||
+                    if (filter instanceof FilterDualCamFusionRepresentation ||
                             filter instanceof FilterTruePortraitFusionRepresentation) {
                         MasterImage.getImage().setFusionUnderlay(null);
                         MasterImage.getImage().setScaleFactor(1);
@@ -467,7 +465,7 @@ public class ImagePreset {
         FilterRepresentation border = null;
         FilterRepresentation dualcam = null;
         FilterRepresentation trueportrait = null;
-        for (int i = 0; i < mFilters.size();) {
+        for (int i = 0; i < mFilters.size(); ) {
             FilterRepresentation rep = mFilters.elementAt(i);
             if (rep.getFilterType() == FilterRepresentation.TYPE_BORDER) {
                 border = rep;
@@ -531,7 +529,7 @@ public class ImagePreset {
 
     private boolean isNonePresetFilter(FilterRepresentation representation) {
         return representation instanceof FilterPresetRepresentation &&
-                ((FilterPresetRepresentation) representation).getTextId() == R.string.none;
+                representation.getTextId() == R.string.none;
     }
 
     public FilterRepresentation getRepresentation(FilterRepresentation filterRepresentation) {
@@ -553,7 +551,7 @@ public class ImagePreset {
     }
 
     public Collection<FilterRepresentation> getGeometryFilters() {
-        ArrayList<FilterRepresentation> geometry = new ArrayList<FilterRepresentation>();
+        ArrayList<FilterRepresentation> geometry = new ArrayList<>();
         for (FilterRepresentation r : mFilters) {
             if (r.getFilterType() == FilterRepresentation.TYPE_GEOMETRY) {
                 geometry.add(r);
@@ -594,7 +592,7 @@ public class ImagePreset {
     public Bitmap applyDualCamera(Bitmap bitmap, FilterEnvironment environment) {
         // Apply dual camera filters
         // Returns a new bitmap.
-        for (FilterRepresentation representation:mFilters) {
+        for (FilterRepresentation representation : mFilters) {
             if (representation.getFilterType() == FilterRepresentation.TYPE_DUALCAM) {
                 Bitmap tmp = bitmap;
                 bitmap = environment.applyRepresentation(representation, bitmap);
@@ -613,7 +611,7 @@ public class ImagePreset {
     public Bitmap applyTruePortrait(Bitmap bitmap, FilterEnvironment environment) {
         // Apply trueportrait filters
         // Returns a new bitmap.
-        for (FilterRepresentation representation:mFilters) {
+        for (FilterRepresentation representation : mFilters) {
             if (representation.getFilterType() == FilterRepresentation.TYPE_TRUEPORTRAIT) {
                 Bitmap tmp = bitmap;
                 bitmap = environment.applyRepresentation(representation, bitmap);
@@ -635,8 +633,6 @@ public class ImagePreset {
                 FilterRepresentation.TYPE_BORDER);
         if (border != null && mDoApplyGeometry) {
             bitmap = environment.applyRepresentation(border, bitmap);
-            if (environment.getQuality() == FilterEnvironment.QUALITY_FINAL) {
-            }
         }
         return bitmap;
     }
@@ -688,7 +684,7 @@ public class ImagePreset {
     }
 
     public void applyBorder(Allocation in, Allocation out,
-            boolean copyOut, FilterEnvironment environment) {
+                            boolean copyOut, FilterEnvironment environment) {
         FilterRepresentation border = getFilterRepresentationForType(
                 FilterRepresentation.TYPE_BORDER);
         if (border != null && mDoApplyGeometry) {
@@ -704,7 +700,7 @@ public class ImagePreset {
     }
 
     public void applyFilters(int from, int to, Allocation in, Allocation out,
-            FilterEnvironment environment) {
+                             FilterEnvironment environment) {
         if (mDoApplyFilters) {
             if (from < 0) {
                 from = 0;
@@ -743,7 +739,7 @@ public class ImagePreset {
         if (imageStateAdapter == null) {
             return;
         }
-        Vector<State> states = new Vector<State>();
+        Vector<State> states = new Vector<>();
         for (FilterRepresentation filter : mFilters) {
             if (filter instanceof FilterUserPresetRepresentation) {
                 // do not show the user preset itself in the state panel
@@ -770,7 +766,7 @@ public class ImagePreset {
     }
 
     public Vector<ImageFilter> getUsedFilters(BaseFiltersManager filtersManager) {
-        Vector<ImageFilter> usedFilters = new Vector<ImageFilter>();
+        Vector<ImageFilter> usedFilters = new Vector<>();
         for (int i = 0; i < mFilters.size(); i++) {
             FilterRepresentation representation = mFilters.elementAt(i);
             ImageFilter filter = filtersManager.getFilterForRepresentation(representation);
@@ -805,9 +801,9 @@ public class ImagePreset {
                     continue;
                 }
                 if (DEBUG) {
-                    Log.v(LOGTAG, "Serialization: " + sname);
+                    Log.v(TAG, "Serialization: " + sname);
                     if (sname == null) {
-                        Log.v(LOGTAG, "Serialization name null for filter: " + filter);
+                        Log.v(TAG, "Serialization name null for filter: " + filter);
                     }
                 }
                 writer.name(sname);
@@ -816,7 +812,7 @@ public class ImagePreset {
             writer.endObject();
 
         } catch (IOException e) {
-            Log.e(LOGTAG,"Error encoding JASON",e);
+            Log.e(TAG, "Error encoding JASON", e);
         }
     }
 
@@ -828,7 +824,7 @@ public class ImagePreset {
      */
     public boolean readJsonFromString(String filterString) {
         if (DEBUG) {
-            Log.v(LOGTAG, "reading preset: \"" + filterString + "\"");
+            Log.v(TAG, "reading preset: \"" + filterString + "\"");
         }
         StringReader sreader = new StringReader(filterString);
         try {
@@ -840,8 +836,8 @@ public class ImagePreset {
             }
             reader.close();
         } catch (Exception e) {
-            Log.e(LOGTAG, "\""+filterString+"\"");
-            Log.e(LOGTAG, "parsing the filter parameters:", e);
+            Log.e(TAG, "\"" + filterString + "\"");
+            Log.e(TAG, "parsing the filter parameters:", e);
             return false;
         }
         return true;
@@ -860,7 +856,7 @@ public class ImagePreset {
             String name = sreader.nextName();
             FilterRepresentation filter = creatFilterFromName(name);
             if (filter == null) {
-                Log.w(LOGTAG, "UNKNOWN FILTER! " + name);
+                Log.w(TAG, "UNKNOWN FILTER! " + name);
                 return false;
             }
             filter.deSerializeRepresentation(sreader);
@@ -886,7 +882,7 @@ public class ImagePreset {
 
     public void updateWith(ImagePreset preset) {
         if (preset.mFilters.size() != mFilters.size()) {
-            Log.e(LOGTAG, "Updating a preset with an incompatible one");
+            Log.e(TAG, "Updating a preset with an incompatible one");
             return;
         }
         for (int i = 0; i < mFilters.size(); i++) {

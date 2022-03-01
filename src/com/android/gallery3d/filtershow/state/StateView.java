@@ -18,22 +18,28 @@ package com.android.gallery3d.filtershow.state;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.*;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
-import org.codeaurora.gallery.R;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.category.SwipableView;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 
+import org.codeaurora.gallery.R;
+
 public class StateView extends View implements SwipableView {
 
-    private static final String LOGTAG = "StateView";
-    private Path mPath = new Path();
-    private Paint mPaint = new Paint();
+    private static final String TAG = "StateView";
+    private final Path mPath = new Path();
+    private final Paint mPaint = new Paint();
 
     public static int DEFAULT = 0;
     public static int BEGIN = 1;
@@ -48,25 +54,25 @@ public class StateView extends View implements SwipableView {
     private float mAlpha = 1.0f;
     private String mText = "Default";
     private float mTextSize = 32;
-    private static int sMargin = 16;
-    private static int sArrowHeight = 16;
-    private static int sArrowWidth = 8;
+    private static final int sMargin = 16;
+    private static final int sArrowHeight = 16;
+    private static final int sArrowWidth = 8;
     private float mStartTouchX = 0;
     private float mStartTouchY = 0;
-    private float mDeleteSlope = 20;
+    private final float mDeleteSlope = 20;
 
     private int mOrientation = LinearLayout.VERTICAL;
-    private int mDirection = DOWN;
+    private final int mDirection = DOWN;
     private boolean mDuplicateButton;
     private State mState;
 
-    private int mEndsBackgroundColor;
-    private int mEndsTextColor;
-    private int mBackgroundColor;
-    private int mTextColor;
-    private int mSelectedBackgroundColor;
-    private int mSelectedTextColor;
-    private Rect mTextBounds = new Rect();
+    private final int mEndsBackgroundColor;
+    private final int mEndsTextColor;
+    private final int mBackgroundColor;
+    private final int mTextColor;
+    private final int mSelectedBackgroundColor;
+    private final int mSelectedTextColor;
+    private final Rect mTextBounds = new Rect();
 
     public StateView(Context context) {
         this(context, DEFAULT);
@@ -135,8 +141,8 @@ public class StateView extends View implements SwipableView {
         mPaint.reset();
         mPath.reset();
 
-        float w = canvas.getWidth();
-        float h = canvas.getHeight();
+        float w = getWidth();
+        float h = getHeight();
         float r = sArrowHeight;
         float d = sArrowWidth;
 
@@ -318,7 +324,7 @@ public class StateView extends View implements SwipableView {
             }
         }
         if (event.getActionMasked() == MotionEvent.ACTION_UP
-            || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
             setTranslationX(0);
             setTranslationY(0);
             MasterImage.getImage().setShowsOriginal(false);

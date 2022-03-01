@@ -3,15 +3,13 @@ package org.codeaurora.gallery3d.video;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnVideoSizeChangedListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnInfoListener;
+import android.media.MediaPlayer.OnVideoSizeChangedListener;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -73,12 +71,12 @@ public class CodeauroraVideoView extends SurfaceView implements MediaPlayerContr
     // All the stuff we need for playing and showing a video
     private SurfaceHolder mSurfaceHolder = null;
     private MediaPlayer mMediaPlayer = null;
-    private int         mAudioSession;
-    private int         mVideoWidth;
-    private int         mVideoHeight;
-    private int         mSurfaceWidth;
-    private int         mSurfaceHeight;
-    private int         mDuration;
+    private int mAudioSession;
+    private int mVideoWidth;
+    private int mVideoHeight;
+    private int mSurfaceWidth;
+    private int mSurfaceHeight;
+    private int mDuration;
     private MediaController mMediaController;
     private OnCompletionListener mOnCompletionListener;
     private MediaPlayer.OnPreparedListener mOnPreparedListener;
@@ -87,15 +85,15 @@ public class CodeauroraVideoView extends SurfaceView implements MediaPlayerContr
     private MediaPlayer.OnPreparedListener mPreparedListener;
     private ScreenModeManager mScreenManager;
     private MoviePlayer.TimerProgress mTimerController;
-    private int         mCurrentBufferPercentage;
+    private int mCurrentBufferPercentage;
     private OnErrorListener mOnErrorListener;
     private OnInfoListener  mOnInfoListener;
-    private int         mSeekWhenPrepared;  // recording the seek position while preparing
-    private boolean     mCanPause;
-    private boolean     mCanSeekBack;
-    private boolean     mCanSeekForward;
-    private boolean     mCanSeek;
-    private boolean     mHasGotPreparedCallBack = false;
+    private int mSeekWhenPrepared;  // recording the seek position while preparing
+    private boolean mCanPause;
+    private boolean mCanSeekBack;
+    private boolean mCanSeekForward;
+    private boolean mCanSeek;
+    private boolean mHasGotPreparedCallBack = false;
     private boolean mNeedWaitLayout = false;
     private boolean mHasGotMetaData = false;
     private boolean mOnResumed;
@@ -108,18 +106,15 @@ public class CodeauroraVideoView extends SurfaceView implements MediaPlayerContr
             if (LOG) {
                 Log.v(TAG, "handleMessage() to do prepare. msg=" + msg);
             }
-            switch (msg.what) {
-                case MSG_LAYOUT_READY:
-                    if (mMediaPlayer == null || mUri == null) {
-                        Log.w(TAG, "Cannot prepare play! mMediaPlayer=" + mMediaPlayer
-                                + ", mUri=" + mUri);
-                        return;
-                    }
-                    doPreparedIfReady(mMediaPlayer);
-                    break;
-                default:
-                    Log.w(TAG, "Unhandled message " + msg);
-                    break;
+            if (msg.what == MSG_LAYOUT_READY) {
+                if (mMediaPlayer == null || mUri == null) {
+                    Log.w(TAG, "Cannot prepare play! mMediaPlayer=" + mMediaPlayer
+                            + ", mUri=" + mUri);
+                    return;
+                }
+                doPreparedIfReady(mMediaPlayer);
+            } else {
+                Log.w(TAG, "Unhandled message " + msg);
             }
         }
     };
@@ -222,136 +217,124 @@ public class CodeauroraVideoView extends SurfaceView implements MediaPlayerContr
     }
 
     private void initialize() {
-        mPreparedListener = new MediaPlayer.OnPreparedListener() {
-            public void onPrepared(final MediaPlayer mp) {
-                if (LOG) {
-                    Log.v(TAG, "mPreparedListener.onPrepared(" + mp + ")");
+        mPreparedListener = mp -> {
+            if (LOG) {
+                Log.v(TAG, "mPreparedListener.onPrepared(" + mp + ")");
+            }
+            //Here we can get meta data from mediaplayer.
+            // Get the capabilities of the player for this stream
+            final Metadata data = ApiHelper.MediaPlayer.getMetadata(mp,
+                    ApiHelper.MediaPlayer.METADATA_ALL,
+                    ApiHelper.MediaPlayer.BYPASS_METADATA_FILTER);
+            if (data != null) {
+                mCanPause = !data.has(Metadata.PAUSE_AVAILABLE)
+                        || data.getBoolean(Metadata.PAUSE_AVAILABLE);
+                mCanSeekBack = !data.has(Metadata.SEEK_BACKWARD_AVAILABLE)
+                        || data.getBoolean(Metadata.SEEK_BACKWARD_AVAILABLE);
+                mCanSeekForward = !data.has(Metadata.SEEK_FORWARD_AVAILABLE)
+                        || data.getBoolean(Metadata.SEEK_FORWARD_AVAILABLE);
+                mCanSeek = !data.has(Metadata.SEEK_AVAILABLE)
+                        || data.getBoolean(Metadata.SEEK_AVAILABLE);
+            } else {
+                mCanPause = true;
+                mCanSeekBack = true;
+                mCanSeekForward = true;
+                mCanSeek = true;
+                Log.w(TAG, "Metadata is null!");
+            }
+            if (LOG) {
+                Log.v(TAG, "mPreparedListener.onPrepared() mCanPause=" + mCanPause);
+            }
+            mHasGotPreparedCallBack = true;
+            doPreparedIfReady(mMediaPlayer);
+        };
+
+        mErrorListener = (mp, frameworkErr, implErr) -> {
+            Log.d(TAG, "Error: " + frameworkErr + "," + implErr);
+            //record error position and duration
+            //here disturb the original logic
+            mSeekWhenPrepared = getCurrentPosition();
+            if (LOG) {
+                Log.v(TAG, "onError() mSeekWhenPrepared=" + mSeekWhenPrepared + ", mDuration=" + mDuration);
+            }
+            //for old version Streaming server, getduration is not valid.
+            mDuration = Math.abs(mDuration);
+            mCurrentState = STATE_ERROR;
+            mTargetState = STATE_ERROR;
+            if (mMediaController != null) {
+                mMediaController.hide();
+            }
+
+            /* If an error handler has been supplied, use it and finish. */
+            if (mOnErrorListener != null) {
+                if (mOnErrorListener.onError(mMediaPlayer, frameworkErr, implErr)) {
+                    return true;
                 }
-                //Here we can get meta data from mediaplayer.
-                // Get the capabilities of the player for this stream
-                final Metadata data = ApiHelper.MediaPlayer.getMetadata(mp,
-                        ApiHelper.MediaPlayer.METADATA_ALL,
-                        ApiHelper.MediaPlayer.BYPASS_METADATA_FILTER);
-                if (data != null) {
-                    mCanPause = !data.has(Metadata.PAUSE_AVAILABLE)
-                            || data.getBoolean(Metadata.PAUSE_AVAILABLE);
-                    mCanSeekBack = !data.has(Metadata.SEEK_BACKWARD_AVAILABLE)
-                            || data.getBoolean(Metadata.SEEK_BACKWARD_AVAILABLE);
-                    mCanSeekForward = !data.has(Metadata.SEEK_FORWARD_AVAILABLE)
-                            || data.getBoolean(Metadata.SEEK_FORWARD_AVAILABLE);
-                    mCanSeek = !data.has(Metadata.SEEK_AVAILABLE)
-                            || data.getBoolean(Metadata.SEEK_AVAILABLE);
+            }
+
+            mMediaPlayer.reset();
+            /* Otherwise, pop up an error dialog so the user knows that
+             * something bad has happened. Only try and pop up the dialog
+             * if we're attached to a window. When we're going away and no
+             * longer have a window, don't bother showing the user an error.
+             */
+            if (getWindowToken() != null && !mErrorDialogShowing) {
+                int messageId;
+
+                if (frameworkErr == MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK) {
+                    messageId = android.R.string.VideoView_error_text_invalid_progressive_playback;
                 } else {
-                    mCanPause = true;
-                    mCanSeekBack = true;
-                    mCanSeekForward = true;
-                    mCanSeek = true;
-                    Log.w(TAG, "Metadata is null!");
+                    messageId = android.R.string.VideoView_error_text_unknown;
                 }
-                if (LOG) {
-                    Log.v(TAG, "mPreparedListener.onPrepared() mCanPause=" + mCanPause);
-                }
-                mHasGotPreparedCallBack = true;
-                doPreparedIfReady(mMediaPlayer);
+                 new AlertDialog.Builder(getContext())
+                    .setMessage(messageId)
+                    .setPositiveButton(android.R.string.VideoView_error_button, (dialog, whichButton) -> {
+                        /* If we get here, there is no onError listener, so
+                         * at least inform them that the video is over.
+                         */
+                        mErrorDialogShowing = false;
+                        if (mOnCompletionListener != null) {
+                            mOnCompletionListener.onCompletion(mMediaPlayer);
+                        }
+                        release(true);
+                    })
+                    .setCancelable(false)
+                    .show();
+                 mErrorDialogShowing = true;
+            }
+            return true;
+        };
+
+        mBufferingUpdateListener = (mp, percent) -> {
+            mCurrentBufferPercentage = percent;
+            if (mOnBufferingUpdateListener != null) {
+                mOnBufferingUpdateListener.onBufferingUpdate(mp, percent);
+            }
+            if (LOG) {
+                Log.v(TAG, "onBufferingUpdate() Buffering percent: " + percent);
+                Log.v(TAG, "onBufferingUpdate() mTargetState=" + mTargetState);
+                Log.v(TAG, "onBufferingUpdate() mCurrentState=" + mCurrentState);
             }
         };
 
-        mErrorListener = new MediaPlayer.OnErrorListener() {
-            public boolean onError(final MediaPlayer mp, final int frameworkErr, final int implErr) {
-                Log.d(TAG, "Error: " + frameworkErr + "," + implErr);
-                //record error position and duration
-                //here disturb the original logic
-                mSeekWhenPrepared = getCurrentPosition();
-                if (LOG) {
-                    Log.v(TAG, "onError() mSeekWhenPrepared=" + mSeekWhenPrepared + ", mDuration=" + mDuration);
-                }
-                //for old version Streaming server, getduration is not valid.
-                mDuration = Math.abs(mDuration);
-                mCurrentState = STATE_ERROR;
-                mTargetState = STATE_ERROR;
-                if (mMediaController != null) {
-                    mMediaController.hide();
-                }
-
-                /* If an error handler has been supplied, use it and finish. */
-                if (mOnErrorListener != null) {
-                    if (mOnErrorListener.onError(mMediaPlayer, frameworkErr, implErr)) {
-                        return true;
-                    }
-                }
-
-                mMediaPlayer.reset();
-                /* Otherwise, pop up an error dialog so the user knows that
-                 * something bad has happened. Only try and pop up the dialog
-                 * if we're attached to a window. When we're going away and no
-                 * longer have a window, don't bother showing the user an error.
-                 */
-                if (getWindowToken() != null && mErrorDialogShowing == false) {
-                    final Resources r = getContext().getResources();
-                    int messageId;
-
-                    if (frameworkErr == MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK) {
-                        messageId = android.R.string.VideoView_error_text_invalid_progressive_playback;
-                    } else {
-                        messageId = android.R.string.VideoView_error_text_unknown;
-                    }
-                     new AlertDialog.Builder(getContext())
-                        .setMessage(messageId)
-                        .setPositiveButton(android.R.string.VideoView_error_button,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int whichButton) {
-                                        /* If we get here, there is no onError listener, so
-                                         * at least inform them that the video is over.
-                                         */
-                                        mErrorDialogShowing = false;
-                                        if (mOnCompletionListener != null) {
-                                            mOnCompletionListener.onCompletion(mMediaPlayer);
-                                        }
-                                        release(true);
-                                    }
-                                })
-                        .setCancelable(false)
-                        .show();
-                     mErrorDialogShowing = true;
-                }
-                return true;
+        mSizeChangedListener = (mp, width, height) -> {
+            mVideoWidth = mp.getVideoWidth();
+            mVideoHeight = mp.getVideoHeight();
+            if (LOG) {
+                Log.v(TAG, "OnVideoSizeChagned(" + width + "," + height + ")");
+                Log.v(TAG, "OnVideoSizeChagned(" + mVideoWidth + "," + mVideoHeight + ")");
+                Log.v(TAG, "OnVideoSizeChagned() mCurrentState=" + mCurrentState);
             }
-        };
-
-        mBufferingUpdateListener = new MediaPlayer.OnBufferingUpdateListener() {
-            public void onBufferingUpdate(final MediaPlayer mp, final int percent) {
-                mCurrentBufferPercentage = percent;
-                if (mOnBufferingUpdateListener != null) {
-                    mOnBufferingUpdateListener.onBufferingUpdate(mp, percent);
-                }
-                if (LOG) {
-                    Log.v(TAG, "onBufferingUpdate() Buffering percent: " + percent);
-                    Log.v(TAG, "onBufferingUpdate() mTargetState=" + mTargetState);
-                    Log.v(TAG, "onBufferingUpdate() mCurrentState=" + mCurrentState);
+            if (mVideoWidth != 0 && mVideoHeight != 0) {
+                getHolder().setFixedSize(mVideoWidth, mVideoHeight);
+                if (mCurrentState == STATE_PREPARING) {
+                    mNeedWaitLayout = true;
                 }
             }
-        };
-
-        mSizeChangedListener = new MediaPlayer.OnVideoSizeChangedListener() {
-            public void onVideoSizeChanged(final MediaPlayer mp, final int width, final int height) {
-                mVideoWidth = mp.getVideoWidth();
-                mVideoHeight = mp.getVideoHeight();
-                if (LOG) {
-                    Log.v(TAG, "OnVideoSizeChagned(" + width + "," + height + ")");
-                    Log.v(TAG, "OnVideoSizeChagned(" + mVideoWidth + "," + mVideoHeight + ")");
-                    Log.v(TAG, "OnVideoSizeChagned() mCurrentState=" + mCurrentState);
-                }
-                if (mVideoWidth != 0 && mVideoHeight != 0) {
-                    getHolder().setFixedSize(mVideoWidth, mVideoHeight);
-                    if (mCurrentState == STATE_PREPARING) {
-                        mNeedWaitLayout = true;
-                    }
-                }
-                if (mVideoSizeListener != null) {
-                    mVideoSizeListener.onVideoSizeChanged(mp, width, height);
-                }
-                CodeauroraVideoView.this.requestLayout();
+            if (mVideoSizeListener != null) {
+                mVideoSizeListener.onVideoSizeChanged(mp, width, height);
             }
+            CodeauroraVideoView.this.requestLayout();
         };
 
         getHolder().removeCallback(mSHCallback);
@@ -496,18 +479,11 @@ public class CodeauroraVideoView extends SurfaceView implements MediaPlayerContr
             // target state that was there before.
             mCurrentState = STATE_PREPARING;
             attachMediaController();
-        } catch (IOException ex) {
+        } catch (IOException | IllegalArgumentException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
             mTargetState = STATE_ERROR;
             mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
-            return;
-        } catch (IllegalArgumentException ex) {
-            Log.w(TAG, "Unable to open content: " + mUri, ex);
-            mCurrentState = STATE_ERROR;
-            mTargetState = STATE_ERROR;
-            mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
-            return;
         }
     }
 
@@ -533,13 +509,10 @@ public class CodeauroraVideoView extends SurfaceView implements MediaPlayerContr
         if (mUri != null){
             String scheme = mUri.toString();
             if (scheme.startsWith("http://") || scheme.startsWith("https://")) {
-                if (scheme.endsWith(".m3u8") || scheme.endsWith(".m3u")
-                    || scheme.contains("m3u8") || scheme.endsWith(".mpd")) {
-                    // HLS or DASH streaming source
-                    return false;
-                }
+                // HLS or DASH streaming source
+                return !scheme.endsWith(".m3u8") && !scheme.endsWith(".m3u")
+                        && !scheme.contains("m3u8") && !scheme.endsWith(".mpd");
                 // HTTP streaming
-                return true;
             }
         }
         return false;

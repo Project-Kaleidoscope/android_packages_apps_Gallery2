@@ -20,11 +20,12 @@ import android.renderscript.Element;
 import android.renderscript.ScriptIntrinsicConvolve3x3;
 
 import com.android.gallery3d.filtershow.editors.BasicEditor;
+
 import org.codeaurora.gallery.R;
 
 public class ImageFilterSharpen extends ImageFilterRS {
     private static final String SERIALIZATION_NAME = "SHARPEN";
-    private static final String LOGTAG = "ImageFilterSharpen";
+    private static final String TAG = "ImageFilterSharpen";
     private ScriptIntrinsicConvolve3x3 mScript;
 
     private FilterBasicRepresentation mParameters;
@@ -45,8 +46,7 @@ public class ImageFilterSharpen extends ImageFilterRS {
     }
 
     public void useRepresentation(FilterRepresentation representation) {
-        FilterBasicRepresentation parameters = (FilterBasicRepresentation) representation;
-        mParameters = parameters;
+        mParameters = (FilterBasicRepresentation) representation;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ImageFilterSharpen extends ImageFilterRS {
 
     @Override
     protected void createFilter(android.content.res.Resources res, float scaleFactor,
-            int quality) {
+                                int quality) {
         if (mScript == null) {
             mScript = ScriptIntrinsicConvolve3x3.create(getRenderScriptContext(),
                     Element.RGBA_8888(getRenderScriptContext()));
@@ -74,17 +74,16 @@ public class ImageFilterSharpen extends ImageFilterRS {
     private void computeKernel() {
         float p1 = mParameters.getValue();
         float value = p1 / 100.0f;
-        float f[] = new float[9];
-        float p = value;
-        f[0] = -p;
-        f[1] = -p;
-        f[2] = -p;
-        f[3] = -p;
-        f[4] = 8 * p + 1;
-        f[5] = -p;
-        f[6] = -p;
-        f[7] = -p;
-        f[8] = -p;
+        float[] f = new float[9];
+        f[0] = -value;
+        f[1] = -value;
+        f[2] = -value;
+        f[3] = -value;
+        f[4] = 8 * value + 1;
+        f[5] = -value;
+        f[6] = -value;
+        f[7] = -value;
+        f[8] = -value;
         mScript.setCoefficients(f);
     }
 

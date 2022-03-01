@@ -46,13 +46,13 @@ public class PhotoSetFragment extends MultiSelectGridFragment implements LoaderC
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Context context = getActivity();
+        Context context = getContext();
         mAdapter = new PhotoThumbnailAdapter(context);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View root = super.onCreateView(inflater, container, savedInstanceState);
         getLoaderManager().initLoader(LOADER_PHOTOSET, null, this);
         return root;
@@ -74,22 +74,21 @@ public class PhotoSetFragment extends MultiSelectGridFragment implements LoaderC
         Cursor item = (Cursor) getItemAtPosition(position);
         Uri uri = mLoaderCompatShim.uriForItem(item);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.setClass(getActivity(), GalleryActivity.class);
+        intent.setClass(getContext(), GalleryActivity.class);
         startActivity(intent);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // TODO: Switch to PhotoSetLoader
-        MediaItemsLoader loader = new MediaItemsLoader(getActivity());
+        MediaItemsLoader loader = new MediaItemsLoader(getContext());
         mLoaderCompatShim = loader;
         mAdapter.setDrawableFactory(mLoaderCompatShim);
         return loader;
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader,
-            Cursor data) {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mAdapter.swapCursor(data);
         setAdapter(mAdapter);
     }
@@ -108,7 +107,8 @@ public class PhotoSetFragment extends MultiSelectGridFragment implements LoaderC
         return ((Cursor) item).getInt(PhotoSetLoader.INDEX_SUPPORTED_OPERATIONS);
     }
 
-    private ArrayList<Uri> mSubItemUriTemp = new ArrayList<Uri>(1);
+    private ArrayList<Uri> mSubItemUriTemp = new ArrayList<>(1);
+
     @Override
     public ArrayList<Uri> getSubItemUrisForItem(Object item) {
         mSubItemUriTemp.clear();

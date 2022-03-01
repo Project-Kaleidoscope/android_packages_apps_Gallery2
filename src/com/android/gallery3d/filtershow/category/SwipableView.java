@@ -17,5 +17,7 @@
 package com.android.gallery3d.filtershow.category;
 
 public interface SwipableView {
-    public void delete();
+
+    void delete();
+
 }

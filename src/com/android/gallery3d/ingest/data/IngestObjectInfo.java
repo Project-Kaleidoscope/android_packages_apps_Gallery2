@@ -1,114 +1,111 @@
 package com.android.gallery3d.ingest.data;
 
-import android.annotation.TargetApi;
 import android.mtp.MtpDevice;
 import android.mtp.MtpObjectInfo;
-import android.os.Build;
+
+import androidx.annotation.NonNull;
 
 /**
  * Holds the info needed for the in-memory index of MTP objects.
  */
-@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
 public class IngestObjectInfo implements Comparable<IngestObjectInfo> {
 
-  private int mHandle;
-  private long mDateCreated;
-  private int mFormat;
-  private int mCompressedSize;
+    private final int mHandle;
+    private final long mDateCreated;
+    private final int mFormat;
+    private final int mCompressedSize;
 
-  public IngestObjectInfo(MtpObjectInfo mtpObjectInfo) {
-    mHandle = mtpObjectInfo.getObjectHandle();
-    mDateCreated = mtpObjectInfo.getDateCreated();
-    mFormat = mtpObjectInfo.getFormat();
-    mCompressedSize = mtpObjectInfo.getCompressedSize();
-  }
-
-  public IngestObjectInfo(int handle, long dateCreated, int format, int compressedSize) {
-    mHandle = handle;
-    mDateCreated = dateCreated;
-    mFormat = format;
-    mCompressedSize = compressedSize;
-  }
-
-  public int getCompressedSize() {
-    return mCompressedSize;
-  }
-
-  public int getFormat() {
-    return mFormat;
-  }
-
-  public long getDateCreated() {
-    return mDateCreated;
-  }
-
-  public int getObjectHandle() {
-    return mHandle;
-  }
-
-  public String getName(MtpDevice device) {
-    if (device != null) {
-      MtpObjectInfo info = device.getObjectInfo(mHandle);
-      if (info != null) {
-        return info.getName();
-      }
+    public IngestObjectInfo(MtpObjectInfo mtpObjectInfo) {
+        mHandle = mtpObjectInfo.getObjectHandle();
+        mDateCreated = mtpObjectInfo.getDateCreated();
+        mFormat = mtpObjectInfo.getFormat();
+        mCompressedSize = mtpObjectInfo.getCompressedSize();
     }
-    return null;
-  }
 
-  @Override
-  public int compareTo(IngestObjectInfo another) {
-    long diff = getDateCreated() - another.getDateCreated();
-    if (diff < 0) {
-      return -1;
-    } else if (diff == 0) {
-      return 0;
-    } else {
-      return 1;
+    public IngestObjectInfo(int handle, long dateCreated, int format, int compressedSize) {
+        mHandle = handle;
+        mDateCreated = dateCreated;
+        mFormat = format;
+        mCompressedSize = compressedSize;
     }
-  }
 
-  @Override
-  public String toString() {
-    return "IngestObjectInfo [mHandle=" + mHandle + ", mDateCreated=" + mDateCreated
-        + ", mFormat=" + mFormat + ", mCompressedSize=" + mCompressedSize + "]";
-  }
+    public int getCompressedSize() {
+        return mCompressedSize;
+    }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + mCompressedSize;
-    result = prime * result + (int) (mDateCreated ^ (mDateCreated >>> 32));
-    result = prime * result + mFormat;
-    result = prime * result + mHandle;
-    return result;
-  }
+    public int getFormat() {
+        return mFormat;
+    }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    public long getDateCreated() {
+        return mDateCreated;
     }
-    if (obj == null) {
-      return false;
+
+    public int getObjectHandle() {
+        return mHandle;
     }
-    if (!(obj instanceof IngestObjectInfo)) {
-      return false;
+
+    public String getName(MtpDevice device) {
+        if (device != null) {
+            MtpObjectInfo info = device.getObjectInfo(mHandle);
+            if (info != null) {
+                return info.getName();
+            }
+        }
+        return null;
     }
-    IngestObjectInfo other = (IngestObjectInfo) obj;
-    if (mCompressedSize != other.mCompressedSize) {
-      return false;
+
+    @Override
+    public int compareTo(IngestObjectInfo another) {
+        long diff = getDateCreated() - another.getDateCreated();
+        if (diff < 0) {
+            return -1;
+        } else if (diff == 0) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
-    if (mDateCreated != other.mDateCreated) {
-      return false;
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "IngestObjectInfo [mHandle=" + mHandle + ", mDateCreated=" + mDateCreated
+                + ", mFormat=" + mFormat + ", mCompressedSize=" + mCompressedSize + "]";
     }
-    if (mFormat != other.mFormat) {
-      return false;
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + mCompressedSize;
+        result = prime * result + (int) (mDateCreated ^ (mDateCreated >>> 32));
+        result = prime * result + mFormat;
+        result = prime * result + mHandle;
+        return result;
     }
-    if (mHandle != other.mHandle) {
-      return false;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof IngestObjectInfo)) {
+            return false;
+        }
+        IngestObjectInfo other = (IngestObjectInfo) obj;
+        if (mCompressedSize != other.mCompressedSize) {
+            return false;
+        }
+        if (mDateCreated != other.mDateCreated) {
+            return false;
+        }
+        if (mFormat != other.mFormat) {
+            return false;
+        }
+      return mHandle == other.mHandle;
     }
-    return true;
-  }
 }

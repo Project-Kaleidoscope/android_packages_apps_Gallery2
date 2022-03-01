@@ -21,7 +21,7 @@ import android.view.View.MeasureSpec;
 
 class MeasureHelper {
 
-    private static MeasureHelper sInstance = new MeasureHelper(null);
+    private static final MeasureHelper sInstance = new MeasureHelper(null);
 
     private GLView mComponent;
     private int mPreferredWidth;
@@ -51,11 +51,17 @@ class MeasureHelper {
 
     private static int getLength(int measureSpec, int prefered) {
         int specLength = MeasureSpec.getSize(measureSpec);
-        switch(MeasureSpec.getMode(measureSpec)) {
-            case MeasureSpec.EXACTLY: return specLength;
-            case MeasureSpec.AT_MOST: return Math.min(prefered, specLength);
-            default: return prefered;
+        switch (MeasureSpec.getMode(measureSpec)) {
+            case MeasureSpec.EXACTLY:
+                return specLength;
+            case MeasureSpec.AT_MOST:
+                return Math.min(prefered, specLength);
+            default:
+                return prefered;
+            case MeasureSpec.UNSPECIFIED:
+                break;
         }
+        return specLength;
     }
 
     protected void setMeasuredSize(int width, int height) {

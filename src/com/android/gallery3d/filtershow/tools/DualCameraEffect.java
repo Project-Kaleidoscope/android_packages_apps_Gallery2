@@ -73,7 +73,8 @@ public class DualCameraEffect {
     private int mWidth;
     private int mHeight;
 
-    private DualCameraEffect() {}
+    private DualCameraEffect() {
+    }
 
     public static boolean isSupported() {
         return loaded;
@@ -87,7 +88,7 @@ public class DualCameraEffect {
     }
 
     public boolean initialize(Bitmap primary, Bitmap depthMap, int[] roi, int width, int height,
-            float brIntensity) {
+                              float brIntensity) {
         boolean ok = init(primary, depthMap, roi, width, height, brIntensity);
         if (ok) {
             mRoi = roi;
@@ -107,12 +108,12 @@ public class DualCameraEffect {
     }
 
     native private boolean init(Bitmap primary, Bitmap depthMap, int[] roi, int width, int height,
-            float brIntensity);
+                                float brIntensity);
 
     native public void release();
 
     native public boolean render(int effect, int focusPointX, int focusPointY, Bitmap out,
-            float intensity);
+                                 float intensity);
 
     public boolean render(int effect, int focusPointX, int focusPointY, Bitmap out) {
         return render(effect, focusPointX, focusPointY, out, 0);

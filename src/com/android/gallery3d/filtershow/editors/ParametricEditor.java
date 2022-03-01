@@ -18,17 +18,12 @@ package com.android.gallery3d.filtershow.editors;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Point;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.controller.ActionSlider;
 import com.android.gallery3d.filtershow.controller.BasicSlider;
 import com.android.gallery3d.filtershow.controller.ColorChooser;
@@ -47,25 +42,21 @@ import com.android.gallery3d.filtershow.controller.SliderHue;
 import com.android.gallery3d.filtershow.controller.SliderOpacity;
 import com.android.gallery3d.filtershow.controller.SliderSaturation;
 import com.android.gallery3d.filtershow.controller.StyleChooser;
-import com.android.gallery3d.filtershow.controller.TitledSlider;
 import com.android.gallery3d.filtershow.filters.FilterBasicRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
+
+import org.codeaurora.gallery.R;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
 public class ParametricEditor extends Editor {
-    private int mLayoutID;
-    private int mViewID;
-    public static int ID = R.id.editorParametric;
-    private final String LOGTAG = "ParametricEditor";
-    protected Control mControl;
     public static final int MINIMUM_WIDTH = 600;
     public static final int MINIMUM_HEIGHT = 800;
-    View mActionButton;
-    View mEditControl;
-    static HashMap<String, Class> portraitMap = new HashMap<String, Class>();
-    static HashMap<String, Class> landscapeMap = new HashMap<String, Class>();
+    public static int ID = R.id.editorParametric;
+    static HashMap<String, Class<?>> portraitMap = new HashMap<>();
+    static HashMap<String, Class<?>> landscapeMap = new HashMap<>();
+
     static {
         portraitMap.put(ParameterSaturation.sParameterType, SliderSaturation.class);
         landscapeMap.put(ParameterSaturation.sParameterType, SliderSaturation.class);
@@ -86,13 +77,12 @@ public class ParametricEditor extends Editor {
         landscapeMap.put(ParameterStyles.sParameterType, StyleChooser.class);
     }
 
-    static Constructor getConstructor(Class cl) {
-        try {
-            return cl.getConstructor(Context.class, ViewGroup.class);
-        } catch (Exception e) {
-            return null;
-        }
-    }
+    private final String TAG = "ParametricEditor";
+    protected Control mControl;
+    View mActionButton;
+    View mEditControl;
+    private int mLayoutID;
+    private int mViewID;
 
     public ParametricEditor() {
         super(ID);
@@ -108,17 +98,30 @@ public class ParametricEditor extends Editor {
         mViewID = viewID;
     }
 
+    static Constructor<?> getConstructor(Class<?> cl) {
+        try {
+            return cl.getConstructor(Context.class, ViewGroup.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    protected static boolean useCompact(Context context) {
+        return context.getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_PORTRAIT;
+    }
+
     @Override
     public String calculateUserMessage(Context context, String effectName, Object parameterValue) {
         String apply = "";
 
         if (mShowParameter == SHOW_VALUE_INT & useCompact(context)) {
-           if (getLocalRepresentation() instanceof FilterBasicRepresentation) {
-            FilterBasicRepresentation interval = (FilterBasicRepresentation) getLocalRepresentation();
+            if (getLocalRepresentation() instanceof FilterBasicRepresentation) {
+                FilterBasicRepresentation interval = (FilterBasicRepresentation) getLocalRepresentation();
                 apply += " " + effectName + " " + interval.getStateRepresentation();
-           } else {
+            } else {
                 apply += " " + effectName + " " + parameterValue;
-           }
+            }
         } else {
             apply += " " + effectName;
         }
@@ -145,14 +148,7 @@ public class ParametricEditor extends Editor {
     @Override
     public Control[] getControls() {
         BasicSlider slider = new BasicSlider();
-        return new Control[] {
-                slider
-        };
-    }
-
-    protected static boolean useCompact(Context context) {
-        return context.getResources().getConfiguration().orientation
-                == Configuration.ORIENTATION_PORTRAIT;
+        return new Control[]{slider};
     }
 
     protected Parameter getParameterToEdit(FilterRepresentation rep) {
@@ -172,7 +168,7 @@ public class ParametricEditor extends Editor {
         if (param != null) {
             control(param, editControl);
         } else {
-            mSeekBar = (SeekBar) editControl.findViewById(R.id.primarySeekBar);
+            mSeekBar = editControl.findViewById(R.id.primarySeekBar);
             if (mSeekBar != null && showsSeekBar()) {
                 mSeekBar.setVisibility(View.VISIBLE);
             }
@@ -183,7 +179,7 @@ public class ParametricEditor extends Editor {
     protected void control(Parameter p, View editControl) {
         String pType = p.getParameterType();
         Context context = editControl.getContext();
-        Class c = ((useCompact(context)) ? portraitMap : landscapeMap).get(pType);
+        Class<?> c = ((useCompact(context)) ? portraitMap : landscapeMap).get(pType);
 
         if (c != null) {
             try {
@@ -191,12 +187,12 @@ public class ParametricEditor extends Editor {
                 p.setController(mControl);
                 mControl.setUp((ViewGroup) editControl, p, this);
             } catch (Exception e) {
-                Log.e(LOGTAG, "Error in loading Control ", e);
+                Log.e(TAG, "Error in loading Control ", e);
             }
         } else {
-            Log.e(LOGTAG, "Unable to find class for " + pType);
+            Log.e(TAG, "Unable to find class for " + pType);
             for (String string : portraitMap.keySet()) {
-                Log.e(LOGTAG, "for " + string + " use " + portraitMap.get(string));
+                Log.e(TAG, "for " + string + " use " + portraitMap.get(string));
             }
         }
     }

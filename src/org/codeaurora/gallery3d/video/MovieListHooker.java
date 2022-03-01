@@ -15,27 +15,29 @@ import org.codeaurora.gallery3d.ext.MovieListLoader;
 public class MovieListHooker extends MovieHooker implements LoaderListener {
     private static final String TAG = "MovieListHooker";
     private static final boolean LOG = false;
-    
+
     private static final int MENU_NEXT = 1;
     private static final int MENU_PREVIOUS = 2;
-    
+
     private MenuItem mMenuNext;
     private MenuItem mMenuPrevious;
-    
+
     private IMovieListLoader mMovieLoader;
     private IMovieList mMovieList;
-    
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mMovieLoader = new MovieListLoader();
         mMovieLoader.fillVideoList(getContext(), getIntent(), this, getMovieItem());
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         mMovieLoader.cancelList();
     }
+
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -47,39 +49,41 @@ public class MovieListHooker extends MovieHooker implements LoaderListener {
         }
         return true;
     }
+
     @Override
     public boolean onPrepareOptionsMenu(final Menu menu) {
         super.onPrepareOptionsMenu(menu);
         updatePrevNext();
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         super.onOptionsItemSelected(item);
-        switch(getMenuOriginalId(item.getItemId())) {
-        case MENU_PREVIOUS:
-            if (mMovieList == null) {
+        switch (getMenuOriginalId(item.getItemId())) {
+            case MENU_PREVIOUS:
+                if (mMovieList == null) {
+                    return false;
+                }
+                getPlayer().startNextVideo(mMovieList.getPrevious(getMovieItem()));
+                return true;
+            case MENU_NEXT:
+                if (mMovieList == null) {
+                    return false;
+                }
+                getPlayer().startNextVideo(mMovieList.getNext(getMovieItem()));
+                return true;
+            default:
                 return false;
-            }
-            getPlayer().startNextVideo(mMovieList.getPrevious(getMovieItem()));
-            return true;
-        case MENU_NEXT:
-            if (mMovieList == null) {
-                return false;
-            }
-            getPlayer().startNextVideo(mMovieList.getNext(getMovieItem()));
-            return true;
-        default:
-            return false;
         }
     }
-    
+
     @Override
     public void onMovieItemChanged(final IMovieItem item) {
         super.onMovieItemChanged(item);
         updatePrevNext();
     }
-    
+
     private void updatePrevNext() {
         if (LOG) {
             Log.v(TAG, "updatePrevNext()");
@@ -92,19 +96,11 @@ public class MovieListHooker extends MovieHooker implements LoaderListener {
                 mMenuNext.setVisible(true);
                 mMenuPrevious.setVisible(true);
             }
-            if (mMovieList.isFirst(getMovieItem())) {
-                mMenuPrevious.setEnabled(false);
-            } else {
-                mMenuPrevious.setEnabled(true);
-            }
-            if (mMovieList.isLast(getMovieItem())) {
-                mMenuNext.setEnabled(false);
-            } else {
-                mMenuNext.setEnabled(true);
-            }
+            mMenuPrevious.setEnabled(!mMovieList.isFirst(getMovieItem()));
+            mMenuNext.setEnabled(!mMovieList.isLast(getMovieItem()));
         }
     }
-    
+
     @Override
     public void onListLoaded(final IMovieList movieList) {
         mMovieList = movieList;

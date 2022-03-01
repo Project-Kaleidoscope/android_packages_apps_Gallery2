@@ -22,14 +22,6 @@ import android.graphics.RectF;
 import com.android.gallery3d.filtershow.imageshow.GeometryMathUtils;
 
 public class CropObject {
-    private BoundedRect mBoundedRect;
-    private float mAspectWidth = 1;
-    private float mAspectHeight = 1;
-    private boolean mFixAspectRatio = false;
-    private float mRotation = 0;
-    private float mTouchTolerance = 45;
-    private float mMinSideSize = 20;
-
     public static final int MOVE_NONE = 0;
     // Sides
     public static final int MOVE_LEFT = 1;
@@ -37,13 +29,18 @@ public class CropObject {
     public static final int MOVE_RIGHT = 4;
     public static final int MOVE_BOTTOM = 8;
     public static final int MOVE_BLOCK = 16;
-
     // Corners
     public static final int TOP_LEFT = MOVE_TOP | MOVE_LEFT;
     public static final int TOP_RIGHT = MOVE_TOP | MOVE_RIGHT;
     public static final int BOTTOM_RIGHT = MOVE_BOTTOM | MOVE_RIGHT;
     public static final int BOTTOM_LEFT = MOVE_BOTTOM | MOVE_LEFT;
-
+    private final BoundedRect mBoundedRect;
+    private float mAspectWidth = 1;
+    private float mAspectHeight = 1;
+    private boolean mFixAspectRatio = false;
+    private float mRotation = 0;
+    private float mTouchTolerance = 45;
+    private float mMinSideSize = 20;
     private int mMovingEdges = MOVE_NONE;
 
     public CropObject(Rect outerBound, Rect innerBound, int outerAngle) {
@@ -52,6 +49,60 @@ public class CropObject {
 
     public CropObject(RectF outerBound, RectF innerBound, int outerAngle) {
         mBoundedRect = new BoundedRect(outerAngle % 360, outerBound, innerBound);
+    }
+
+    public static boolean checkCorner(int selected) {
+        return selected == TOP_LEFT || selected == TOP_RIGHT || selected == BOTTOM_RIGHT
+                || selected == BOTTOM_LEFT;
+    }
+
+    public static boolean checkEdge(int selected) {
+        return selected == MOVE_LEFT || selected == MOVE_TOP || selected == MOVE_RIGHT
+                || selected == MOVE_BOTTOM;
+    }
+
+    public static boolean checkBlock(int selected) {
+        return selected == MOVE_BLOCK;
+    }
+
+    public static boolean checkValid(int selected) {
+        return selected == MOVE_NONE || checkBlock(selected) || checkEdge(selected)
+                || checkCorner(selected);
+    }
+
+    private static RectF fixedCornerResize(RectF r, int moving_corner, float dx, float dy) {
+        RectF newCrop = null;
+        // Fix opposite corner in place and move sides
+        if (moving_corner == BOTTOM_RIGHT) {
+            newCrop = new RectF(r.left, r.top, r.left + r.width() + dx, r.top + r.height()
+                    + dy);
+        } else if (moving_corner == BOTTOM_LEFT) {
+            newCrop = new RectF(r.right - r.width() + dx, r.top, r.right, r.top + r.height()
+                    + dy);
+        } else if (moving_corner == TOP_LEFT) {
+            newCrop = new RectF(r.right - r.width() + dx, r.bottom - r.height() + dy,
+                    r.right, r.bottom);
+        } else if (moving_corner == TOP_RIGHT) {
+            newCrop = new RectF(r.left, r.bottom - r.height() + dy, r.left
+                    + r.width() + dx, r.bottom);
+        }
+        return newCrop;
+    }
+
+    private static int fixEdgeToCorner(int moving_edges) {
+        if (moving_edges == MOVE_LEFT) {
+            moving_edges |= MOVE_TOP;
+        }
+        if (moving_edges == MOVE_TOP) {
+            moving_edges |= MOVE_LEFT;
+        }
+        if (moving_edges == MOVE_RIGHT) {
+            moving_edges |= MOVE_BOTTOM;
+        }
+        if (moving_edges == MOVE_BOTTOM) {
+            moving_edges |= MOVE_RIGHT;
+        }
+        return moving_edges;
     }
 
     public void resetBoundsTo(RectF inner, RectF outer) {
@@ -128,25 +179,6 @@ public class CropObject {
         return mMovingEdges != MOVE_NONE;
     }
 
-    public static boolean checkCorner(int selected) {
-        return selected == TOP_LEFT || selected == TOP_RIGHT || selected == BOTTOM_RIGHT
-                || selected == BOTTOM_LEFT;
-    }
-
-    public static boolean checkEdge(int selected) {
-        return selected == MOVE_LEFT || selected == MOVE_TOP || selected == MOVE_RIGHT
-                || selected == MOVE_BOTTOM;
-    }
-
-    public static boolean checkBlock(int selected) {
-        return selected == MOVE_BLOCK;
-    }
-
-    public static boolean checkValid(int selected) {
-        return selected == MOVE_NONE || checkBlock(selected) || checkEdge(selected)
-                || checkCorner(selected);
-    }
-
     public void clearSelectState() {
         mMovingEdges = MOVE_NONE;
     }
@@ -173,6 +205,8 @@ public class CropObject {
         mMovingEdges = edge;
         return true;
     }
+
+    // Helper methods
 
     public boolean selectEdge(float x, float y) {
         int edgeSelected = calculateSelectedEdge(x, y);
@@ -259,8 +293,6 @@ public class CropObject {
         return true;
     }
 
-    // Helper methods
-
     private int calculateSelectedEdge(float x, float y) {
         RectF cropped = mBoundedRect.getInner();
 
@@ -274,8 +306,7 @@ public class CropObject {
         if ((left <= mTouchTolerance) && ((y + mTouchTolerance) >= cropped.top)
                 && ((y - mTouchTolerance) <= cropped.bottom) && (left < right)) {
             edgeSelected |= MOVE_LEFT;
-        }
-        else if ((right <= mTouchTolerance) && ((y + mTouchTolerance) >= cropped.top)
+        } else if ((right <= mTouchTolerance) && ((y + mTouchTolerance) >= cropped.top)
                 && ((y - mTouchTolerance) <= cropped.bottom)) {
             edgeSelected |= MOVE_RIGHT;
         }
@@ -284,47 +315,11 @@ public class CropObject {
         if ((top <= mTouchTolerance) && ((x + mTouchTolerance) >= cropped.left)
                 && ((x - mTouchTolerance) <= cropped.right) && (top < bottom)) {
             edgeSelected |= MOVE_TOP;
-        }
-        else if ((bottom <= mTouchTolerance) && ((x + mTouchTolerance) >= cropped.left)
+        } else if ((bottom <= mTouchTolerance) && ((x + mTouchTolerance) >= cropped.left)
                 && ((x - mTouchTolerance) <= cropped.right)) {
             edgeSelected |= MOVE_BOTTOM;
         }
         return edgeSelected;
-    }
-
-    private static RectF fixedCornerResize(RectF r, int moving_corner, float dx, float dy) {
-        RectF newCrop = null;
-        // Fix opposite corner in place and move sides
-        if (moving_corner == BOTTOM_RIGHT) {
-            newCrop = new RectF(r.left, r.top, r.left + r.width() + dx, r.top + r.height()
-                    + dy);
-        } else if (moving_corner == BOTTOM_LEFT) {
-            newCrop = new RectF(r.right - r.width() + dx, r.top, r.right, r.top + r.height()
-                    + dy);
-        } else if (moving_corner == TOP_LEFT) {
-            newCrop = new RectF(r.right - r.width() + dx, r.bottom - r.height() + dy,
-                    r.right, r.bottom);
-        } else if (moving_corner == TOP_RIGHT) {
-            newCrop = new RectF(r.left, r.bottom - r.height() + dy, r.left
-                    + r.width() + dx, r.bottom);
-        }
-        return newCrop;
-    }
-
-    private static int fixEdgeToCorner(int moving_edges) {
-        if (moving_edges == MOVE_LEFT) {
-            moving_edges |= MOVE_TOP;
-        }
-        if (moving_edges == MOVE_TOP) {
-            moving_edges |= MOVE_LEFT;
-        }
-        if (moving_edges == MOVE_RIGHT) {
-            moving_edges |= MOVE_BOTTOM;
-        }
-        if (moving_edges == MOVE_BOTTOM) {
-            moving_edges |= MOVE_RIGHT;
-        }
-        return moving_edges;
     }
 
 }

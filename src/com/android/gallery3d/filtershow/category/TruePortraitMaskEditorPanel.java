@@ -29,36 +29,37 @@
 
 package com.android.gallery3d.filtershow.category;
 
-
 import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.codeaurora.gallery.R;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.EditorTruePortraitMask;
 import com.android.gallery3d.filtershow.ui.DoNotShowAgainDialog;
 import com.android.gallery3d.util.GalleryUtils;
+
+import org.codeaurora.gallery.R;
 
 public class TruePortraitMaskEditorPanel extends Fragment {
     private View mMainView;
     private EditorTruePortraitMask mEditor;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         FilterShowActivity filterShowActivity = (FilterShowActivity) context;
         mEditor = (EditorTruePortraitMask) filterShowActivity.getEditor(EditorTruePortraitMask.ID);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mMainView = inflater.inflate(R.layout.filtershow_trueportrait_editor_panel, container, false);
         if (mEditor != null) {
             mEditor.setUpEditorUI(mMainView, null);
@@ -69,14 +70,14 @@ public class TruePortraitMaskEditorPanel extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Context context = getActivity();
+        Context context = requireContext();
         boolean skipIntro = GalleryUtils.getBooleanPref(context,
                 context.getString(R.string.pref_trueportrait_edit_intro_show_key), false);
-        if(!skipIntro) {
+        if (!skipIntro) {
             FragmentManager fm = getFragmentManager();
             DoNotShowAgainDialog dialog =
                     (DoNotShowAgainDialog) fm.findFragmentByTag("trueportrait_edit_intro");
-            if(dialog == null) {
+            if (dialog == null) {
                 dialog = new DoNotShowAgainDialog(
                         R.string.trueportrait_touch_up, R.string.trueportrait_edit_intro,
                         R.string.pref_trueportrait_edit_intro_show_key);

@@ -16,15 +16,14 @@
 
 package com.android.gallery3d.ui;
 
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.common.Utils;
 import com.android.photos.data.GalleryBitmapPool;
 
@@ -82,19 +81,14 @@ public class TileImageViewAdapter implements TileImageView.TileSource {
     //
     // As a result, we should decode region (50-6, 50-6, 250+6, 250+6) or
     // (44, 44, 256, 256) from the original photo and down sample it to 106.
-    @TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB)
     @Override
     public Bitmap getTile(int level, int x, int y, int tileSize) {
-        if (!ApiHelper.HAS_REUSING_BITMAP_IN_BITMAP_REGION_DECODER) {
-            return getTileWithoutReusingBitmap(level, x, y, tileSize);
-        }
-
         int t = tileSize << level;
 
         Rect wantRegion = new Rect(x, y, x + t, y + t);
 
         boolean needClear;
-        BitmapRegionDecoder regionDecoder = null;
+        BitmapRegionDecoder regionDecoder;
 
         synchronized (this) {
             regionDecoder = mRegionDecoder;
@@ -116,7 +110,7 @@ public class TileImageViewAdapter implements TileImageView.TileSource {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Config.ARGB_8888;
         options.inPreferQualityOverSpeed = true;
-        options.inSampleSize =  (1 << level);
+        options.inSampleSize = (1 << level);
         options.inBitmap = bitmap;
 
         try {
@@ -155,8 +149,8 @@ public class TileImageViewAdapter implements TileImageView.TileSource {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Config.ARGB_8888;
         options.inPreferQualityOverSpeed = true;
-        options.inSampleSize =  (1 << level);
-        Bitmap bitmap = null;
+        options.inSampleSize = (1 << level);
+        Bitmap bitmap;
 
         // In CropImage, we may call the decodeRegion() concurrently.
         synchronized (regionDecoder) {

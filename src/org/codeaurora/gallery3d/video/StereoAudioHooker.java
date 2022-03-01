@@ -60,17 +60,13 @@ public class StereoAudioHooker extends MovieHooker {
     }
 
     private boolean getStereoAudio() {
-        boolean isstereo = false;
+        boolean isstereo;
         if (mAudioManager == null) {
             mAudioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         }
         final String stereo = mAudioManager.getParameters(KEY_STEREO);
         final String key = KEY_STEREO + "=1";
-        if (stereo != null && stereo.indexOf(key) > -1) {
-            isstereo = true;
-        } else {
-            isstereo = false;
-        }
+        isstereo = stereo != null && stereo.contains(key);
         if (LOG) {
             Log.v(TAG, "getStereoAudio() isstereo=" + isstereo + ", stereo=" + stereo
                     + ", key=" + key);

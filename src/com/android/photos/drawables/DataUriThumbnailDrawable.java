@@ -33,8 +33,9 @@ public class DataUriThumbnailDrawable extends AutoThumbnailDrawable<String> {
             ExifInterface exif = new ExifInterface(data);
             if (exif.hasThumbnail()) {
                 thumbnail = exif.getThumbnail();
-             }
-        } catch (IOException e) { }
+            }
+        } catch (IOException ignored) {
+        }
         return thumbnail;
     }
 

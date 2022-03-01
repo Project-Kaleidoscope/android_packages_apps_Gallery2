@@ -16,10 +16,8 @@
 
 package com.android.gallery3d.ui;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.app.AlbumSetDataLoader;
-import com.android.gallery3d.data.MediaObject;
 import com.android.gallery3d.data.Path;
 import com.android.gallery3d.glrenderer.ColorTexture;
 import com.android.gallery3d.glrenderer.FadeInTexture;
@@ -29,6 +27,8 @@ import com.android.gallery3d.glrenderer.Texture;
 import com.android.gallery3d.glrenderer.TiledTexture;
 import com.android.gallery3d.glrenderer.UploadedTexture;
 import com.android.gallery3d.ui.AlbumSetSlidingWindow.AlbumSetEntry;
+
+import org.codeaurora.gallery.R;
 
 public class AlbumSetSlotRenderer extends AbstractSlotRenderer {
     @SuppressWarnings("unused")
@@ -43,7 +43,7 @@ public class AlbumSetSlotRenderer extends AbstractSlotRenderer {
     protected final LabelSpec mLabelSpec;
 
     protected AlbumSetSlidingWindow mDataWindow;
-    private SlotView mSlotView;
+    private final SlotView mSlotView;
 
     private int mPressedIndex = -1;
     private boolean mAnimatePressedUp;
@@ -68,9 +68,9 @@ public class AlbumSetSlotRenderer extends AbstractSlotRenderer {
     }
 
     public AlbumSetSlotRenderer(AbstractGalleryActivity activity,
-            SelectionManager selectionManager,
-            SlotView slotView, LabelSpec labelSpec, int placeholderColor) {
-        super (activity);
+                                SelectionManager selectionManager,
+                                SlotView slotView, LabelSpec labelSpec, int placeholderColor) {
+        super(activity);
         mActivity = activity;
         mSelectionManager = selectionManager;
         mSlotView = slotView;

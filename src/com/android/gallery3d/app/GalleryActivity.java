@@ -30,29 +30,19 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.drawerlayout.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.InputDevice;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
-import org.codeaurora.gallery.R;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.MediaItem;
@@ -60,8 +50,9 @@ import com.android.gallery3d.data.MediaSet;
 import com.android.gallery3d.data.Path;
 import com.android.gallery3d.picasasource.PicasaSource;
 import com.android.gallery3d.util.GalleryUtils;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import org.codeaurora.gallery.R;
 
 import java.util.Locale;
 
@@ -116,8 +107,7 @@ public final class GalleryActivity extends AbstractGalleryActivity implements On
         super.onCreate(savedInstanceState);
 
         if (getIntent().getBooleanExtra(KEY_DISMISS_KEYGUARD, false)) {
-            getWindow().addFlags(
-                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         }
 
         setContentView(R.layout.gallery_main);
@@ -172,34 +162,31 @@ public final class GalleryActivity extends AbstractGalleryActivity implements On
                     R.string.videos_title, R.drawable.videos) };
 
     public void initView() {
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar = findViewById(R.id.toolbar);
         setActionBar(mToolbar);
         setToolbar(mToolbar);
 
-        mGLParentLayout = (RelativeLayout) findViewById(R.id.gl_parent_layout);
+        mGLParentLayout = findViewById(R.id.gl_parent_layout);
         params = (RelativeLayout.LayoutParams) mGLParentLayout.getLayoutParams();
 
-        mBottomNavigation = (BottomNavigationView) findViewById(R.id.bottom_navigation);
-        mBottomNavigation.setOnNavigationItemSelectedListener(
-                new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem item) {
-                getGLRoot().lockRenderThread();
-                switch (item.getItemId()) {
-                    case R.id.action_timeline:
-                        showScreen(0);
-                        break;
-                    case R.id.action_album:
-                        showScreen(1);
-                        break;
-                    case R.id.action_videos:
-                        showScreen(2);
-                        break;
-                }
-                getGLRoot().unlockRenderThread();
-                return true;
-            }
-        });
+        mBottomNavigation = findViewById(R.id.bottom_navigation);
+        mBottomNavigation.setOnItemSelectedListener(
+                item -> {
+                    getGLRoot().lockRenderThread();
+                    switch (item.getItemId()) {
+                        case R.id.action_timeline:
+                            showScreen(0);
+                            break;
+                        case R.id.action_album:
+                            showScreen(1);
+                            break;
+                        case R.id.action_videos:
+                            showScreen(2);
+                            break;
+                    }
+                    getGLRoot().unlockRenderThread();
+                    return true;
+                });
     }
 
     public void toggleNavBar(boolean show) {
@@ -389,7 +376,7 @@ public final class GalleryActivity extends AbstractGalleryActivity implements On
     }
 
     private void startViewAction(Intent intent) {
-        Boolean slideshow = intent.getBooleanExtra(EXTRA_SLIDESHOW, false);
+        boolean slideshow = intent.getBooleanExtra(EXTRA_SLIDESHOW, false);
         if (slideshow) {
             getActionBar().hide();
             DataManager manager = getDataManager();

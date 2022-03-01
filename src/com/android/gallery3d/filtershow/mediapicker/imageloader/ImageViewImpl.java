@@ -43,7 +43,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 
 
-public class ImageViewImpl{
+public class ImageViewImpl {
 
     private final static String TAG = "ImageViewImpl";
     protected Reference<View> viewRef;
@@ -52,7 +52,7 @@ public class ImageViewImpl{
     public ImageViewImpl(ImageView imageView) {
         if (imageView == null) throw new IllegalArgumentException("view must not be null");
 
-        this.viewRef = new WeakReference<View>(imageView);
+        this.viewRef = new WeakReference<>(imageView);
     }
 
     public int getWidth() {
@@ -61,7 +61,7 @@ public class ImageViewImpl{
         if (view != null) {
             final ViewGroup.LayoutParams params = view.getLayoutParams();
 
-            if (width <= 0 && params != null) width = params.width; // Get layout width parameter
+            if (params != null) width = params.width; // Get layout width parameter
         }
         if (width <= 0) {
             ImageView imageView = (ImageView) viewRef.get();
@@ -77,14 +77,13 @@ public class ImageViewImpl{
         View view = viewRef.get();
         if (view != null) {
             final ViewGroup.LayoutParams params = view.getLayoutParams();
-            if (height <= 0 && params != null) height = params.height; // Get layout height parameter
+            if (params != null)
+                height = params.height; // Get layout height parameter
             return height;
         }
-        if (height <= 0) {
-            ImageView imageView = (ImageView) viewRef.get();
-            if (imageView != null) {
-                height = getImageViewFieldValue(imageView, "mMaxHeight"); // Check maxHeight parameter
-            }
+        ImageView imageView = (ImageView) viewRef.get();
+        if (imageView != null) {
+            height = getImageViewFieldValue(imageView, "mMaxHeight"); // Check maxHeight parameter
         }
         return height;
     }
@@ -95,7 +94,7 @@ public class ImageViewImpl{
             if (view != null) {
                 ((ImageView) view).setImageDrawable(drawable);
                 if (drawable instanceof AnimationDrawable) {
-                    ((AnimationDrawable)drawable).start();
+                    ((AnimationDrawable) drawable).start();
                 }
                 return true;
             }
@@ -146,7 +145,7 @@ public class ImageViewImpl{
         return false;
     }
 
-    public boolean isRecyled() {
+    public boolean isRecycled() {
         return viewRef.get() == null;
     }
 }

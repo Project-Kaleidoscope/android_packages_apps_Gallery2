@@ -30,8 +30,8 @@ import com.android.gallery3d.util.ThreadPool.JobContext;
 public class ActionImage extends MediaItem {
     @SuppressWarnings("unused")
     private static final String TAG = "ActionImage";
-    private GalleryApp mApplication;
-    private int mResourceId;
+    private final GalleryApp mApplication;
+    private final int mResourceId;
 
     public ActionImage(Path path, GalleryApp application, int resourceId) {
         super(path, nextVersionNumber());
@@ -47,28 +47,6 @@ public class ActionImage extends MediaItem {
     @Override
     public Job<BitmapRegionDecoder> requestLargeImage() {
         return null;
-    }
-
-    private class BitmapJob implements Job<Bitmap> {
-        private int mType;
-
-        protected BitmapJob(int type) {
-            mType = type;
-        }
-
-        @Override
-        public Bitmap run(JobContext jc) {
-            int targetSize = MediaItem.getTargetSize(mType);
-            Bitmap bitmap = BitmapFactory.decodeResource(mApplication.getResources(),
-                    mResourceId);
-
-            if (mType == MediaItem.TYPE_MICROTHUMBNAIL) {
-                bitmap = BitmapUtils.resizeAndCropCenter(bitmap, targetSize, true);
-            } else {
-                bitmap = BitmapUtils.resizeDownBySideLength(bitmap, targetSize, true);
-            }
-            return bitmap;
-        }
     }
 
     @Override
@@ -99,5 +77,27 @@ public class ActionImage extends MediaItem {
     @Override
     public int getHeight() {
         return 0;
+    }
+
+    private class BitmapJob implements Job<Bitmap> {
+        private final int mType;
+
+        protected BitmapJob(int type) {
+            mType = type;
+        }
+
+        @Override
+        public Bitmap run(JobContext jc) {
+            int targetSize = MediaItem.getTargetSize(mType);
+            Bitmap bitmap = BitmapFactory.decodeResource(mApplication.getResources(),
+                    mResourceId);
+
+            if (mType == MediaItem.TYPE_MICROTHUMBNAIL) {
+                bitmap = BitmapUtils.resizeAndCropCenter(bitmap, targetSize, true);
+            } else {
+                bitmap = BitmapUtils.resizeDownBySideLength(bitmap, targetSize, true);
+            }
+            return bitmap;
+        }
     }
 }

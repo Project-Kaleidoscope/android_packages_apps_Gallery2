@@ -29,14 +29,16 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-import java.io.IOException;
-
 import android.graphics.Point;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.editors.EditorDualCamSketch;
 import com.android.gallery3d.filtershow.editors.EditorDualCamera;
+
+import java.io.IOException;
 
 public class FilterDualCamBasicRepresentation extends FilterBasicRepresentation {
     private static final String SERIAL_VALUE = "value";
@@ -59,7 +61,7 @@ public class FilterDualCamBasicRepresentation extends FilterBasicRepresentation 
     @Override
     public FilterRepresentation copy() {
         FilterDualCamBasicRepresentation representation =
-                new FilterDualCamBasicRepresentation(getName(), 0,0,0);
+                new FilterDualCamBasicRepresentation(getName(), 0, 0, 0);
         copyAllParameters(representation);
         return representation;
     }
@@ -85,25 +87,24 @@ public class FilterDualCamBasicRepresentation extends FilterBasicRepresentation 
         }
         if (representation instanceof FilterDualCamBasicRepresentation) {
             FilterDualCamBasicRepresentation dualCam = (FilterDualCamBasicRepresentation) representation;
-            if (dualCam.mPoint.equals(mPoint)) {
-                return true;
-            }
+            return dualCam.mPoint.equals(mPoint);
         }
         return false;
     }
 
     public void setPoint(int x, int y) {
-        mPoint = new Point(x,y);
-    }
-
-    public void setPoint(Point point) {
-        mPoint = point;
+        mPoint = new Point(x, y);
     }
 
     public Point getPoint() {
         return mPoint;
     }
 
+    public void setPoint(Point point) {
+        mPoint = point;
+    }
+
+    @NonNull
     @Override
     public String toString() {
         return "dualcam - value: " + getValue() + ", point: " + getPoint().toString();

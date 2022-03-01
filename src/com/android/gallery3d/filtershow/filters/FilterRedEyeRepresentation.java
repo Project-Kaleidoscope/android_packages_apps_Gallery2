@@ -18,16 +18,17 @@ package com.android.gallery3d.filtershow.filters;
 
 import android.graphics.RectF;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.EditorRedEye;
+
+import org.codeaurora.gallery.R;
 
 import java.util.Vector;
 
 public class FilterRedEyeRepresentation extends FilterPointRepresentation {
-    private static final String LOGTAG = "FilterRedEyeRepresentation";
+    private static final String TAG = "FilterRedEyeRepresentation";
 
     public FilterRedEyeRepresentation() {
-        super("RedEye",R.string.redeye,EditorRedEye.ID);
+        super("RedEye", R.string.redeye, EditorRedEye.ID);
         setSerializationName("REDEYE");
         setFilterClass(ImageFilterRedEye.class);
         setOverlayId(R.drawable.photoeditor_effect_redeye);
@@ -48,7 +49,7 @@ public class FilterRedEyeRepresentation extends FilterPointRepresentation {
     }
 
     public void addRect(RectF rect, RectF bounds) {
-        Vector<RedEyeCandidate> intersects = new Vector<RedEyeCandidate>();
+        Vector<RedEyeCandidate> intersects = new Vector<>();
         for (int i = 0; i < getCandidates().size(); i++) {
             RedEyeCandidate r = (RedEyeCandidate) getCandidate(i);
             if (r.intersect(rect)) {

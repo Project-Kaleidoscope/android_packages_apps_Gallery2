@@ -16,7 +16,6 @@
 
 package com.android.photos;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -24,8 +23,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.util.Log;
 
 import com.android.gallery3d.common.BitmapUtils;
@@ -39,13 +36,10 @@ import java.io.IOException;
  * A {@link com.android.photos.views.TiledImageRenderer.TileSource} using
  * {@link BitmapRegionDecoder} to wrap a local file
  */
-@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
 public class BitmapRegionTileSource implements TiledImageRenderer.TileSource {
 
     private static final String TAG = "BitmapRegionTileSource";
 
-    private static final boolean REUSE_BITMAP =
-            Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN;
     private static final int GL_SIZE_LIMIT = 2048;
     // This must be no larger than half the size of the GL_SIZE_LIMIT
     // due to decodePreview being allowed to be up to 2x the size of the target
@@ -89,7 +83,7 @@ public class BitmapRegionTileSource implements TiledImageRenderer.TileSource {
             } else {
                 Log.w(TAG, String.format(
                         "Failed to create preview of apropriate size! "
-                        + " in: %dx%d, out: %dx%d",
+                                + " in: %dx%d, out: %dx%d",
                         mWidth, mHeight,
                         preview.getWidth(), preview.getHeight()));
             }
@@ -124,9 +118,6 @@ public class BitmapRegionTileSource implements TiledImageRenderer.TileSource {
     @Override
     public Bitmap getTile(int level, int x, int y, Bitmap bitmap) {
         int tileSize = getTileSize();
-        if (!REUSE_BITMAP) {
-            return getTileWithoutReusingBitmap(level, x, y, tileSize);
-        }
 
         int t = tileSize << level;
         mWantRegion.set(x, y, x + t, y + t);

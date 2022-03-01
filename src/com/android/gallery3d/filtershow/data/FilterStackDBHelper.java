@@ -25,22 +25,10 @@ public class FilterStackDBHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "filterstacks.db";
     private static final String SQL_CREATE_TABLE = "CREATE TABLE ";
-
-    public static interface FilterStack {
-        /** The row uid */
-        public static final String _ID = "_id";
-        /** The table name */
-        public static final String TABLE = "filterstack";
-        /** The stack name */
-        public static final String STACK_ID = "stack_id";
-        /** A serialized stack of filters. */
-        public static final String FILTER_STACK= "stack";
-    }
-
     private static final String[][] CREATE_FILTER_STACK = {
-            { FilterStack._ID, "INTEGER PRIMARY KEY AUTOINCREMENT" },
-            { FilterStack.STACK_ID, "TEXT" },
-            { FilterStack.FILTER_STACK, "BLOB" },
+            {FilterStack._ID, "INTEGER PRIMARY KEY AUTOINCREMENT"},
+            {FilterStack.STACK_ID, "TEXT"},
+            {FilterStack.FILTER_STACK, "BLOB"},
     };
 
     public FilterStackDBHelper(Context context, String name, int version) {
@@ -53,17 +41,6 @@ public class FilterStackDBHelper extends SQLiteOpenHelper {
 
     public FilterStackDBHelper(Context context) {
         this(context, DATABASE_NAME);
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        createTable(db, FilterStack.TABLE, CREATE_FILTER_STACK);
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        dropTable(db, FilterStack.TABLE);
-        onCreate(db);
     }
 
     protected static void createTable(SQLiteDatabase db, String table, String[][] columns) {
@@ -97,5 +74,35 @@ public class FilterStackDBHelper extends SQLiteOpenHelper {
         } finally {
             db.endTransaction();
         }
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        createTable(db, FilterStack.TABLE, CREATE_FILTER_STACK);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        dropTable(db, FilterStack.TABLE);
+        onCreate(db);
+    }
+
+    public interface FilterStack {
+        /**
+         * The row uid
+         */
+        String _ID = "_id";
+        /**
+         * The table name
+         */
+        String TABLE = "filterstack";
+        /**
+         * The stack name
+         */
+        String STACK_ID = "stack_id";
+        /**
+         * A serialized stack of filters.
+         */
+        String FILTER_STACK = "stack";
     }
 }

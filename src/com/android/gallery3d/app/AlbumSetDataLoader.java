@@ -46,9 +46,9 @@ public class AlbumSetDataLoader {
     private static final int MSG_LOAD_FINISH = 2;
     private static final int MSG_RUN_OBJECT = 3;
 
-    public static interface DataListener {
-        public void onContentChanged(int index);
-        public void onSizeChanged(int size);
+    public interface DataListener {
+        void onContentChanged(int index);
+        void onSizeChanged(int size);
     }
 
     private final MediaSet[] mData;
@@ -181,14 +181,14 @@ public class AlbumSetDataLoader {
         mContentEnd = contentEnd;
 
         if (contentStart >= end || start >= contentEnd) {
-            for (int i = start, n = end; i < n; ++i) {
+            for (int i = start; i < end; ++i) {
                 clearSlot(i % length);
             }
         } else {
             for (int i = start; i < contentStart; ++i) {
                 clearSlot(i % length);
             }
-            for (int i = contentEnd, n = end; i < n; ++i) {
+            for (int i = contentEnd; i < end; ++i) {
                 clearSlot(i % length);
             }
         }
@@ -255,10 +255,9 @@ public class AlbumSetDataLoader {
         }
 
         private int getInvalidIndex(long version) {
-            long setVersion[] = mSetVersion;
+            long[] setVersion = mSetVersion;
             int length = setVersion.length;
             for (int i = mContentStart, n = mContentEnd; i < n; ++i) {
-                int index = i % length;
                 if (setVersion[i % length] != version) return i;
             }
             return INDEX_NONE;
@@ -321,7 +320,7 @@ public class AlbumSetDataLoader {
     }
 
     private <T> T executeAndWait(Callable<T> callable) {
-        FutureTask<T> task = new FutureTask<T>(callable);
+        FutureTask<T> task = new FutureTask<>(callable);
         mMainHandler.sendMessage(
                 mMainHandler.obtainMessage(MSG_RUN_OBJECT, task));
         try {

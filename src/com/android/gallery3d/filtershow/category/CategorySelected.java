@@ -10,8 +10,8 @@ import android.view.View;
 import org.codeaurora.gallery.R;
 
 public class CategorySelected extends View {
-    private Paint mPaint = new Paint();
-    private int mMargin = 20;
+    private final Paint mPaint = new Paint();
+    private final int mMargin;
 
     public CategorySelected(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -24,8 +24,8 @@ public class CategorySelected extends View {
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(Color.argb(128, 128, 128, 128));
-        canvas.drawCircle(getWidth()/2, getHeight()/2,
-                getWidth()/2 - mMargin, mPaint);
+        canvas.drawCircle(getWidth() / 2, getHeight() / 2,
+                getWidth() / 2 - mMargin, mPaint);
     }
 
 }

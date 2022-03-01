@@ -59,9 +59,13 @@ public class WaterMarkView extends FrameLayout {
     private static final int NONE = 0;
     private static final int DRAG = 1;
     private static final int ZOOM = 2;
-
+    public boolean mTouchable;
+    protected int widthScreen;
+    protected int heightScreen;
+    protected FrameLayout markLayout;
+    protected Drawable mMarkDrawable;
+    protected ImageView mImageView;
     private int mode = NONE;
-
     private float x_down = 0;
     private float y_down = 0;
     private float moveX;
@@ -79,31 +83,22 @@ public class WaterMarkView extends FrameLayout {
     private float oldDist = 1f;
     private float newDist;
     private Rect imageBounds;
-    protected int widthScreen;
-    protected int heightScreen;
     private String text;
-
     private EditText mEditText;
-    protected FrameLayout markLayout;
-    protected Drawable mMarkDrawable;
-    protected ImageView mImageView;
-
     //control the bounds of the watermark
     private float markLeft;
     private float markTop;
     private float markRight;
     private float markBottom;
-
     private GeometryMathUtils.GeometryHolder mGeometry;
     private Matrix mDisplaySegPointsMatrix;
     private Matrix oldImageToScreenMatrix;
-    private RectF markLayoutRect = new RectF(markLeft, markTop, markRight, markBottom);
+    private final RectF markLayoutRect = new RectF(markLeft, markTop, markRight, markBottom);
     private int newWidth;
     private int newHeight;
     private int oldWidth;
     private int oldHeight;
     private boolean sizeChanged = false;
-    public boolean mTouchable;
 
     public WaterMarkView(Context context) {
         super(context);
@@ -112,6 +107,26 @@ public class WaterMarkView extends FrameLayout {
     public WaterMarkView(Context context, Drawable drawable, String text) {
         super(context);
         init(context, drawable, text);
+    }
+
+    public static String convertStream2String(InputStream inputStream) {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        String oneLine;
+        try {
+            while ((oneLine = reader.readLine()) != null) {
+                sb.append(oneLine).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
     }
 
     private void init(Context context, Drawable drawable, String text) {
@@ -124,13 +139,13 @@ public class WaterMarkView extends FrameLayout {
     }
 
     private void initView(Context context, Drawable drawable, String text) {
-        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        FrameLayout layout = (FrameLayout)inflater.inflate(R.layout.filtershow_watermark, this, true);
-        mImageView = (ImageView) layout.findViewById(R.id.image);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        FrameLayout layout = (FrameLayout) inflater.inflate(R.layout.filtershow_watermark, this, true);
+        mImageView = layout.findViewById(R.id.image);
         mMarkDrawable = drawable;
         mImageView.setBackground(drawable);
-        markLayout = (FrameLayout) layout.findViewById(R.id.root_layout);
-        mEditText = (EditText) layout.findViewById(R.id.edit);
+        markLayout = layout.findViewById(R.id.root_layout);
+        mEditText = layout.findViewById(R.id.edit);
         mEditText.setHint(text);
         mEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -248,8 +263,8 @@ public class WaterMarkView extends FrameLayout {
                             markRight = getMid(l, r) + halfNewWidth;
                             markBottom = getMid(t, b) + halfNewHeight;
                             updateMarkLayoutRect();
-                            scaleMoveX = markLayout.getMeasuredWidth()/2 - halfNewWidth;
-                            scaleMoveY = markLayout.getMeasuredHeight()/2 - halfNewHeight;
+                            scaleMoveX = markLayout.getMeasuredWidth() / 2 - halfNewWidth;
+                            scaleMoveY = markLayout.getMeasuredHeight() / 2 - halfNewHeight;
                         }
                         markLayout.setBackground(null);
                         break;
@@ -278,10 +293,10 @@ public class WaterMarkView extends FrameLayout {
         if (imageBounds == null) {
             return true;
         }
-        return x < (imageBounds.left < 0 ? 0 : imageBounds.left) + x_down - markLeft
-                || x > (imageBounds.right > widthScreen ? widthScreen : imageBounds.right) + x_down - markRight
-                || y < (imageBounds.top < 0 ? 0 : imageBounds.top) + y_down - markTop
-                || y > (imageBounds.bottom > heightScreen ? heightScreen : imageBounds.bottom) + y_down - markBottom;
+        return x < (Math.max(imageBounds.left, 0)) + x_down - markLeft
+                || x > (Math.min(imageBounds.right, widthScreen)) + x_down - markRight
+                || y < (Math.max(imageBounds.top, 0)) + y_down - markTop
+                || y > (Math.min(imageBounds.bottom, heightScreen)) + y_down - markBottom;
     }
 
     private boolean isOutMark(MotionEvent event) {
@@ -296,10 +311,11 @@ public class WaterMarkView extends FrameLayout {
                 float x1 = event.getX(1);
                 float y1 = event.getY(1);
                 return (x0 < markLeft || x0 > markRight || y0 < markTop || y0 > markBottom)
-                        &&(x1 < markLeft || x1 > markRight || y1 < markTop || y1 > markBottom);
+                        && (x1 < markLeft || x1 > markRight || y1 < markTop || y1 > markBottom);
         }
         return false;
     }
+
     private float getMid(float x1, float x2) {
         return (x1 + x2) / 2;
     }
@@ -403,15 +419,15 @@ public class WaterMarkView extends FrameLayout {
     }
 
     /**
-     * @param left margin left
-     * @param top margin top
-     * @param right margin right
-     * @param bottom margin bottom
-     * @param gravity gravity value
+     * @param left       margin left
+     * @param top        margin top
+     * @param right      margin right
+     * @param bottom     margin bottom
+     * @param gravity    gravity value
      * @param isDipValue true means the values of left top right bottom are dip not px
      */
     public void setTextPosition(int left, int top, int right, int bottom,
-                              int gravity, boolean isDipValue) {
+                                int gravity, boolean isDipValue) {
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -433,26 +449,6 @@ public class WaterMarkView extends FrameLayout {
     public void setImageAlpha(int alpha) {
         mMarkDrawable.setAlpha(alpha);
         mImageView.setBackground(mMarkDrawable);
-    }
-
-    public static String convertStream2String(InputStream inputStream) {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        String oneLine;
-        try {
-            while ((oneLine = reader.readLine()) != null) {
-                sb.append(oneLine + "\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return sb.toString();
     }
 
     public RectF getMarkLayoutRect() {
@@ -478,6 +474,7 @@ public class WaterMarkView extends FrameLayout {
     public String getTextContent() {
         return text;
     }
+
     public void setTextContent(String text) {
         this.text = text;
     }
@@ -488,7 +485,7 @@ public class WaterMarkView extends FrameLayout {
         sizeChanged = false;
         float mw = markLayoutRect.width();
         Matrix mx = new Matrix();
-        mx.setTranslate(-markLayoutRect.width()/2, -markLayoutRect.height()/2);
+        mx.setTranslate(-markLayoutRect.width() / 2, -markLayoutRect.height() / 2);
         mx.mapRect(markLayoutRect);
         mx.reset();
         oldImageToScreenMatrix.invert(mx);
@@ -497,7 +494,7 @@ public class WaterMarkView extends FrameLayout {
         oldImageToScreenMatrix = MasterImage.getImage().computeImageToScreen(mBitmap, 0, false);
         oldImageToScreenMatrix.mapRect(markLayoutRect);
         mx.reset();
-        mx.setTranslate(markLayoutRect.width()/2,markLayoutRect.height()/2);
+        mx.setTranslate(markLayoutRect.width() / 2, markLayoutRect.height() / 2);
         mx.mapRect(markLayoutRect);
 
 //        Bitmap mBitmap = MasterImage.getImage().getFilteredImage();

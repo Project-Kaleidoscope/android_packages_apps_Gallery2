@@ -16,9 +16,6 @@
 
 package com.android.gallery3d.filtershow.editors;
 
-import android.content.Context;
-
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.controller.Control;
 import com.android.gallery3d.filtershow.controller.FilterView;
 import com.android.gallery3d.filtershow.controller.Parameter;
@@ -26,13 +23,15 @@ import com.android.gallery3d.filtershow.controller.ParameterInteger;
 import com.android.gallery3d.filtershow.filters.FilterBasicRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 
+import org.codeaurora.gallery.R;
+
 
 /**
  * The basic editor that all the one parameter filters
  */
 public class BasicEditor extends ParametricEditor implements ParameterInteger {
     public static int ID = R.id.basicEditor;
-    private final String LOGTAG = "BasicEditor";
+    private final String TAG = "BasicEditor";
 
     public BasicEditor() {
         super(ID, R.layout.filtershow_default_editor, R.id.basicEditor);
@@ -97,11 +96,6 @@ public class BasicEditor extends ParametricEditor implements ParameterInteger {
     }
 
     @Override
-    public String getValueString() {
-        return null;
-    }
-
-    @Override
     public void setValue(int value) {
         FilterBasicRepresentation rep = getBasicRepresentation();
         if (rep == null) {
@@ -109,6 +103,11 @@ public class BasicEditor extends ParametricEditor implements ParameterInteger {
         }
         rep.setValue(value);
         commitLocalRepresentation();
+    }
+
+    @Override
+    public String getValueString() {
+        return null;
     }
 
     @Override

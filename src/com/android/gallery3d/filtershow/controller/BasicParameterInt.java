@@ -16,30 +16,18 @@
 
 package com.android.gallery3d.filtershow.controller;
 
-import android.util.Log;
+import androidx.annotation.NonNull;
 
 public class BasicParameterInt implements ParameterInteger {
+    public final int ID;
+    private final String TAG = "BasicParameterInt";
     protected String mParameterName;
     protected Control mControl;
     protected int mMaximum = 100;
     protected int mMinimum = 0;
     protected int mDefaultValue;
     protected int mValue;
-    public final int ID;
     protected FilterView mEditor;
-    private final String LOGTAG = "BasicParameterInt";
-
-    @Override
-    public void copyFrom(Parameter src) {
-        if (!(src instanceof BasicParameterInt)) {
-            throw new IllegalArgumentException(src.getClass().getName());
-        }
-        BasicParameterInt p = (BasicParameterInt) src;
-        mMaximum = p.mMaximum;
-        mMinimum = p.mMinimum;
-        mDefaultValue = p.mDefaultValue;
-        mValue = p.mValue;
-    }
 
     public BasicParameterInt(int id, int value) {
         ID = id;
@@ -51,6 +39,18 @@ public class BasicParameterInt implements ParameterInteger {
         mValue = value;
         mMinimum = min;
         mMaximum = max;
+    }
+
+    @Override
+    public void copyFrom(Parameter src) {
+        if (!(src instanceof BasicParameterInt)) {
+            throw new IllegalArgumentException(src.getClass().getName());
+        }
+        BasicParameterInt p = (BasicParameterInt) src;
+        mMaximum = p.mMaximum;
+        mMinimum = p.mMinimum;
+        mDefaultValue = p.mDefaultValue;
+        mValue = p.mValue;
     }
 
     @Override
@@ -101,6 +101,7 @@ public class BasicParameterInt implements ParameterInteger {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         return getValueString();

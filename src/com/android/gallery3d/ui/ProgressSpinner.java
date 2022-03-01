@@ -18,13 +18,14 @@ package com.android.gallery3d.ui;
 
 import android.content.Context;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.glrenderer.ResourceTexture;
 
+import org.codeaurora.gallery.R;
+
 public class ProgressSpinner {
-    private static float ROTATE_SPEED_OUTER = 1080f / 3500f;
-    private static float ROTATE_SPEED_INNER = -720f / 3500f;
+    private static final float ROTATE_SPEED_OUTER = 1080f / 3500f;
+    private static final float ROTATE_SPEED_INNER = -720f / 3500f;
     private final ResourceTexture mOuter;
     private final ResourceTexture mInner;
     private final int mWidth;

@@ -16,22 +16,17 @@
 
 package com.android.gallery3d.app;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.filtershow.crop.CropActivity;
 import com.android.gallery3d.filtershow.crop.CropExtras;
-
-import java.lang.IllegalArgumentException;
 
 /**
  * Wallpaper picker for the gallery application. This just redirects to the
@@ -61,7 +56,7 @@ public class Wallpaper extends Activity {
         super.onCreate(bundle);
         if (bundle != null) {
             mState = bundle.getInt(KEY_STATE);
-            mPickedItem = (Uri) bundle.getParcelable(KEY_PICKED_ITEM);
+            mPickedItem = bundle.getParcelable(KEY_PICKED_ITEM);
         }
     }
 
@@ -73,15 +68,9 @@ public class Wallpaper extends Activity {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private Point getDefaultDisplaySize(Point size) {
         Display d = getWindowManager().getDefaultDisplay();
-        if (Build.VERSION.SDK_INT >= ApiHelper.VERSION_CODES.HONEYCOMB_MR2) {
-            d.getSize(size);
-        } else {
-            size.set(d.getWidth(), d.getHeight());
-        }
+        d.getSize(size);
         return size;
     }
 
@@ -112,16 +101,14 @@ public class Wallpaper extends Activity {
                 if (extras != null) {
                     fromScreenColor = extras.getBoolean(KEY_FROM_SCREENCOLOR, false);
                 }
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && (!fromScreenColor)) {
+                if (!fromScreenColor) {
                     WallpaperManager wpm = WallpaperManager.getInstance(getApplicationContext());
                     try {
                         cropAndSetWallpaperIntent = wpm.getCropAndSetWallpaperIntent(mPickedItem);
                         startActivity(cropAndSetWallpaperIntent);
                         finish();
                         return;
-                    } catch (ActivityNotFoundException anfe) {
-                        // ignored; fallthru to existing crop activity
-                    } catch (IllegalArgumentException iae) {
+                    } catch (ActivityNotFoundException | IllegalArgumentException ignored) {
                         // ignored; fallthru to existing crop activity
                     }
                 }

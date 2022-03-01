@@ -30,11 +30,13 @@
 package com.android.gallery3d.filtershow.category;
 
 
-import android.app.Activity;
-import android.graphics.Bitmap;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.editors.TrueScannerEditor;
 
@@ -44,51 +46,43 @@ public class TrueScannerPanel extends BasicGeometryPanel {
     private TrueScannerEditor mTrueScannerEditor;
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        FilterShowActivity filterShowActivity = (FilterShowActivity) activity;
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        FilterShowActivity filterShowActivity = (FilterShowActivity) context;
         mTrueScannerEditor = (TrueScannerEditor) filterShowActivity.getEditor(TrueScannerEditor.ID);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mEditorName.setText(R.string.truescanner);
 
         mBottomPanel.setVisibility(View.VISIBLE);
-        final FilterShowActivity activity = (FilterShowActivity) getActivity();
+        final FilterShowActivity activity = (FilterShowActivity) requireActivity();
         if (mTrueScannerEditor == null) {
             mTrueScannerEditor = (TrueScannerEditor) activity.getEditor(TrueScannerEditor.ID);
         }
         if (mTrueScannerEditor != null) {
             mTrueScannerEditor.initCords();
         }
-        mExitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activity.cancelCurrentFilter();
-                activity.backToMain();
-                activity.setActionBar();
-            }
+        mExitButton.setOnClickListener(view1 -> {
+            activity.cancelCurrentFilter();
+            activity.backToMain();
+            activity.setActionBar();
         });
-        mApplyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mTrueScannerEditor != null) {
-                    mTrueScannerEditor.finalApplyCalled();
-                }
-                activity.backToMain();
-                activity.setActionBar();
+        mApplyButton.setOnClickListener(view1 -> {
+            if (mTrueScannerEditor != null) {
+                mTrueScannerEditor.finalApplyCalled();
             }
+            activity.backToMain();
+            activity.setActionBar();
         });
     }
 
     @Override
     protected void initPanels() {
         super.initPanels();
-        int size = mPanels.length;
-        for (int i = 0; i < size; i++) {
-            View view = mPanels[i];
+        for (View view : mPanels) {
             view.setVisibility(View.GONE);
         }
     }

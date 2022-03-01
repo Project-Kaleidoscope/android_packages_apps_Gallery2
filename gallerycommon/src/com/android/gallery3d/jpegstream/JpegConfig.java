@@ -18,15 +18,15 @@ package com.android.gallery3d.jpegstream;
 
 public interface JpegConfig {
     // Pixel formats
-    public static final int FORMAT_GRAYSCALE = 0x001; // 1 byte/pixel
-    public static final int FORMAT_RGB = 0x003; // 3 bytes/pixel RGBRGBRGBRGB...
-    public static final int FORMAT_RGBA = 0x004; // 4 bytes/pixel RGBARGBARGBARGBA...
-    public static final int FORMAT_ABGR = 0x104; // 4 bytes/pixel ABGRABGRABGR...
+    int FORMAT_GRAYSCALE = 0x001; // 1 byte/pixel
+    int FORMAT_RGB = 0x003; // 3 bytes/pixel RGBRGBRGBRGB...
+    int FORMAT_RGBA = 0x004; // 4 bytes/pixel RGBARGBARGBARGBA...
+    int FORMAT_ABGR = 0x104; // 4 bytes/pixel ABGRABGRABGR...
 
     // Jni error codes
-    static final int J_SUCCESS = 0;
-    static final int J_ERROR_FATAL = -1;
-    static final int J_ERROR_BAD_ARGS = -2;
-    static final int J_EXCEPTION = -3;
-    static final int J_DONE = -4;
+    int J_SUCCESS = 0;
+    int J_ERROR_FATAL = -1;
+    int J_ERROR_BAD_ARGS = -2;
+    int J_EXCEPTION = -3;
+    int J_DONE = -4;
 }

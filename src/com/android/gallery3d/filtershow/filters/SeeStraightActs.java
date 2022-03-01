@@ -30,11 +30,11 @@
 package com.android.gallery3d.filtershow.filters;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.SeeStraightEditor;
+
+import org.codeaurora.gallery.R;
 
 public class SeeStraightActs extends SimpleImageFilter {
     public static final String SERIALIZATION_NAME = "SeeStraightActs";
@@ -45,17 +45,26 @@ public class SeeStraightActs extends SimpleImageFilter {
     private static final boolean DEBUG = true;
     private static boolean isSeeStraightEnabled = true;
 
-    private void printDebug(String str) {
-        if(DEBUG)
-            android.util.Log.d("SeeStraight", str);
+    static {
+        try {
+            System.loadLibrary("jni_seestraight");
+            isSeeStraightEnabled = true;
+        } catch (UnsatisfiedLinkError e) {
+            isSeeStraightEnabled = false;
+        }
+    }
+
+    public SeeStraightActs() {
+        mName = "SeeStraightActs";
     }
 
     public static boolean isSeeStraightEnabled() {
         return isSeeStraightEnabled;
     }
 
-    public SeeStraightActs() {
-        mName = "SeeStraightActs";
+    private void printDebug(String str) {
+        if (DEBUG)
+            android.util.Log.d("SeeStraight", str);
     }
 
     public FilterRepresentation getDefaultRepresentation() {
@@ -78,48 +87,36 @@ public class SeeStraightActs extends SimpleImageFilter {
 
     private boolean checkSize(int w, int h) {
         int t;
-        if(w < h) {
+        if (w < h) {
             t = w;
             w = h;
             h = t;
         }
-        if(w >= MIN_WIDTH_REQUIREMENT && h >= MIN_HEIGHT_REQUIREMENT) {
-            return true;
-        }
-        return false;
+        return w >= MIN_WIDTH_REQUIREMENT && h >= MIN_HEIGHT_REQUIREMENT;
     }
 
     @Override
     public Bitmap apply(Bitmap bitmap, float not_use, int quality) {
-        if(bitmap == null)
+        if (bitmap == null)
             return null;
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
 
-        if(width <= MIN_WIDTH && height <= MIN_HEIGHT)
+        if (width <= MIN_WIDTH && height <= MIN_HEIGHT)
             return bitmap;
 
-        if(!checkSize(width, height)) {
+        if (!checkSize(width, height)) {
             showToast(R.string.seestraight_input_image_is_small, Toast.LENGTH_SHORT);
             return bitmap;
         }
 
         Bitmap dstBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         int[] outputRoi = processImage(width, height, bitmap, dstBitmap);
-        if(outputRoi == null) {
+        if (outputRoi == null) {
             showToast(R.string.seestraight_process_fail, Toast.LENGTH_SHORT);
             return bitmap;
         }
         dstBitmap = Bitmap.createBitmap(dstBitmap, outputRoi[0], outputRoi[1], outputRoi[2], outputRoi[3]);
         return dstBitmap;
-    }
-
-    static {
-        try {
-            System.loadLibrary("jni_seestraight");
-            isSeeStraightEnabled = true;
-        } catch(UnsatisfiedLinkError e) {
-            isSeeStraightEnabled = false;
-        }
     }
 }

@@ -16,8 +16,9 @@
 
 package com.android.gallery3d.filtershow.filters;
 
-
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.android.gallery3d.filtershow.controller.Control;
 import com.android.gallery3d.filtershow.controller.FilterView;
@@ -25,15 +26,15 @@ import com.android.gallery3d.filtershow.controller.Parameter;
 import com.android.gallery3d.filtershow.controller.ParameterInteger;
 
 public class FilterBasicRepresentation extends FilterRepresentation implements ParameterInteger {
-    private static final String LOGTAG = "FilterBasicRep";
+    public static final String SERIAL_NAME = "Name";
+    public static final String SERIAL_VALUE = "Value";
+    private static final String TAG = "FilterBasicRep";
     private int mMinimum;
     private int mValue;
     private int mMaximum;
     private int mDefaultValue;
     private int mPreviewValue;
-    public static final String SERIAL_NAME = "Name";
-    public static final String SERIAL_VALUE = "Value";
-    private boolean mLogVerbose = Log.isLoggable(LOGTAG, Log.VERBOSE);
+    private final boolean mLogVerbose = Log.isLoggable(TAG, Log.VERBOSE);
 
     public FilterBasicRepresentation(String name, int minimum, int value, int maximum) {
         super(name);
@@ -42,6 +43,7 @@ public class FilterBasicRepresentation extends FilterRepresentation implements P
         setValue(value);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return getName() + " : " + mMinimum + " < " + mValue + " < " + mMaximum;
@@ -49,7 +51,7 @@ public class FilterBasicRepresentation extends FilterRepresentation implements P
 
     @Override
     public FilterRepresentation copy() {
-        FilterBasicRepresentation representation = new FilterBasicRepresentation(getName(),0,0,0);
+        FilterBasicRepresentation representation = new FilterBasicRepresentation(getName(), 0, 0, 0);
         copyAllParameters(representation);
         return representation;
     }
@@ -79,13 +81,11 @@ public class FilterBasicRepresentation extends FilterRepresentation implements P
         }
         if (representation instanceof FilterBasicRepresentation) {
             FilterBasicRepresentation basic = (FilterBasicRepresentation) representation;
-            if (basic.mMinimum == mMinimum
+            return basic.mMinimum == mMinimum
                     && basic.mMaximum == mMaximum
                     && basic.mValue == mValue
                     && basic.mDefaultValue == mDefaultValue
-                    && basic.mPreviewValue == mPreviewValue) {
-                return true;
-            }
+                    && basic.mPreviewValue == mPreviewValue;
         }
         return false;
     }
@@ -124,13 +124,13 @@ public class FilterBasicRepresentation extends FilterRepresentation implements P
         mMaximum = maximum;
     }
 
-    public void setDefaultValue(int defaultValue) {
-        mDefaultValue = defaultValue;
-    }
-
     @Override
     public int getDefaultValue() {
         return mDefaultValue;
+    }
+
+    public void setDefaultValue(int defaultValue) {
+        mDefaultValue = defaultValue;
     }
 
     public int getPreviewValue() {
@@ -148,7 +148,7 @@ public class FilterBasicRepresentation extends FilterRepresentation implements P
     }
 
     @Override
-    public String getParameterType(){
+    public String getParameterType() {
         return sParameterType;
     }
 
@@ -177,18 +177,17 @@ public class FilterBasicRepresentation extends FilterRepresentation implements P
 
     @Override
     public String[][] serializeRepresentation() {
-        String[][] ret = {
-                {SERIAL_NAME  , getName() },
-                {SERIAL_VALUE , Integer.toString(mValue)}};
-        return ret;
+        return new String[][]{
+                {SERIAL_NAME, getName()},
+                {SERIAL_VALUE, Integer.toString(mValue)}};
     }
 
     @Override
     public void deSerializeRepresentation(String[][] rep) {
         super.deSerializeRepresentation(rep);
-        for (int i = 0; i < rep.length; i++) {
-            if (SERIAL_VALUE.equals(rep[i][0])) {
-                mValue = Integer.parseInt(rep[i][1]);
+        for (String[] strings : rep) {
+            if (SERIAL_VALUE.equals(strings[0])) {
+                mValue = Integer.parseInt(strings[1]);
                 break;
             }
         }

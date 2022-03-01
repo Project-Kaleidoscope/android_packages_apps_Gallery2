@@ -35,8 +35,7 @@ public class AlbumActivity extends Activity implements MultiChoiceManager.Provid
             AlbumFragment albumFragment = new AlbumFragment();
             mMultiChoiceManager.setDelegate(albumFragment);
             albumFragment.setArguments(intentExtras);
-            getFragmentManager().beginTransaction().add(android.R.id.content,
-                    albumFragment).commit();
+            getFragmentManager().beginTransaction().add(android.R.id.content, albumFragment).commit();
         }
         getActionBar().setTitle(intentExtras.getString(KEY_ALBUM_TITLE));
     }

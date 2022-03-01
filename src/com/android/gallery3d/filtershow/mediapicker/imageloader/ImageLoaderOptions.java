@@ -32,22 +32,25 @@ package com.android.gallery3d.filtershow.mediapicker.imageloader;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+
+import androidx.core.content.res.ResourcesCompat;
+
 import org.codeaurora.gallery.R;
 
 public class ImageLoaderOptions {
 
-    private int imageResOnLoading = R.color.picker_imageloading;
-    private int imageResForEmptyUri = 0;
-    private Drawable imageOnLoading = null;
-    private Drawable imageForEmptyUri = null;
-    private Handler handler = null;
+    private final int imageResOnLoading = R.color.picker_imageloading;
+    private final int imageResForEmptyUri = 0;
+    private final Drawable imageOnLoading = null;
+    private final Drawable imageForEmptyUri = null;
+    private final Handler handler = null;
 
     public Drawable getImageOnLoading(Resources res) {
-        return imageResOnLoading != 0 ? res.getDrawable(imageResOnLoading) : imageOnLoading;
+        return imageResOnLoading != 0 ? ResourcesCompat.getDrawable(res, imageResOnLoading, null) : imageOnLoading;
     }
 
     public Drawable getImageForEmptyUri(Resources res) {
-        return imageResForEmptyUri != 0 ? res.getDrawable(imageResForEmptyUri) : imageForEmptyUri;
+        return imageResForEmptyUri != 0 ? ResourcesCompat.getDrawable(res, imageResForEmptyUri, null) : imageForEmptyUri;
     }
 
     public Handler getHandler() {

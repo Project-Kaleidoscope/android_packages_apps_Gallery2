@@ -29,14 +29,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
-import org.codeaurora.gallery.R;
 import com.android.photos.adapters.AlbumSetCursorAdapter;
 import com.android.photos.data.AlbumSetLoader;
 import com.android.photos.shims.LoaderCompatShim;
 import com.android.photos.shims.MediaSetLoader;
 
-import java.util.ArrayList;
+import org.codeaurora.gallery.R;
 
+import java.util.ArrayList;
 
 public class AlbumSetFragment extends MultiSelectGridFragment implements LoaderCallbacks<Cursor> {
 
@@ -48,13 +48,13 @@ public class AlbumSetFragment extends MultiSelectGridFragment implements LoaderC
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Context context = getActivity();
+        Context context = getContext();
         mAdapter = new AlbumSetCursorAdapter(context);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View root = super.onCreateView(inflater, container, savedInstanceState);
         getLoaderManager().initLoader(LOADER_ALBUMSET, null, this);
         return root;
@@ -63,14 +63,14 @@ public class AlbumSetFragment extends MultiSelectGridFragment implements LoaderC
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getGridView().setColumnWidth(getActivity().getResources()
+        getGridView().setColumnWidth(getContext().getResources()
                 .getDimensionPixelSize(R.dimen.album_set_item_width));
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // TODO: Switch to AlbumSetLoader
-        MediaSetLoader loader = new MediaSetLoader(getActivity());
+        MediaSetLoader loader = new MediaSetLoader(getContext());
         mAdapter.setDrawableFactory(loader);
         mLoaderCompatShim = loader;
         return loader;
@@ -78,7 +78,7 @@ public class AlbumSetFragment extends MultiSelectGridFragment implements LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader,
-            Cursor data) {
+                               Cursor data) {
         mAdapter.swapCursor(data);
         setAdapter(mAdapter);
     }
@@ -94,7 +94,7 @@ public class AlbumSetFragment extends MultiSelectGridFragment implements LoaderC
             return;
         }
         Cursor item = (Cursor) getItemAtPosition(position);
-        Context context = getActivity();
+        Context context = getContext();
         Intent intent = new Intent(context, AlbumActivity.class);
         intent.putExtra(AlbumActivity.KEY_ALBUM_URI,
                 mLoaderCompatShim.getPathForItem(item).toString());

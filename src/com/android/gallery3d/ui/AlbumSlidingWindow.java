@@ -19,20 +19,11 @@
 
 package com.android.gallery3d.ui;
 
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.Bitmap.Config;
 import android.os.Message;
-import android.text.TextPaint;
-import android.text.TextUtils;
 
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.app.AlbumDataLoader;
-import com.android.gallery3d.app.AlbumPage;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.MediaItem;
 import com.android.gallery3d.data.MediaObject;
@@ -55,10 +46,10 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
     private static final int MSG_UPDATE_ALBUM_ENTRY = 1;
     public static final String KEY_ALBUM = "Album";
 
-    public static interface Listener {
-        public void onSizeChanged(int size);
+    public interface Listener {
+        void onSizeChanged(int size);
 
-        public void onContentChanged();
+        void onContentChanged();
     }
 
     public static class AlbumEntry {
@@ -79,7 +70,7 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
     }
 
     private final AlbumDataLoader mSource;
-    private final AlbumEntry mData[];
+    private final AlbumEntry[] mData;
     private final SynchronizedHandler mHandler;
     private final JobLimiter mThreadPool;
     private final TiledTexture.Uploader mTileUploader;
@@ -101,9 +92,9 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
     private BitmapTexture mLoadingLabel;
     private TextureUploader mLabelUploader;
     private int mCurrentView;
-    private AbstractGalleryActivity mActivity;
+    private final AbstractGalleryActivity mActivity;
     private boolean isSlotSizeChanged;
-    private boolean mViewType;
+    private final boolean mViewType;
 
     private class PanoSupportListener implements PanoramaSupportCallback {
         public final AlbumEntry mEntry;
@@ -114,15 +105,15 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
 
         @Override
         public void panoramaInfoAvailable(MediaObject mediaObject,
-                boolean isPanorama, boolean isPanorama360) {
+                                          boolean isPanorama, boolean isPanorama360) {
             if (mEntry != null)
                 mEntry.isPanorama = isPanorama;
         }
     }
 
     public AlbumSlidingWindow(AbstractGalleryActivity activity,
-            AlbumDataLoader source, int cacheSize,
-            AlbumSlotRenderer.LabelSpec labelSpec, boolean viewType) {
+                              AlbumDataLoader source, int cacheSize,
+                              AlbumSlotRenderer.LabelSpec labelSpec, boolean viewType) {
         source.setDataListener(this);
         mSource = source;
         mViewType = viewType;
@@ -132,14 +123,14 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
             @Override
             public void handleMessage(Message message) {
                 switch (message.what) {
-                case 0:
-                    Utils.assertTrue(message.what == MSG_UPDATE_ENTRY);
-                    ((ThumbnailLoader) message.obj).updateEntry();
-                    break;
-                case 1:
-                    Utils.assertTrue(message.what == MSG_UPDATE_ALBUM_ENTRY);
-                    ((EntryUpdater) message.obj).updateEntry();
-                    break;
+                    case 0:
+                        Utils.assertTrue(message.what == MSG_UPDATE_ENTRY);
+                        ((ThumbnailLoader) message.obj).updateEntry();
+                        break;
+                    case 1:
+                        Utils.assertTrue(message.what == MSG_UPDATE_ALBUM_ENTRY);
+                        ((EntryUpdater) message.obj).updateEntry();
+                        break;
                 }
 
             }
@@ -215,7 +206,7 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
         if (!(start <= end && end - start <= mData.length && end <= mSize)) {
             Utils.fail("%s, %s, %s, %s", start, end, mData.length, mSize);
         }
-        AlbumEntry data[] = mData;
+        AlbumEntry[] data = mData;
 
         mActiveStart = start;
         mActiveEnd = end;
@@ -295,23 +286,17 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
             return;
         AlbumEntry entry = mData[slotIndex % mData.length];
         if (isSlotSizeChanged && !mViewType) {
-            if ((entry.content != null || entry.item == null)
-                    && entry.labelTexture != null) {
-                return;
-
-            } else {
+            if (!((entry.content != null || entry.item == null) && entry.labelTexture != null)) {
                 if (entry.labelLoader != null)
                     entry.labelLoader.startLoad();
             }
         } else {
-            if (entry.content != null || entry.item == null)
-                return;
+            if (entry.content != null || entry.item == null) return;
             entry.mPanoSupportListener = new PanoSupportListener(entry);
             entry.item.getPanoramaSupport(entry.mPanoSupportListener);
             if (entry.contentLoader != null)
                 entry.contentLoader.startLoad();
             if (!mViewType) {
-
                 if (entry.labelLoader != null)
                     entry.labelLoader.startLoad();
             }
@@ -363,7 +348,7 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
     }
 
     private void freeSlotContent(int slotIndex) {
-        AlbumEntry data[] = mData;
+        AlbumEntry[] data = mData;
         int index = slotIndex % data.length;
         AlbumEntry entry = data[index];
         if (entry.contentLoader != null)
@@ -407,17 +392,10 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
         for (int i = mActiveStart, n = mActiveEnd; i < n; ++i) {
             AlbumEntry entry = mData[i % mData.length];
             if (isSlotSizeChanged) {
-                if ((entry.content != null || entry.item == null)
-                        && entry.labelTexture != null) {
-                    continue;
-                } else {
-                    if (startLoadBitmap(entry.labelLoader))
-                        ++mActiveRequestCount;
+                if (!((entry.content != null || entry.item == null) && entry.labelTexture != null)) {
+                    if (startLoadBitmap(entry.labelLoader)) ++mActiveRequestCount;
                 }
-
-            }
-
-            else {
+            } else {
                 if (entry.content != null || entry.item == null)
                     continue;
                 if (startLoadBitmap(entry.contentLoader))
@@ -526,8 +504,8 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
         }
     }
 
-    private static interface EntryUpdater {
-        public void updateEntry();
+    private interface EntryUpdater {
+        void updateEntry();
     }
 
     private class AlbumLabelLoader extends BitmapLoader implements EntryUpdater {
@@ -579,10 +557,10 @@ public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
         if (mSlotWidth == width)
             return;
 
-        isSlotSizeChanged = !mViewType ;
+        isSlotSizeChanged = !mViewType;
         mSlotWidth = width;
         mLoadingLabel = null;
-        mLabelMaker.setLabelWidth(mSlotWidth,KEY_ALBUM);
+        mLabelMaker.setLabelWidth(mSlotWidth, KEY_ALBUM);
 
         if (!mIsActive)
             return;

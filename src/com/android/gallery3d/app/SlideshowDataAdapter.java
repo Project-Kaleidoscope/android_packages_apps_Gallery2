@@ -39,23 +39,25 @@ public class SlideshowDataAdapter implements SlideshowPage.Model {
     private static final int IMAGE_QUEUE_CAPACITY = 3;
 
     public interface SlideshowSource {
-        public void addContentListener(ContentListener listener);
-        public void removeContentListener(ContentListener listener);
-        public long reload();
-        public MediaItem getMediaItem(int index);
-        public int findItemIndex(Path path, int hint);
+
+        void addContentListener(ContentListener listener);
+        void removeContentListener(ContentListener listener);
+        long reload();
+        MediaItem getMediaItem(int index);
+        int findItemIndex(Path path, int hint);
+
     }
 
     private final SlideshowSource mSource;
 
-    private int mLoadIndex = 0;
-    private int mNextOutput = 0;
+    private int mLoadIndex;
+    private int mNextOutput;
     private boolean mIsActive = false;
     private boolean mNeedReset;
     private boolean mDataReady;
     private Path mInitialPath;
 
-    private final LinkedList<Slide> mImageQueue = new LinkedList<Slide>();
+    private final LinkedList<Slide> mImageQueue = new LinkedList<>();
 
     private Future<Void> mReloadTask;
     private final ThreadPool mThreadPool;
@@ -103,7 +105,6 @@ public class SlideshowDataAdapter implements SlideshowPage.Model {
                         } catch (InterruptedException ex) {
                             // ignored.
                         }
-                        continue;
                     }
                 }
                 if (!mIsActive) return null;
@@ -172,12 +173,9 @@ public class SlideshowDataAdapter implements SlideshowPage.Model {
 
     @Override
     public Future<Slide> nextSlide(FutureListener<Slide> listener) {
-        return mThreadPool.submit(new Job<Slide>() {
-            @Override
-            public Slide run(JobContext jc) {
-                jc.setMode(ThreadPool.MODE_NONE);
-                return innerNextBitmap();
-            }
+        return mThreadPool.submit(jc -> {
+            jc.setMode(ThreadPool.MODE_NONE);
+            return innerNextBitmap();
         }, listener);
     }
 

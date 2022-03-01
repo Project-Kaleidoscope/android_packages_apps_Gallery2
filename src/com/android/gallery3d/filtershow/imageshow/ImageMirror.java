@@ -30,7 +30,7 @@ public class ImageMirror extends ImageShow {
     private static final String TAG = ImageMirror.class.getSimpleName();
     private EditorMirror mEditorMirror;
     private FilterMirrorRepresentation mLocalRep = new FilterMirrorRepresentation();
-    private GeometryHolder mDrawHolder = new GeometryHolder();
+    private final GeometryHolder mDrawHolder = new GeometryHolder();
 
     public ImageMirror(Context context, AttributeSet attrs) {
         super(context, attrs);

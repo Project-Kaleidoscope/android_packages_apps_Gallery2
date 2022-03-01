@@ -20,7 +20,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
+
+import androidx.annotation.NonNull;
 import androidx.collection.LongSparseArray;
+
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pools.Pool;
@@ -67,7 +70,7 @@ public class TiledImageRenderer {
     private static final int STATE_RECYCLING = 0x20;
     private static final int STATE_RECYCLED = 0x40;
 
-    private static Pool<Bitmap> sTilePool = new SynchronizedPool<Bitmap>(64);
+    private static Pool<Bitmap> sTilePool = new SynchronizedPool<>(64);
 
     // TILE_SIZE must be 2^N
     private int mTileSize;
@@ -93,7 +96,7 @@ public class TiledImageRenderer {
     private final RectF mSourceRect = new RectF();
     private final RectF mTargetRect = new RectF();
 
-    private final LongSparseArray<Tile> mActiveTiles = new LongSparseArray<Tile>();
+    private final LongSparseArray<Tile> mActiveTiles = new LongSparseArray<>();
 
     // The following three queue are guarded by mQueueLock
     private final Object mQueueLock = new Object();
@@ -114,7 +117,7 @@ public class TiledImageRenderer {
 
     // Temp variables to avoid memory allocation
     private final Rect mTileRange = new Rect();
-    private final Rect mActiveRange[] = {new Rect(), new Rect()};
+    private final Rect[] mActiveRange = {new Rect(), new Rect()};
 
     private TileDecoder mTileDecoder;
     private boolean mBackgroundTileUploaded;
@@ -125,22 +128,25 @@ public class TiledImageRenderer {
     /**
      * Interface for providing tiles to a {@link TiledImageRenderer}
      */
-    public static interface TileSource {
+    public interface TileSource {
 
         /**
          * If the source does not care about the tile size, it should use
          * {@link TiledImageRenderer#suggestedTileSize(Context)}
          */
-        public int getTileSize();
-        public int getImageWidth();
-        public int getImageHeight();
-        public int getRotation();
+        int getTileSize();
+
+        int getImageWidth();
+
+        int getImageHeight();
+
+        int getRotation();
 
         /**
          * Return a Preview image if available. This will be used as the base layer
          * if higher res tiles are not yet available
          */
-        public BasicTexture getPreview();
+        BasicTexture getPreview();
 
         /**
          * The tile returned by this method can be specified this way: Assuming
@@ -148,14 +154,14 @@ public class TiledImageRenderer {
          * 0) - (width, height) and (x, y) - (x + tileSize, y + tileSize). If
          * in extending the region, we found some part of the region is outside
          * the image, those pixels are filled with black.
-         *
+         * <p>
          * If level > 0, it does the same operation on a down-scaled version of
          * the original image (down-scaled by a factor of 2^level), but (x, y)
          * still refers to the coordinate on the original image.
-         *
+         * <p>
          * The method would be called by the decoder thread.
          */
-        public Bitmap getTile(int level, int x, int y, Bitmap reuse);
+        Bitmap getTile(int level, int x, int y, Bitmap reuse);
     }
 
     public static int suggestedTileSize(Context context) {
@@ -167,7 +173,7 @@ public class TiledImageRenderer {
         WindowManager wm = (WindowManager)
                 context.getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(metrics);
-        return metrics.heightPixels > 2048 ||  metrics.widthPixels > 2048;
+        return metrics.heightPixels > 2048 || metrics.widthPixels > 2048;
     }
 
     public TiledImageRenderer(View parent) {
@@ -202,7 +208,7 @@ public class TiledImageRenderer {
     private void calculateLevelCount() {
         if (mPreview != null) {
             mLevelCount = Math.max(0, Utils.ceilLog2(
-                mImageWidth / (float) mPreview.getWidth()));
+                    mImageWidth / (float) mPreview.getWidth()));
         } else {
             int levels = 1;
             int maxDim = Math.max(mImageWidth, mImageHeight);
@@ -357,7 +363,7 @@ public class TiledImageRenderer {
     // (cX, cY) is the point on the original bitmap which will be put in the
     // center of the ImageViewer.
     private void getRange(Rect out,
-            int cX, int cY, int level, float scale, int rotation) {
+                          int cX, int cY, int level, float scale, int rotation) {
 
         double radians = Math.toRadians(-rotation);
         double w = mViewWidth;
@@ -407,7 +413,8 @@ public class TiledImageRenderer {
         mActiveTiles.clear();
         mTileRange.set(0, 0, 0, 0);
 
-        while (sTilePool.acquire() != null) {}
+        while (sTilePool.acquire() != null) {
+        }
     }
 
     public boolean draw(GLCanvas canvas) {
@@ -478,15 +485,15 @@ public class TiledImageRenderer {
         }
     }
 
-   private void queueForDecode(Tile tile) {
-       synchronized (mQueueLock) {
-           if (tile.mTileState == STATE_ACTIVATED) {
-               tile.mTileState = STATE_IN_QUEUE;
-               if (mDecodeQueue.push(tile)) {
-                   mQueueLock.notifyAll();
-               }
-           }
-       }
+    private void queueForDecode(Tile tile) {
+        synchronized (mQueueLock) {
+            if (tile.mTileState == STATE_ACTIVATED) {
+                tile.mTileState = STATE_IN_QUEUE;
+                if (mDecodeQueue.push(tile)) {
+                    mQueueLock.notifyAll();
+                }
+            }
+        }
     }
 
     private void decodeTile(Tile tile) {
@@ -594,7 +601,7 @@ public class TiledImageRenderer {
     // Draw the tile to a square at canvas that locates at (x, y) and
     // has a side length of length.
     private void drawTile(GLCanvas canvas,
-            int tx, int ty, int level, float x, float y, float length) {
+                          int tx, int ty, int level, float x, float y, float length) {
         RectF source = mSourceRect;
         RectF target = mTargetRect;
         target.set(x, y, x + length, y + length);
@@ -610,7 +617,7 @@ public class TiledImageRenderer {
                     } else {
                         mRenderComplete = false;
                     }
-                } else if (tile.mTileState != STATE_DECODE_FAIL){
+                } else if (tile.mTileState != STATE_DECODE_FAIL) {
                     mRenderComplete = false;
                     queueForDecode(tile);
                 }
@@ -741,6 +748,7 @@ public class TiledImageRenderer {
             return getTile(x, y, mTileLevel + 1);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return String.format("tile(%s, %s, %s / %s)",

@@ -49,16 +49,17 @@ public class PhotoFallbackEffect extends Animation implements SlotFilter {
     }
 
     public interface PositionProvider {
-        public Rect getPosition(int index);
-        public int getItemIndex(Path path);
+        Rect getPosition(int index);
+
+        int getItemIndex(Path path);
     }
 
-    private RectF mSource = new RectF();
-    private RectF mTarget = new RectF();
+    private final RectF mSource = new RectF();
+    private final RectF mTarget = new RectF();
     private float mProgress;
     private PositionProvider mPositionProvider;
 
-    private ArrayList<Entry> mList = new ArrayList<Entry>();
+    private final ArrayList<Entry> mList = new ArrayList<>();
 
     public PhotoFallbackEffect() {
         setDuration(ANIM_DURATION);
@@ -127,9 +128,7 @@ public class PhotoFallbackEffect extends Animation implements SlotFilter {
             // draw the right part
             mTarget.set(cx + ch / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2);
             mSource.set((w + h) / 2, 0, w, h);
-            canvas.drawTexture(entry.texture, mSource, mTarget);
 
-            canvas.restore();
         } else {
             // draw the center part
             mTarget.set(cx - cw / 2, cy - cw / 2, cx + cw / 2, cy + cw / 2);
@@ -147,10 +146,10 @@ public class PhotoFallbackEffect extends Animation implements SlotFilter {
             // draw the bottom part
             mTarget.set(cx - cw / 2, cy + cw / 2, cx + cw / 2, cy + ch / 2);
             mSource.set(0, (w + h) / 2, w, h);
-            canvas.drawTexture(entry.texture, mSource, mTarget);
 
-            canvas.restore();
         }
+        canvas.drawTexture(entry.texture, mSource, mTarget);
+        canvas.restore();
     }
 
     @Override

@@ -19,7 +19,7 @@ package com.android.gallery3d.app;
 import java.util.HashMap;
 
 public class TransitionStore {
-    private HashMap<Object, Object> mStorage = new HashMap<Object, Object>();
+    private HashMap<Object, Object> mStorage = new HashMap<>();
 
     public void put(Object key, Object value) {
         mStorage.put(key, value);

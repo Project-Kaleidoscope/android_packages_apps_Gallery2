@@ -34,12 +34,12 @@ public class GradControl {
     private float mPoint1Y = 0;
     private float mPoint2X = 200;
     private float mPoint2Y = 300;
-    private int mMinTouchDist = 80;// should be a resource & in dips
+    private int mMinTouchDist; // should be a resource & in dips
 
-    private float[] handlex = new float[3];
-    private float[] handley = new float[3];
-    private int mSliderColor;
-    private int mCenterDotSize;
+    private final float[] handlex = new float[3];
+    private final float[] handley = new float[3];
+    private final int mSliderColor;
+    private final int mCenterDotSize;
     private float mDownX;
     private float mDownY;
     private float mDownPoint1X;
@@ -55,30 +55,30 @@ public class GradControl {
     public final static int HAN_CENTER = 0;
     public final static int HAN_NORTH = 2;
     public final static int HAN_SOUTH = 1;
-    private int[] mPointColorPatern;
-    private int[] mGrayPointColorPatern;
-    private float[] mPointRadialPos = new float[]{0, .3f, .31f, 1};
-    private int mLineColor;
-    private int mlineShadowColor;
+    private final int[] mPointColorPatern;
+    private final int[] mGrayPointColorPatern;
+    private final float[] mPointRadialPos = new float[]{0, .3f, .31f, 1};
+    private final int mLineColor;
+    private final int mlineShadowColor;
 
     public GradControl(Context context) {
 
         Resources res = context.getResources();
         mCenterDotSize = (int) res.getDimension(R.dimen.gradcontrol_dot_size);
         mMinTouchDist = (int) res.getDimension(R.dimen.gradcontrol_min_touch_dist);
-        int grayPointCenterColor = res.getColor(R.color.gradcontrol_graypoint_center);
-        int grayPointEdgeColor = res.getColor(R.color.gradcontrol_graypoint_edge);
-        int pointCenterColor = res.getColor(R.color.gradcontrol_point_center);
-        int pointEdgeColor = res.getColor(R.color.gradcontrol_point_edge);
-        int pointShadowStartColor = res.getColor(R.color.gradcontrol_point_shadow_start);
-        int pointShadowEndColor = res.getColor(R.color.gradcontrol_point_shadow_end);
+        int grayPointCenterColor = context.getColor(R.color.gradcontrol_graypoint_center);
+        int grayPointEdgeColor = context.getColor(R.color.gradcontrol_graypoint_edge);
+        int pointCenterColor = context.getColor(R.color.gradcontrol_point_center);
+        int pointEdgeColor = context.getColor(R.color.gradcontrol_point_edge);
+        int pointShadowStartColor = context.getColor(R.color.gradcontrol_point_shadow_start);
+        int pointShadowEndColor = context.getColor(R.color.gradcontrol_point_shadow_end);
         mPointColorPatern = new int[]{
                 pointCenterColor, pointEdgeColor, pointShadowStartColor, pointShadowEndColor};
         mGrayPointColorPatern = new int[]{
                 grayPointCenterColor, grayPointEdgeColor, pointShadowStartColor, pointShadowEndColor};
         mSliderColor = Color.WHITE;
-        mLineColor = res.getColor(R.color.gradcontrol_line_color);
-        mlineShadowColor = res.getColor(R.color.gradcontrol_line_shadow);
+        mLineColor = context.getColor(R.color.gradcontrol_line_color);
+        mlineShadowColor = context.getColor(R.color.gradcontrol_line_shadow);
     }
 
     public void setPoint2(float x, float y) {
@@ -227,7 +227,6 @@ public class GradControl {
 
     public void paintOvallines(
             Canvas canvas, Paint paint, float p1x, float p1y, float p2x, float p2y) {
-
 
 
         canvas.drawLine(p1x, p1y, p2x, p2y, paint);

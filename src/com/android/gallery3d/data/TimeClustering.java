@@ -24,7 +24,6 @@ import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.util.GalleryUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class TimeClustering extends Clustering {
@@ -53,25 +52,22 @@ public class TimeClustering extends Clustering {
     // The max cluster size can range from 20 to 50.
     private static final int MIN_MAX_CLUSTER_SIZE = 20;
     private static final int MAX_MAX_CLUSTER_SIZE = 50;
-
-    // Initially put 2 items in the same cluster as long as they are within
-    // 3 cluster frequencies of each other.
-    private static int CLUSTER_SPLIT_MULTIPLIER = 3;
-
     // The minimum change factor in the time between items to consider a
     // partition.
     // Example: (Item 3 - Item 2) / (Item 2 - Item 1).
     private static final int MIN_PARTITION_CHANGE_FACTOR = 2;
-
     // Make the cluster split time of a large cluster half that of a regular
     // cluster.
     private static final int PARTITION_CLUSTER_SPLIT_TIME_FACTOR = 2;
-
-    private Context mContext;
-    private ArrayList<Cluster> mClusters;
+    private static final Comparator<SmallItem> sDateComparator =
+            new DateComparator();
+    // Initially put 2 items in the same cluster as long as they are within
+    // 3 cluster frequencies of each other.
+    private static final int CLUSTER_SPLIT_MULTIPLIER = 3;
+    private final Context mContext;
+    private final ArrayList<Cluster> mClusters;
     private String[] mNames;
     private Cluster mCurrCluster;
-
     private long mClusterSplitTime =
             (MIN_CLUSTER_SPLIT_TIME_IN_MS + MAX_CLUSTER_SPLIT_TIME_IN_MS) / 2;
     private long mLargeClusterSplitTime =
@@ -79,21 +75,30 @@ public class TimeClustering extends Clustering {
     private int mMinClusterSize = (MIN_MIN_CLUSTER_SIZE + MAX_MIN_CLUSTER_SIZE) / 2;
     private int mMaxClusterSize = (MIN_MAX_CLUSTER_SIZE + MAX_MAX_CLUSTER_SIZE) / 2;
 
-
-    private static final Comparator<SmallItem> sDateComparator =
-            new DateComparator();
-
-    private static class DateComparator implements Comparator<SmallItem> {
-        @Override
-        public int compare(SmallItem item1, SmallItem item2) {
-            return -Utils.compare(item1.dateInMs, item2.dateInMs);
-        }
-    }
-
     public TimeClustering(Context context) {
         mContext = context;
-        mClusters = new ArrayList<Cluster>();
+        mClusters = new ArrayList<>();
         mCurrCluster = new Cluster();
+    }
+
+    // Returns true if a, b are sufficiently geographically separated.
+    private static boolean isGeographicallySeparated(SmallItem itemA, SmallItem itemB) {
+        if (!GalleryUtils.isValidLocation(itemA.lat, itemA.lng)
+                || !GalleryUtils.isValidLocation(itemB.lat, itemB.lng)) {
+            return false;
+        }
+
+        double distance = GalleryUtils.fastDistanceMeters(
+                Math.toRadians(itemA.lat),
+                Math.toRadians(itemA.lng),
+                Math.toRadians(itemB.lat),
+                Math.toRadians(itemB.lng));
+        return (GalleryUtils.toMile(distance) > GEOGRAPHIC_DISTANCE_CUTOFF_IN_MILES);
+    }
+
+    // Returns the time interval between the two items in milliseconds.
+    private static long timeDistance(SmallItem a, SmallItem b) {
+        return Math.abs(a.dateInMs - b.dateInMs);
     }
 
     @Override
@@ -101,21 +106,18 @@ public class TimeClustering extends Clustering {
         final double[] latLng = new double[2];
 
         final ArrayList<SmallItem> items = new ArrayList<>();
-        baseSet.enumerateTotalMediaItems(new MediaSet.ItemConsumer() {
-            @Override
-            public void consume(int index, MediaItem item) {
-                SmallItem s = new SmallItem();
-                s.path = item.getPath();
-                s.mediaType = item.getMediaType();
-                s.dateInMs = item.getDateInMs();
-                item.getLatLong(latLng);
-                s.lat = latLng[0];
-                s.lng = latLng[1];
-                items.add(s);
-            }
+        baseSet.enumerateTotalMediaItems((index, item) -> {
+            SmallItem smallItem = new SmallItem();
+            smallItem.path = item.getPath();
+            smallItem.mediaType = item.getMediaType();
+            smallItem.dateInMs = item.getDateInMs();
+            item.getLatLong(latLng);
+            smallItem.lat = latLng[0];
+            smallItem.lng = latLng[1];
+            items.add(smallItem);
         });
 
-        Collections.sort(items, sDateComparator);
+        items.sort(sDateComparator);
 
         int n = items.size();
         long minTime = 0;
@@ -154,7 +156,7 @@ public class TimeClustering extends Clustering {
     @Override
     public ArrayList<Path> getCluster(int index) {
         ArrayList<SmallItem> items = mClusters.get(index).getItems();
-        ArrayList<Path> result = new ArrayList<Path>(items.size());
+        ArrayList<Path> result = new ArrayList<>(items.size());
         for (int i = 0, n = items.size(); i < n; i++) {
             result.add(items.get(i).path);
         }
@@ -323,24 +325,11 @@ public class TimeClustering extends Clustering {
         }
     }
 
-    // Returns true if a, b are sufficiently geographically separated.
-    private static boolean isGeographicallySeparated(SmallItem itemA, SmallItem itemB) {
-        if (!GalleryUtils.isValidLocation(itemA.lat, itemA.lng)
-                || !GalleryUtils.isValidLocation(itemB.lat, itemB.lng)) {
-            return false;
+    private static class DateComparator implements Comparator<SmallItem> {
+        @Override
+        public int compare(SmallItem item1, SmallItem item2) {
+            return -Utils.compare(item1.dateInMs, item2.dateInMs);
         }
-
-        double distance = GalleryUtils.fastDistanceMeters(
-            Math.toRadians(itemA.lat),
-            Math.toRadians(itemA.lng),
-            Math.toRadians(itemB.lat),
-            Math.toRadians(itemB.lng));
-        return (GalleryUtils.toMile(distance) > GEOGRAPHIC_DISTANCE_CUTOFF_IN_MILES);
-    }
-
-    // Returns the time interval between the two items in milliseconds.
-    private static long timeDistance(SmallItem a, SmallItem b) {
-        return Math.abs(a.dateInMs - b.dateInMs);
     }
 }
 
@@ -361,16 +350,16 @@ class Cluster {
     // This is for TimeClustering only.
     public boolean mGeographicallySeparatedFromPrevCluster = false;
 
-    private ArrayList<SmallItem> mItems = new ArrayList<SmallItem>();
+    private final ArrayList<SmallItem> mItems = new ArrayList<>();
 
     public Cluster() {
     }
 
     public void addItem(SmallItem item) {
-        if(item.mediaType == MediaObject.MEDIA_TYPE_IMAGE) {
+        if (item.mediaType == MediaObject.MEDIA_TYPE_IMAGE) {
             mPhotoCount++;
-        } else if(item.mediaType == MediaObject.MEDIA_TYPE_VIDEO) {
-           mVideoCount++;
+        } else if (item.mediaType == MediaObject.MEDIA_TYPE_VIDEO) {
+            mVideoCount++;
         }
         mItems.add(item);
     }

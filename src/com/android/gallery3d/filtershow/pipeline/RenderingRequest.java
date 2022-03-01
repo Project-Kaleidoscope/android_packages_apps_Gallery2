@@ -19,14 +19,15 @@ package com.android.gallery3d.filtershow.pipeline;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import com.android.gallery3d.app.Log;
+import android.util.Log;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.cache.BitmapCache;
 import com.android.gallery3d.filtershow.filters.FiltersManager;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 
 public class RenderingRequest {
-    private static final String LOGTAG = "RenderingRequest";
+    private static final String TAG = "RenderingRequest";
     private boolean mIsDirect = false;
     private Bitmap mBitmap = null;
     private ImagePreset mImagePreset = null;
@@ -57,7 +58,7 @@ public class RenderingRequest {
         if (((type != PARTIAL_RENDERING && type != HIGHRES_RENDERING
                 && type != GEOMETRY_RENDERING && type != FILTERS_RENDERING) && source == null)
                 || preset == null || caller == null) {
-            Log.v(LOGTAG, "something null: source: " + source
+            Log.v(TAG, "something null: source: " + source
                     + " or preset: " + preset + " or caller: " + caller);
             return;
         }
@@ -100,7 +101,7 @@ public class RenderingRequest {
                                        ImagePreset preset,
                                        RenderingRequestCaller caller) {
         if (preset == null || caller == null) {
-            Log.v(LOGTAG, "something null, preset: "
+            Log.v(TAG, "something null, preset: "
                     + preset + " or caller: " + caller);
             return;
         }

@@ -32,7 +32,7 @@ import java.io.FileNotFoundException;
 
 public class SharedImageProvider extends ContentProvider {
 
-    private static final String LOGTAG = "SharedImageProvider";
+    private static final String TAG = "SharedImageProvider";
 
     public static final String MIME_TYPE = "image/jpeg";
     public static final String AUTHORITY = "com.android.gallery3d.filtershow.provider.SharedImageProvider";
@@ -43,7 +43,7 @@ public class SharedImageProvider extends ContentProvider {
             MIME_TYPE
     };
 
-    private static ConditionVariable mImageReadyCond = new ConditionVariable(false);
+    private static final ConditionVariable mImageReadyCond = new ConditionVariable(false);
 
     @Override
     public int delete(Uri arg0, String arg1, String[] arg2) {
@@ -89,7 +89,7 @@ public class SharedImageProvider extends ContentProvider {
             return null;
         }
         if (projection == null) {
-            projection = new String[] {
+            projection = new String[]{
                     BaseColumns._ID,
                     MediaStore.MediaColumns.DATA,
                     OpenableColumns.DISPLAY_NAME,

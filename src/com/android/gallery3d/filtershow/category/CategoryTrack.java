@@ -19,21 +19,19 @@ package com.android.gallery3d.filtershow.category;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
-import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+
 import org.codeaurora.gallery.R;
 
 public class CategoryTrack extends LinearLayout {
 
     private CategoryAdapter mAdapter;
-    private int mElemSize;
+    private final int mElemSize;
     private View mSelectedView;
     private float mStartTouchY;
-    private DataSetObserver mDataSetObserver = new DataSetObserver() {
+    private final DataSetObserver mDataSetObserver = new DataSetObserver() {
         @Override
         public void onChanged() {
             super.onChanged();
@@ -43,6 +41,7 @@ public class CategoryTrack extends LinearLayout {
                 invalidate();
             }
         }
+
         @Override
         public void onInvalidated() {
             super.onInvalidated();

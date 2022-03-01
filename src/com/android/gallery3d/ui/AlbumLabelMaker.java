@@ -30,11 +30,9 @@ import android.text.TextPaint;
 import android.text.TextUtils;
 import android.view.View;
 
-import org.codeaurora.gallery.R;
-import com.android.gallery3d.data.DataSourceType;
-import com.android.photos.data.GalleryBitmapPool;
 import com.android.gallery3d.util.ThreadPool;
 import com.android.gallery3d.util.ThreadPool.JobContext;
+import com.android.photos.data.GalleryBitmapPool;
 
 import java.util.Locale;
 
@@ -43,7 +41,7 @@ public class AlbumLabelMaker {
 
     private AlbumSetSlotRenderer.LabelSpec mSpec;
     private AlbumSlotRenderer.LabelSpec mAlbumListSpec;
-    private TextPaint mTitlePaint;
+    private final TextPaint mTitlePaint;
     private TextPaint mCountPaint;
     private final Context mContext;
 
@@ -103,7 +101,7 @@ public class AlbumLabelMaker {
 
     private class LazyLoadedBitmap {
         private Bitmap mBitmap;
-        private int mResId;
+        private final int mResId;
 
         public LazyLoadedBitmap(int resId) {
             mResId = resId;
@@ -142,7 +140,7 @@ public class AlbumLabelMaker {
     }
 
     static void drawText(Canvas canvas,
-            int x, int y, String text, int lengthLimit, TextPaint p) {
+                         int x, int y, String text, int lengthLimit, TextPaint p) {
         // The TextPaint cannot be used concurrently
         synchronized (p) {
             text = TextUtils.ellipsize(
@@ -205,7 +203,7 @@ public class AlbumLabelMaker {
                     bitmap.getWidth() - BORDER_SIZE,
                     bitmap.getHeight() - BORDER_SIZE);
             if (!isAlbumListViewShown) {
-                 canvas.drawColor(mSpec.backgroundColor, PorterDuff.Mode.SRC);
+                canvas.drawColor(mSpec.backgroundColor, PorterDuff.Mode.SRC);
             }
 
             canvas.translate(BORDER_SIZE, BORDER_SIZE);
@@ -239,7 +237,7 @@ public class AlbumLabelMaker {
                 }
 
             } else { // LTR
-                                // draw title
+                // draw title
                 if (jc.isCancelled())
                     return null;
                 if (!isAlbumListViewShown) {
@@ -266,7 +264,7 @@ public class AlbumLabelMaker {
                     drawText(canvas, x, y, title, labelWidth - s1.leftMargin
                             - x, mTitlePaint);
                 }
-          }
+            }
             return bitmap;
         }
     }

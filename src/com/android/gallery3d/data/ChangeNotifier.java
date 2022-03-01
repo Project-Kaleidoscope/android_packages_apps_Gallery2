@@ -25,8 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // This handles change notification for media sets.
 public class ChangeNotifier {
 
-    private MediaSet mMediaSet;
-    private AtomicBoolean mContentDirty = new AtomicBoolean(true);
+    private final MediaSet mMediaSet;
+    private final AtomicBoolean mContentDirty = new AtomicBoolean(true);
 
     public ChangeNotifier(MediaSet set, Uri uri, GalleryApp application) {
         mMediaSet = set;
@@ -35,8 +35,8 @@ public class ChangeNotifier {
 
     public ChangeNotifier(MediaSet set, Uri[] uris, GalleryApp application) {
         mMediaSet = set;
-        for (int i = 0; i < uris.length; i++) {
-            application.getDataManager().registerChangeNotifier(uris[i], this);
+        for (Uri uri : uris) {
+            application.getDataManager().registerChangeNotifier(uri, this);
         }
     }
 
@@ -46,10 +46,10 @@ public class ChangeNotifier {
     }
 
     public void fakeChange() {
-        onChange(false);
+        onChange();
     }
 
-    protected void onChange(boolean selfChange) {
+    protected void onChange() {
         if (mContentDirty.compareAndSet(false, true)) {
             mMediaSet.notifyContentChanged();
         }

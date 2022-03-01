@@ -29,8 +29,6 @@
 
 package com.android.gallery3d.filtershow.tools;
 
-import java.util.Stack;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -41,32 +39,25 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Point;
 import android.graphics.Rect;
-import androidx.fragment.app.FragmentManager;
-import android.util.Log;
 
-import org.codeaurora.gallery.R;
+import androidx.fragment.app.FragmentManager;
+
 import com.android.gallery3d.filtershow.filters.FilterDrawRepresentation.StrokeData;
 import com.android.gallery3d.filtershow.ui.AlertMsgDialog;
 
+import org.codeaurora.gallery.R;
+
+import java.util.Stack;
+
 public class TruePortraitNativeEngine {
     private static final String TAG = "TruePortraitNativeEngine";
-    static {
-        try {
-            //System.loadLibrary("jni_trueportrait");
-            //mLibLoaded = true;
-            //Log.v(TAG, "successfully loaded true portrait lib");
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, "failed to load true portrait lib");
-            mLibLoaded = false;
-        }
-    }
 
-    public static enum EffectType {
+    public enum EffectType {
         BLUR,
         MOTION_BLUR,
         HALO,
         SKETCH
-    };
+    }
 
     private static final int MASK_UPDATE_FOREGROUND = 0x7F000000;
     private static final int MASK_UPDATE_BACKGROUND = 0x81000000;
@@ -76,13 +67,14 @@ public class TruePortraitNativeEngine {
 
     private Bitmap mSketchBm;
     private boolean mFacesDetected;
-    private Point mPreviewSize = new Point();
+    private final Point mPreviewSize = new Point();
     private Bitmap mUpdateBm;
 
-    private TruePortraitNativeEngine() {}
+    private TruePortraitNativeEngine() {
+    }
 
     public static void createInstance() {
-        if(mInstance == null) {
+        if (mInstance == null) {
             mInstance = new TruePortraitNativeEngine();
         }
     }
@@ -97,8 +89,8 @@ public class TruePortraitNativeEngine {
     }
 
     public boolean init(Context context, Bitmap src, Rect[] faces) {
-        boolean result = false; 
-        if(nativeInit(src, faces.length, faces)) {
+        boolean result = false;
+        if (nativeInit(src, faces.length, faces)) {
             result = nativeGetPreviewSize(mPreviewSize);
         }
         if (result) {
@@ -106,17 +98,17 @@ public class TruePortraitNativeEngine {
         } else {
             mSketchBm = null;
         }
-        setFacesDetected(result);   
+        setFacesDetected(result);
         return result;
     }
 
     public void release() {
-        if(mUpdateBm != null) {
+        if (mUpdateBm != null) {
             mUpdateBm.recycle();
             mUpdateBm = null;
         }
 
-        if(mSketchBm != null) {
+        if (mSketchBm != null) {
             mSketchBm.recycle();
             mSketchBm = null;
         }
@@ -139,19 +131,19 @@ public class TruePortraitNativeEngine {
 
     public boolean applyEffect(EffectType type, int intensity, Bitmap outBm) {
         boolean result = false;
-        switch(type) {
-        case BLUR:
-            result = nativeApplyBlur(intensity, outBm);
-            break;
-        case MOTION_BLUR:
-            result = nativeApplyMotionBlur(intensity, outBm);
-            break;
-        case HALO:
-            result = nativeApplyHalo(intensity, outBm);
-            break;
-        case SKETCH:
-            result = nativeApplySketch(outBm, mSketchBm);
-            break;
+        switch (type) {
+            case BLUR:
+                result = nativeApplyBlur(intensity, outBm);
+                break;
+            case MOTION_BLUR:
+                result = nativeApplyMotionBlur(intensity, outBm);
+                break;
+            case HALO:
+                result = nativeApplyHalo(intensity, outBm);
+                break;
+            case SKETCH:
+                result = nativeApplySketch(outBm, mSketchBm);
+                break;
         }
 
         return result;
@@ -159,7 +151,7 @@ public class TruePortraitNativeEngine {
 
     public Bitmap getMask() {
         Bitmap mask = Bitmap.createBitmap(mPreviewSize.x, mPreviewSize.y, Config.ALPHA_8);
-        if(mask != null) {
+        if (mask != null) {
             nativeGetPreviewMask(mask);
         }
 
@@ -168,7 +160,7 @@ public class TruePortraitNativeEngine {
 
     public Bitmap getPreview() {
         Bitmap previewBm = Bitmap.createBitmap(mPreviewSize.x, mPreviewSize.y, Config.ARGB_8888);
-        if(previewBm != null) {
+        if (previewBm != null) {
             nativeGetPreviewImage(previewBm);
         }
 
@@ -176,13 +168,13 @@ public class TruePortraitNativeEngine {
     }
 
     public boolean updateMask(Stack<StrokeData> edits) {
-        if(mUpdateBm == null) {
+        if (mUpdateBm == null) {
             mUpdateBm = Bitmap.createBitmap(mPreviewSize.x, mPreviewSize.y, Config.ALPHA_8);
         }
 
         mUpdateBm.eraseColor(Color.TRANSPARENT);
         Canvas canvas = new Canvas(mUpdateBm);
-        for(StrokeData sd:edits) {
+        for (StrokeData sd : edits) {
             drawEdit(canvas, sd);
         }
         return nativeUpdatePreviewMask(mUpdateBm);
@@ -202,7 +194,7 @@ public class TruePortraitNativeEngine {
         paint.setAntiAlias(false);
         paint.setStyle(Style.STROKE);
         paint.setStrokeCap(Paint.Cap.ROUND);
-        if(sd.mColor == Color.TRANSPARENT)
+        if (sd.mColor == Color.TRANSPARENT)
             paint.setColor(MASK_UPDATE_BACKGROUND);
         else
             paint.setColor(MASK_UPDATE_FOREGROUND);

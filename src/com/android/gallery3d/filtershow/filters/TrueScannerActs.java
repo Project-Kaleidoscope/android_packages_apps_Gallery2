@@ -31,41 +31,43 @@ package com.android.gallery3d.filtershow.filters;
 
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
-import android.util.Log;
-import android.view.View;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
-import com.android.gallery3d.app.GalleryActivity;
-import com.android.gallery3d.filtershow.FilterShowActivity;
-import com.android.gallery3d.filtershow.controller.Parameter;
 import com.android.gallery3d.filtershow.editors.TrueScannerEditor;
 import com.android.gallery3d.filtershow.imageshow.ImageTrueScanner;
-import com.android.gallery3d.filtershow.imageshow.MasterImage;
-import com.android.gallery3d.ui.MenuExecutor;
-import static com.android.gallery3d.filtershow.imageshow.ImageTrueScanner.*;
+
+import org.codeaurora.gallery.R;
 
 public class TrueScannerActs extends SimpleImageFilter {
     public static final String SERIALIZATION_NAME = "TrueScannerActs";
     //The minimum resolution that TrueScanner library supports is VGA, i.e. 640x480.
     public static final int MIN_WIDTH = 640;
     public static final int MIN_HEIGHT = 480;
-    private static boolean rotating = false;
     private static final boolean DEBUG = false;
-    private static boolean isTrueScannerEnabled = true;
-    private static boolean isPointsAcquired;
     private final static int POINTS_LEN = 8;
-    private static int[] mAcquiredPoints = new int[POINTS_LEN+2];
+    private static boolean rotating = false;
+    private static boolean isTrueScannerEnabled;
+    private static boolean isPointsAcquired;
+    private static final int[] mAcquiredPoints = new int[POINTS_LEN + 2];
+
+    static {
+        try {
+            System.loadLibrary("jni_truescanner_v2");
+            isTrueScannerEnabled = true;
+        } catch (UnsatisfiedLinkError e) {
+            isTrueScannerEnabled = false;
+        }
+    }
+
     protected boolean isWhiteBoard = false;
     private boolean mLocked = false;
     private Bitmap rectifiedImage = null;
-    private int[] oldPts = new int[POINTS_LEN];
+    private final int[] oldPts = new int[POINTS_LEN];
     private ProgressDialog mProgressDialog;
 
-    private void printDebug(String str) {
-        if(DEBUG)
-            android.util.Log.d("TrueScanner", str);
+    public TrueScannerActs() {
+        mName = "TrueScannerActs";
+        isPointsAcquired = false;
     }
 
     public static boolean isTrueScannerEnabled() {
@@ -76,9 +78,9 @@ public class TrueScannerActs extends SimpleImageFilter {
         return rotating = isRotating;
     }
 
-    public TrueScannerActs() {
-        mName = "TrueScannerActs";
-        isPointsAcquired = false;
+    private void printDebug(String str) {
+        if (DEBUG)
+            android.util.Log.d("TrueScanner", str);
     }
 
     public FilterRepresentation getDefaultRepresentation() {
@@ -98,10 +100,11 @@ public class TrueScannerActs extends SimpleImageFilter {
     }
 
     private native int[] processImage(Bitmap orgBitmap, Bitmap rectifiedBitmap, int[] cornerPts);
+
     private native int enhanceImage(Bitmap orgBitmap, Bitmap rectifiedBitmap);
 
     private synchronized boolean acquireLock(boolean isAcquiring) {
-        if(mLocked != isAcquiring) {
+        if (mLocked != isAcquiring) {
             mLocked = isAcquiring;
             return true;
         }
@@ -110,13 +113,11 @@ public class TrueScannerActs extends SimpleImageFilter {
 
     private void showProgressDialog() {
         if (null != sActivity) {
-            sActivity.runOnUiThread(new Runnable() {
-                public void run() {
-                    if (!sActivity.isFinishing()) {
-                        mProgressDialog = ProgressDialog.show(sActivity,
-                                "", "Processing...", true, false);
-                        mProgressDialog.show();
-                    }
+            sActivity.runOnUiThread(() -> {
+                if (!sActivity.isFinishing()) {
+                    mProgressDialog = ProgressDialog.show(sActivity,
+                            "", "Processing...", true, false);
+                    mProgressDialog.show();
                 }
             });
         }
@@ -124,12 +125,10 @@ public class TrueScannerActs extends SimpleImageFilter {
 
     private void dismissProgressDialog() {
         if (null != sActivity) {
-            sActivity.runOnUiThread(new Runnable() {
-                public void run() {
-                    if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                        mProgressDialog.dismiss();
-                        mProgressDialog = null;
-                    }
+            sActivity.runOnUiThread(() -> {
+                if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                    mProgressDialog.dismiss();
+                    mProgressDialog = null;
                 }
             });
         }
@@ -137,7 +136,7 @@ public class TrueScannerActs extends SimpleImageFilter {
 
     @Override
     public Bitmap apply(Bitmap bitmap, float not_use, int quality) {
-        if(bitmap == null)
+        if (bitmap == null)
             return null;
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
@@ -145,25 +144,25 @@ public class TrueScannerActs extends SimpleImageFilter {
             w = h;
             h = bitmap.getWidth();
         }
-        if(w <= MIN_WIDTH || h <= MIN_HEIGHT)
+        if (w <= MIN_WIDTH || h <= MIN_HEIGHT)
             return bitmap;
-        if(ImageTrueScanner.getCordsUIState()) {
+        if (ImageTrueScanner.getCordsUIState()) {
             return bitmap;
         }
-        if(!acquireLock(true)) {
+        if (!acquireLock(true)) {
             showToast("Still processing the previous request... ", Toast.LENGTH_LONG);
             return bitmap;
         }
         new Throwable().printStackTrace();
         int[] pts = ImageTrueScanner.getDeterminedPoints();
         int[] resultPts = new int[POINTS_LEN];
-        float xScale = ((float)bitmap.getWidth())/pts[POINTS_LEN];
-        float yScale = ((float)bitmap.getHeight())/pts[POINTS_LEN+1];
-        for(int i=0; i < POINTS_LEN; i++) {
-            if(i%2 == 0)
-                resultPts[i] = (int)((pts[i] - pts[POINTS_LEN+2])*xScale);
+        float xScale = ((float) bitmap.getWidth()) / pts[POINTS_LEN];
+        float yScale = ((float) bitmap.getHeight()) / pts[POINTS_LEN + 1];
+        for (int i = 0; i < POINTS_LEN; i++) {
+            if (i % 2 == 0)
+                resultPts[i] = (int) ((pts[i] - pts[POINTS_LEN + 2]) * xScale);
             else
-                resultPts[i] = (int)((pts[i] - pts[POINTS_LEN+3])*yScale);
+                resultPts[i] = (int) ((pts[i] - pts[POINTS_LEN + 3]) * yScale);
         }
         if (rotating && rectifiedImage != null) {
             acquireLock(false);
@@ -175,7 +174,7 @@ public class TrueScannerActs extends SimpleImageFilter {
         int[] outputSize = processImage(bitmap, rectifiedImage, resultPts);
         rectifiedImage = Bitmap.createBitmap(
                 rectifiedImage, 0, 0, outputSize[0], outputSize[1]);
-        if(ImageTrueScanner.getRemoveGlareButtonStatus()) {
+        if (ImageTrueScanner.getRemoveGlareButtonStatus()) {
             Bitmap enhancedImage = Bitmap.createBitmap(
                     outputSize[0], outputSize[1], Bitmap.Config.ARGB_8888);
             showProgressDialog();
@@ -186,14 +185,5 @@ public class TrueScannerActs extends SimpleImageFilter {
         acquireLock(false);
 
         return rectifiedImage;
-    }
-
-    static {
-        try {
-            System.loadLibrary("jni_truescanner_v2");
-            isTrueScannerEnabled = true;
-        } catch(UnsatisfiedLinkError e) {
-            isTrueScannerEnabled = false;
-        }
     }
 }

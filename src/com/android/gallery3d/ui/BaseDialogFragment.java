@@ -28,6 +28,7 @@
  */
 package com.android.gallery3d.ui;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -35,10 +36,10 @@ import androidx.fragment.app.FragmentTransaction;
 public class BaseDialogFragment extends DialogFragment {
 
     @Override
-    public void show(FragmentManager manager, String tag) {
+    public void show(@NonNull FragmentManager manager, String tag) {
         try {
             super.show(manager, tag);
-        } catch(IllegalStateException e) {
+        } catch (IllegalStateException e) {
             FragmentTransaction transaction = manager.beginTransaction();
             transaction.add(this, tag);
             transaction.commitAllowingStateLoss();
@@ -46,7 +47,7 @@ public class BaseDialogFragment extends DialogFragment {
     }
 
     @Override
-    public int show(FragmentTransaction transaction, String tag) {
+    public int show(@NonNull FragmentTransaction transaction, String tag) {
         try {
             return super.show(transaction, tag);
         } catch (IllegalStateException e) {

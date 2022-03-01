@@ -35,18 +35,17 @@ public class CropMath {
      * |        v
      * 3<-------2
      *
-     * @param r  the rectangle to get the corners of
-     * @return  the float array of corners (8 floats)
+     * @param r the rectangle to get the corners of
+     * @return the float array of corners (8 floats)
      */
 
     public static float[] getCornersFromRect(RectF r) {
-        float[] corners = {
+        return new float[]{
                 r.left, r.top,
                 r.right, r.top,
                 r.right, r.bottom,
                 r.left, r.bottom
         };
-        return corners;
     }
 
     /**
@@ -76,10 +75,10 @@ public class CropMath {
         for (int i = 1; i < array.length; i += 2) {
             float x = array[i - 1];
             float y = array[i];
-            r.left = (x < r.left) ? x : r.left;
-            r.top = (y < r.top) ? y : r.top;
-            r.right = (x > r.right) ? x : r.right;
-            r.bottom = (y > r.bottom) ? y : r.bottom;
+            r.left = Math.min(x, r.left);
+            r.top = Math.min(y, r.top);
+            r.right = Math.max(x, r.right);
+            r.bottom = Math.max(y, r.bottom);
         }
         r.sort();
         return r;
@@ -90,8 +89,8 @@ public class CropMath {
      * image bound rectangle, clamps it to the edge of the rectangle.
      *
      * @param imageBound the rectangle to clamp edge points to.
-     * @param array an array of points to clamp to the rectangle, gets set to
-     *            the clamped values.
+     * @param array      an array of points to clamp to the rectangle, gets set to
+     *                   the clamped values.
      */
     public static void getEdgePoints(RectF imageBound, float[] array) {
         if (array.length < 2)
@@ -106,7 +105,7 @@ public class CropMath {
      * Takes a point and the corners of a rectangle and returns the two corners
      * representing the side of the rectangle closest to the point.
      *
-     * @param point the point which is being checked
+     * @param point   the point which is being checked
      * @param corners the corners of the rectangle
      * @return two corners representing the side of the rectangle
      */
@@ -134,7 +133,7 @@ public class CropMath {
      *
      * @param point 2D point to check
      * @param bound rectangle to rotate
-     * @param rot angle of rotation about rectangle center
+     * @param rot   angle of rotation about rectangle center
      * @return true if point is within rotated rectangle
      */
     public static boolean pointInRotatedRect(float[] point, RectF bound, float rot) {
@@ -151,9 +150,9 @@ public class CropMath {
     /**
      * Checks if a given point is within a rotated rectangle.
      *
-     * @param point 2D point to check
+     * @param point       2D point to check
      * @param rotatedRect corners of a rotated rectangle
-     * @param center center of the rotated rectangle
+     * @param center      center of the rotated rectangle
      * @return true if point is within rotated rectangle
      */
     public static boolean pointInRotatedRect(float[] point, float[] rotatedRect, float[] center) {
@@ -192,8 +191,8 @@ public class CropMath {
         float origH = r.height();
         float origA = origW / origH;
         float a = w / h;
-        float finalW = origW;
-        float finalH = origH;
+        float finalW;
+        float finalH;
         if (origA < a) {
             finalH = origW / a;
             r.top = r.centerY() - finalH / 2;
@@ -209,13 +208,14 @@ public class CropMath {
      * Stretches/Scales/Translates photoBounds to match displayBounds, and
      * and returns an equivalent stretched/scaled/translated cropBounds or null
      * if the mapping is invalid.
-     * @param cropBounds  cropBounds to transform
-     * @param photoBounds  original bounds containing crop bounds
-     * @param displayBounds  final bounds for crop
-     * @return  the stretched/scaled/translated crop bounds that fit within displayBounds
+     *
+     * @param cropBounds    cropBounds to transform
+     * @param photoBounds   original bounds containing crop bounds
+     * @param displayBounds final bounds for crop
+     * @return the stretched/scaled/translated crop bounds that fit within displayBounds
      */
     public static RectF getScaledCropBounds(RectF cropBounds, RectF photoBounds,
-            RectF displayBounds) {
+                                            RectF displayBounds) {
         Matrix m = new Matrix();
         m.setRectToRect(photoBounds, displayBounds, Matrix.ScaleToFit.FILL);
         RectF trueCrop = new RectF(cropBounds);
@@ -225,8 +225,9 @@ public class CropMath {
 
     /**
      * Returns the size of a bitmap in bytes.
-     * @param bmap  bitmap whose size to check
-     * @return  bitmap size in bytes
+     *
+     * @param bmap bitmap whose size to check
+     * @return bitmap size in bytes
      */
     public static int getBitmapSize(Bitmap bmap) {
         return bmap.getRowBytes() * bmap.getHeight();
@@ -234,8 +235,9 @@ public class CropMath {
 
     /**
      * Constrains rotation to be in [0, 90, 180, 270] rounding down.
-     * @param rotation  any rotation value, in degrees
-     * @return  integer rotation in [0, 90, 180, 270]
+     *
+     * @param rotation any rotation value, in degrees
+     * @return integer rotation in [0, 90, 180, 270]
      */
     public static int constrainedRotation(float rotation) {
         int r = (int) ((rotation % 360) / 90);

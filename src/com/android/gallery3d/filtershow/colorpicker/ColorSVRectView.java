@@ -20,13 +20,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.graphics.SweepGradient;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
@@ -37,27 +35,24 @@ import org.codeaurora.gallery.R;
 import java.util.ArrayList;
 
 public class ColorSVRectView extends View implements ColorListener {
-    private float mDpToPix;
-
-    private float mCtrY = 100;
-    private Paint mPaint1;
-
-    private float mCtrX = 100;
-    private Paint mDotPaint = new Paint();
-    private float mDotRadus;
-    private float mBorder;
-
-    private float mDotX = Float.NaN;
-    private float mDotY;
-    private int mSliderColor = 0xFF33B5E5;
-    private float[] mHSVO = new float[]{0, 1, 1, 1};
-    RectF mRect = new RectF();
-
-    private int mWidth;
-    private int mHeight;
     public final static float DOT_SIZE = 20;
     public final static float BORDER_SIZE = 20;
+    RectF mRect = new RectF();
     Bitmap mBitmap;
+    ArrayList<ColorListener> mColorListeners = new ArrayList<>();
+    private final float mDpToPix;
+    private float mCtrY = 100;
+    private final Paint mPaint1;
+    private float mCtrX = 100;
+    private final Paint mDotPaint = new Paint();
+    private final float mDotRadus;
+    private final float mBorder;
+    private float mDotX = Float.NaN;
+    private float mDotY;
+    private int mSliderColor;
+    private final float[] mHSVO = new float[]{0, 1, 1, 1};
+    private int mWidth;
+    private int mHeight;
 
     public ColorSVRectView(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
@@ -114,7 +109,6 @@ public class ColorSVRectView extends View implements ColorListener {
 
     }
 
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -130,7 +124,6 @@ public class ColorSVRectView extends View implements ColorListener {
             canvas.drawCircle(mDotX, mDotY, mDotRadus, mDotPaint);
         }
     }
-
 
     public boolean onDown(MotionEvent e) {
         return true;
@@ -174,7 +167,6 @@ public class ColorSVRectView extends View implements ColorListener {
         setUpColorPanel();
     }
 
-
     private void updateDot() {
 
         double hue = mHSVO[0];
@@ -188,10 +180,9 @@ public class ColorSVRectView extends View implements ColorListener {
     }
 
     private void updateDotPaint() {
-        int[] colors3 = new int[]{
-                mSliderColor, mSliderColor, 0x66000000, 0};
-        RadialGradient g = new RadialGradient(mDotX, mDotY, mDotRadus, colors3, new float[]{
-                0, .3f, .31f, 1}, Shader.TileMode.CLAMP);
+        int[] colors3 = new int[]{mSliderColor, mSliderColor, 0x66000000, 0};
+        RadialGradient g = new RadialGradient(mDotX, mDotY, mDotRadus, colors3,
+                new float[]{0, .3f, .31f, 1}, Shader.TileMode.CLAMP);
         mDotPaint.setShader(g);
 
     }
@@ -213,8 +204,6 @@ public class ColorSVRectView extends View implements ColorListener {
         updateDotPaint();
 
     }
-
-    ArrayList<ColorListener> mColorListeners = new ArrayList<ColorListener>();
 
     public void notifyColorListeners(float[] hsv) {
         for (ColorListener l : mColorListeners) {

@@ -16,19 +16,15 @@
 
 package com.android.gallery3d.app;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 import android.app.Activity;
 import android.content.Intent;
-//import android.drm.DrmHelper;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.ContentListener;
 import com.android.gallery3d.data.MediaItem;
@@ -41,6 +37,11 @@ import com.android.gallery3d.ui.SlideshowView;
 import com.android.gallery3d.ui.SynchronizedHandler;
 import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.FutureListener;
+
+import org.codeaurora.gallery.R;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class SlideshowPage extends ActivityState {
     private static final String TAG = "SlideshowPage";
@@ -57,12 +58,12 @@ public class SlideshowPage extends ActivityState {
     private static final int MSG_LOAD_NEXT_BITMAP = 1;
     private static final int MSG_SHOW_PENDING_BITMAP = 2;
 
-    public static interface Model {
-        public void pause();
+    public interface Model {
 
-        public void resume();
+        void pause();
+        void resume();
+        Future<Slide> nextSlide(FutureListener<Slide> listener);
 
-        public Future<Slide> nextSlide(FutureListener<Slide> listener);
     }
 
     public static class Slide {
@@ -144,12 +145,9 @@ public class SlideshowPage extends ActivityState {
     }
 
     private void loadNextBitmap() {
-        mModel.nextSlide(new FutureListener<Slide>() {
-            @Override
-            public void onFutureDone(Future<Slide> future) {
-                mPendingSlide = future.get();
-                mHandler.sendEmptyMessage(MSG_SHOW_PENDING_BITMAP);
-            }
+        mModel.nextSlide(future -> {
+            mPendingSlide = future.get();
+            mHandler.sendEmptyMessage(MSG_SHOW_PENDING_BITMAP);
         });
     }
 
@@ -248,7 +246,7 @@ public class SlideshowPage extends ActivityState {
         private static final int RETRY_COUNT = 5;
         private final MediaSet mMediaSet;
         private final Random mRandom = new Random();
-        private int mOrder[] = new int[0];
+        private int[] mOrder = new int[0];
         private final boolean mRepeat;
         private long mSourceVersion = MediaSet.INVALID_DATA_VERSION;
         private int mLastIndex = -1;
@@ -317,7 +315,7 @@ public class SlideshowPage extends ActivityState {
     private static class SequentialSource implements SlideshowDataAdapter.SlideshowSource {
         private static final int DATA_SIZE = 32;
 
-        private ArrayList<MediaItem> mData = new ArrayList<MediaItem>();
+        private ArrayList<MediaItem> mData = new ArrayList<>();
         private int mDataStart = 0;
         private long mDataVersion = MediaObject.INVALID_DATA_VERSION;
         private final MediaSet mMediaSet;

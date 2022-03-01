@@ -22,7 +22,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.os.Build;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -199,29 +198,17 @@ public class BitmapUtils {
             method.invoke(instance, filePath);
 
             // The method name changes between API Level 9 and 10.
-            if (Build.VERSION.SDK_INT <= 9) {
-                return (Bitmap) clazz.getMethod("captureFrame").invoke(instance);
-            } else {
-                byte[] data = (byte[]) clazz.getMethod("getEmbeddedPicture").invoke(instance);
-                if (data != null) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                    if (bitmap != null) return bitmap;
-                }
-                return (Bitmap) clazz.getMethod("getFrameAtTime").invoke(instance);
+            byte[] data = (byte[]) clazz.getMethod("getEmbeddedPicture").invoke(instance);
+            if (data != null) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                if (bitmap != null) return bitmap;
             }
+            return (Bitmap) clazz.getMethod("getFrameAtTime").invoke(instance);
         } catch (IllegalArgumentException ex) {
             // Assume this is a corrupt video file
         } catch (RuntimeException ex) {
             // Assume this is a corrupt video file.
-        } catch (InstantiationException e) {
-            Log.e(TAG, "createVideoThumbnail", e);
-        } catch (InvocationTargetException e) {
-            Log.e(TAG, "createVideoThumbnail", e);
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, "createVideoThumbnail", e);
-        } catch (NoSuchMethodException e) {
-            Log.e(TAG, "createVideoThumbnail", e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
             Log.e(TAG, "createVideoThumbnail", e);
         } finally {
             try {

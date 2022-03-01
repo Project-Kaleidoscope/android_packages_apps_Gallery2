@@ -17,21 +17,19 @@
 package com.android.gallery3d.filtershow.pipeline;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.renderscript.Allocation;
+import android.util.Log;
 
-import com.android.gallery3d.app.Log;
 import com.android.gallery3d.filtershow.cache.BitmapCache;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterUserPresetRepresentation;
 import com.android.gallery3d.filtershow.filters.FiltersManagerInterface;
 import com.android.gallery3d.filtershow.filters.ImageFilter;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 public class FilterEnvironment {
-    private static final String LOGTAG = "FilterEnvironment";
+    private static final String TAG = "FilterEnvironment";
     private ImagePreset mImagePreset;
     private float mScaleFactor;
     private int mQuality;
@@ -52,8 +50,7 @@ public class FilterEnvironment {
         this.mStop = stop;
     }
 
-    private HashMap<Integer, Integer>
-                    generalParameters = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Integer> generalParameters = new HashMap<>();
 
     public void setBitmapCache(BitmapCache cache) {
         mBitmapCache = cache;
@@ -127,8 +124,8 @@ public class FilterEnvironment {
             return bitmap;
         }
         ImageFilter filter = mFiltersManager.getFilterForRepresentation(representation);
-        if (filter == null){
-            Log.e(LOGTAG,"No ImageFilter for "+representation.getSerializationName());
+        if (filter == null) {
+            Log.e(TAG, "No ImageFilter for " + representation.getSerializationName());
             return bitmap;
         }
         filter.useRepresentation(representation);
@@ -163,7 +160,7 @@ public class FilterEnvironment {
 
     public synchronized void setGeneralParameter(int id, int value) {
         if (generalParameters == null) {
-            generalParameters = new HashMap<Integer, Integer>();
+            generalParameters = new HashMap<>();
         }
 
         generalParameters.put(id, value);

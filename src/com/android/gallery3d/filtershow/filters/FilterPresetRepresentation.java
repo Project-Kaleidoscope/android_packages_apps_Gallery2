@@ -20,20 +20,22 @@ import android.net.Uri;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.editors.ImageOnlyEditor;
 
 import java.io.IOException;
 
 public class FilterPresetRepresentation extends FilterRepresentation {
 
-    private static final String LOGTAG = "FilterPresetRepresentation";
+    private static final String TAG = "FilterPresetRepresentation";
 
     private static final String URI_TAG = "URI";
 
     // TODO: When implementing serialization, we should find a unique way of
     // specifying bitmaps / names (the resource IDs being random)
-    private int mBitmapResource = 0;
-    private int mNameResource = 0;
+    private int mBitmapResource;
+    private int mNameResource;
     private Uri FilteredURI;
     //private int mId;
 
@@ -48,6 +50,7 @@ public class FilterPresetRepresentation extends FilterRepresentation {
         setSupportsPartialRendering(true);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "FilterPreset: " + hashCode() + " : " + getName() + " bitmap rsc: " + mBitmapResource;
@@ -85,10 +88,8 @@ public class FilterPresetRepresentation extends FilterRepresentation {
         }
         if (representation instanceof FilterPresetRepresentation) {
             FilterPresetRepresentation fp = (FilterPresetRepresentation) representation;
-            if (fp.mNameResource == mNameResource
-                   && fp.mBitmapResource == mBitmapResource) {
-                return true;
-            }
+            return fp.mNameResource == mNameResource
+                    && fp.mBitmapResource == mBitmapResource;
         }
         return false;
     }
@@ -101,14 +102,20 @@ public class FilterPresetRepresentation extends FilterRepresentation {
         return equals(representation);
     }
 
-    public void setUri (Uri URI) {FilteredURI = URI;}
+    public Uri getUri() {
+        return FilteredURI;
+    }
 
-    public Uri getUri(){return FilteredURI;}
-
-    public void setId (int Id) {mBitmapResource = Id;}
+    public void setUri(Uri URI) {
+        FilteredURI = URI;
+    }
 
     public int getId() {
         return mBitmapResource;
+    }
+
+    public void setId(int Id) {
+        mBitmapResource = Id;
     }
 
     @Override
@@ -121,7 +128,7 @@ public class FilterPresetRepresentation extends FilterRepresentation {
     }
 
     public void setNameResource(int nameResource) {
-            mNameResource = nameResource;
+        mNameResource = nameResource;
     }
 
     public int getBitmapResource() {
@@ -129,7 +136,7 @@ public class FilterPresetRepresentation extends FilterRepresentation {
     }
 
     public void setBitmapResource(int bitmapResource) {
-            mBitmapResource = bitmapResource;
+        mBitmapResource = bitmapResource;
     }
 
     // Serialization...
@@ -157,6 +164,6 @@ public class FilterPresetRepresentation extends FilterRepresentation {
                 reader.skipValue();
             }
         }
-            reader.endObject();
+        reader.endObject();
     }
 }

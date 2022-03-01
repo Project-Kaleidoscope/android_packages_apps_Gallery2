@@ -32,21 +32,20 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.core.content.res.ResourcesCompat;
+
 import org.codeaurora.gallery.R;
 
 
 public class CropView extends View {
-    private static final String LOGTAG = "CropView";
-
+    private static final String TAG = "CropView";
+    private final RectF mScreenImageBounds = new RectF();
+    private final RectF mScreenCropBounds = new RectF();
+    private final Rect mShadowBounds = new Rect();
+    private final Paint mPaint = new Paint();
     private RectF mImageBounds = new RectF();
     private RectF mScreenBounds = new RectF();
-    private RectF mScreenImageBounds = new RectF();
-    private RectF mScreenCropBounds = new RectF();
-    private Rect mShadowBounds = new Rect();
-
     private Bitmap mBitmap;
-    private Paint mPaint = new Paint();
-
     private NinePatchDrawable mShadow;
     private CropObject mCropObj = null;
     private Drawable mCropIndicator;
@@ -72,11 +71,6 @@ public class CropView extends View {
     private int mTouchTolerance = 40;
     private float mDashOnLength = 20;
     private float mDashOffLength = 10;
-
-    private enum Mode {
-        NONE, MOVE
-    }
-
     private Mode mState = Mode.NONE;
 
     public CropView(Context context) {
@@ -95,19 +89,19 @@ public class CropView extends View {
     }
 
     private void setup(Context context) {
-        Resources rsc = context.getResources();
-        mShadow = (NinePatchDrawable) rsc.getDrawable(R.drawable.geometry_shadow);
-        mCropIndicator = rsc.getDrawable(R.drawable.camera_crop);
-        mIndicatorSize = (int) rsc.getDimension(R.dimen.crop_indicator_size);
-        mShadowMargin = (int) rsc.getDimension(R.dimen.shadow_margin);
-        mMargin = (int) rsc.getDimension(R.dimen.preview_margin);
-        mMinSideSize = (int) rsc.getDimension(R.dimen.crop_min_side);
-        mTouchTolerance = (int) rsc.getDimension(R.dimen.crop_touch_tolerance);
-        mOverlayShadowColor = (int) rsc.getColor(R.color.crop_shadow_color);
-        mOverlayWPShadowColor = (int) rsc.getColor(R.color.crop_shadow_wp_color);
-        mWPMarkerColor = (int) rsc.getColor(R.color.crop_wp_markers);
-        mDashOnLength = rsc.getDimension(R.dimen.wp_selector_dash_length);
-        mDashOffLength = rsc.getDimension(R.dimen.wp_selector_off_length);
+        Resources res = context.getResources();
+        mShadow = (NinePatchDrawable) ResourcesCompat.getDrawable(res, R.drawable.geometry_shadow, null);
+        mCropIndicator = ResourcesCompat.getDrawable(res, R.drawable.camera_crop, null);
+        mIndicatorSize = (int) res.getDimension(R.dimen.crop_indicator_size);
+        mShadowMargin = (int) res.getDimension(R.dimen.shadow_margin);
+        mMargin = (int) res.getDimension(R.dimen.preview_margin);
+        mMinSideSize = (int) res.getDimension(R.dimen.crop_min_side);
+        mTouchTolerance = (int) res.getDimension(R.dimen.crop_touch_tolerance);
+        mOverlayShadowColor = context.getColor(R.color.crop_shadow_color);
+        mOverlayWPShadowColor = context.getColor(R.color.crop_shadow_wp_color);
+        mWPMarkerColor = context.getColor(R.color.crop_wp_markers);
+        mDashOnLength = res.getDimension(R.dimen.wp_selector_dash_length);
+        mDashOffLength = res.getDimension(R.dimen.wp_selector_off_length);
     }
 
     public void initialize(Bitmap image, RectF newCropBounds, RectF newPhotoBounds, int rotation) {
@@ -186,7 +180,7 @@ public class CropView extends View {
     }
 
     private void reset() {
-        Log.w(LOGTAG, "crop reset called");
+        Log.w(TAG, "crop reset called");
         mState = Mode.NONE;
         mCropObj = null;
         mRotation = 0;
@@ -217,7 +211,7 @@ public class CropView extends View {
             applyAspect(w, h);
             mCropObj.resetBoundsTo(outer, outer);
         } else {
-            Log.w(LOGTAG, "failed to set aspect ratio original");
+            Log.w(TAG, "failed to set aspect ratio original");
         }
     }
 
@@ -236,7 +230,7 @@ public class CropView extends View {
             y = tmp;
         }
         if (!mCropObj.setInnerAspectRatio(x, y)) {
-            Log.w(LOGTAG, "failed to set aspect ratio");
+            Log.w(TAG, "failed to set aspect ratio");
         }
         invalidate();
     }
@@ -296,7 +290,7 @@ public class CropView extends View {
         }
 
         mImageBounds = new RectF(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
-        mScreenBounds = new RectF(0, 0, canvas.getWidth(), canvas.getHeight());
+        mScreenBounds = new RectF(0, 0, getWidth(), getHeight());
         mScreenBounds.inset(mMargin, mMargin);
 
         // If crop object doesn't exist, create it and update it from master
@@ -312,14 +306,14 @@ public class CropView extends View {
             mDisplayMatrix.reset();
             if (!CropDrawingUtils.setImageToScreenMatrix(mDisplayMatrix, mImageBounds, mScreenBounds,
                     mRotation)) {
-                Log.w(LOGTAG, "failed to get screen matrix");
+                Log.w(TAG, "failed to get screen matrix");
                 mDisplayMatrix = null;
                 return;
             }
             mDisplayMatrixInverse = new Matrix();
             mDisplayMatrixInverse.reset();
             if (!mDisplayMatrix.invert(mDisplayMatrixInverse)) {
-                Log.w(LOGTAG, "could not invert display matrix");
+                Log.w(TAG, "could not invert display matrix");
                 mDisplayMatrixInverse = null;
                 return;
             }
@@ -370,5 +364,9 @@ public class CropView extends View {
                     mSpotX, mSpotY, wpPaint, p);
         }
 
+    }
+
+    private enum Mode {
+        NONE, MOVE
     }
 }

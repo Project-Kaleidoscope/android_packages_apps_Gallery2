@@ -16,7 +16,6 @@
 
 package com.android.gallery3d.gadget;
 
-import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -32,10 +31,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
-import org.codeaurora.gallery.R;
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.gadget.WidgetDatabaseHelper.Entry;
 import com.android.gallery3d.onetimeinitializer.GalleryWidgetMigrator;
+
+import org.codeaurora.gallery.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +42,8 @@ import java.util.List;
 public class PhotoAppWidgetProvider extends AppWidgetProvider {
 
     private static final String TAG = "WidgetProvider";
-    private static List<PhotoUriContentObserver> mPhotoUriObservers = new ArrayList<>();
-    private static Handler mContentObserverHandler = new Handler();
+    private static final List<PhotoUriContentObserver> mPhotoUriObservers = new ArrayList<>();
+    private static final Handler mContentObserverHandler = new Handler();
 
     static RemoteViews buildWidget(Context context, int id, Entry entry) {
 
@@ -66,15 +65,12 @@ public class PhotoAppWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context,
-            AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+                         AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
-        if (ApiHelper.HAS_REMOTE_VIEWS_SERVICE) {
-            // migrate gallery widgets from pre-JB releases to JB due to bucket ID change
-            GalleryWidgetMigrator.migrateGalleryWidgets(context);
-        }
+        // migrate gallery widgets from pre-JB releases to JB due to bucket ID change
+        GalleryWidgetMigrator.migrateGalleryWidgets(context);
 
-        WidgetDatabaseHelper helper = new WidgetDatabaseHelper(context);
-        try {
+        try (WidgetDatabaseHelper helper = new WidgetDatabaseHelper(context)) {
             for (int id : appWidgetIds) {
                 Entry entry = helper.getEntry(id);
                 if (entry != null) {
@@ -84,14 +80,11 @@ public class PhotoAppWidgetProvider extends AppWidgetProvider {
                     Log.e(TAG, "cannot load widget: " + id);
                 }
             }
-        } finally {
-            helper.close();
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
     @SuppressWarnings("deprecation")
-    @TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB)
     private static RemoteViews buildStackWidget(Context context, int widgetId, Entry entry) {
         RemoteViews views = new RemoteViews(
                 context.getPackageName(), R.layout.appwidget_main);
@@ -167,10 +160,10 @@ public class PhotoAppWidgetProvider extends AppWidgetProvider {
     }
 
     private static class PhotoUriContentObserver extends ContentObserver {
-        private int mId;
+        private final int mId;
         private int mTag;
-        private Context mContext;
-        private Entry mEntry;
+        private final Context mContext;
+        private final Entry mEntry;
 
         public void setTag(int tag) {
             this.mTag = tag;

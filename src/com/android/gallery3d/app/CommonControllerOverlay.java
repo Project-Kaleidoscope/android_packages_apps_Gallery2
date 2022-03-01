@@ -86,7 +86,7 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         mBackground = new View(context);
-        mBackground.setBackgroundColor(context.getResources().getColor(R.color.darker_transparent));
+        mBackground.setBackgroundColor(context.getColor(R.color.darker_transparent));
         addView(mBackground, matchParent);
 
         // Depending on the usage, the timeBar can show a single scrubber, or
@@ -188,8 +188,7 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
     }
 
     @Override
-    public void setTimes(int currentTime, int totalTime,
-            int trimStartTime, int trimEndTime) {
+    public void setTimes(int currentTime, int totalTime, int trimStartTime, int trimEndTime) {
         mTimeBar.setTime(currentTime, totalTime, trimStartTime, trimEndTime);
     }
 
@@ -207,8 +206,7 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
         mMainView = view;
         mErrorView.setVisibility(mMainView == mErrorView ? View.VISIBLE : View.INVISIBLE);
         mLoadingView.setVisibility(mMainView == mLoadingView ? View.VISIBLE : View.INVISIBLE);
-        mPlayPauseReplayView.setVisibility(
-                mMainView == mPlayPauseReplayView ? View.VISIBLE : View.INVISIBLE);
+        mPlayPauseReplayView.setVisibility(mMainView == mPlayPauseReplayView ? View.VISIBLE : View.INVISIBLE);
         show();
     }
 
@@ -232,19 +230,6 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
                 }
             }
         }
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (super.onTouchEvent(event)) {
-            return true;
-        }
-        return false;
     }
 
     // The paddings of 4 sides which covered by system components. E.g.
@@ -313,15 +298,15 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
     protected void updateViews() {
         mBackground.setVisibility(View.VISIBLE);
         mTimeBar.setVisibility(View.VISIBLE);
-        Resources resources = getContext().getResources();
+        Context context = getContext();
         int imageResource = R.drawable.ic_vidcontrol_reload;
-        String contentDescription = resources.getString(R.string.accessibility_reload_video);
+        String contentDescription = context.getString(R.string.accessibility_reload_video);
         if (mState == State.PAUSED) {
             imageResource = R.drawable.ic_vidcontrol_play;
-            contentDescription = resources.getString(R.string.accessibility_play_video);
+            contentDescription = context.getString(R.string.accessibility_play_video);
         } else if (mState == State.PLAYING) {
             imageResource = R.drawable.ic_vidcontrol_pause;
-            contentDescription = resources.getString(R.string.accessibility_pause_video);
+            contentDescription = context.getString(R.string.accessibility_pause_video);
         }
 
         mPlayPauseReplayView.setImageResource(imageResource);

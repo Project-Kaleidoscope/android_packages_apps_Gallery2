@@ -29,15 +29,25 @@ public class GestureRecognizer {
     private static final String TAG = "GestureRecognizer";
 
     public interface Listener {
+
         boolean onSingleTapUp(float x, float y);
+
         boolean onDoubleTap(float x, float y);
+
         boolean onScroll(float dx, float dy, float totalX, float totalY);
+
         boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY);
+
         boolean onScaleBegin(float focusX, float focusY);
+
         boolean onScale(float focusX, float focusY, float scale);
+
         void onScaleEnd();
+
         void onDown(float x, float y);
+
         void onUp();
+
     }
 
     private final GestureDetector mGestureDetector;
@@ -47,10 +57,8 @@ public class GestureRecognizer {
 
     public GestureRecognizer(Context context, Listener listener) {
         mListener = listener;
-        mGestureDetector = new GestureDetector(context, new MyGestureListener(),
-                null, true /* ignoreMultitouch */);
-        mScaleDetector = new ScaleGestureDetector(
-                context, new MyScaleListener());
+        mGestureDetector = new GestureDetector(context, new MyGestureListener(), null, true /* ignoreMultitouch */);
+        mScaleDetector = new ScaleGestureDetector(context, new MyScaleListener());
         mDownUpDetector = new DownUpDetector(new MyDownUpListener());
     }
 
@@ -73,7 +81,7 @@ public class GestureRecognizer {
     }
 
     private class MyGestureListener
-                extends GestureDetector.SimpleOnGestureListener {
+            extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             return mListener.onSingleTapUp(e.getX(), e.getY());
@@ -93,7 +101,7 @@ public class GestureRecognizer {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                float velocityY) {
+                               float velocityY) {
             return mListener.onFling(e1, e2, velocityX, velocityY);
         }
     }

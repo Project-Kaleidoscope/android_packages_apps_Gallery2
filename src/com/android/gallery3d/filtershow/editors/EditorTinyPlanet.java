@@ -19,14 +19,15 @@ package com.android.gallery3d.filtershow.editors;
 import android.content.Context;
 import android.widget.FrameLayout;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.filters.FilterTinyPlanetRepresentation;
 import com.android.gallery3d.filtershow.imageshow.ImageTinyPlanet;
 
+import org.codeaurora.gallery.R;
+
 public class EditorTinyPlanet extends BasicEditor {
     public static final int ID = R.id.tinyPlanetEditor;
-    private static final String LOGTAG = "EditorTinyPlanet";
+    private static final String TAG = "EditorTinyPlanet";
     ImageTinyPlanet mImageTinyPlanet;
 
     public EditorTinyPlanet() {

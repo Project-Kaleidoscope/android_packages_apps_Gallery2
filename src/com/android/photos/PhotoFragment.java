@@ -19,7 +19,6 @@ package com.android.photos;
 
 import android.app.Fragment;
 
-
 public class PhotoFragment extends Fragment {
 
 }

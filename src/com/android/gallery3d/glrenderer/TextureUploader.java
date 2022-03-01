@@ -26,9 +26,9 @@ public class TextureUploader implements OnGLIdleListener {
     private static final int QUOTA_PER_FRAME = 1;
 
     private final ArrayDeque<UploadedTexture> mFgTextures =
-            new ArrayDeque<UploadedTexture>(INIT_CAPACITY);
+            new ArrayDeque<>(INIT_CAPACITY);
     private final ArrayDeque<UploadedTexture> mBgTextures =
-            new ArrayDeque<UploadedTexture>(INIT_CAPACITY);
+            new ArrayDeque<>(INIT_CAPACITY);
     private final GLRoot mGLRoot;
     private volatile boolean mIsQueued = false;
 
@@ -67,7 +67,7 @@ public class TextureUploader implements OnGLIdleListener {
     }
 
     private int upload(GLCanvas canvas, ArrayDeque<UploadedTexture> deque,
-            int uploadQuota, boolean isBackground) {
+                       int uploadQuota, boolean isBackground) {
         while (uploadQuota > 0) {
             UploadedTexture t;
             synchronized (this) {

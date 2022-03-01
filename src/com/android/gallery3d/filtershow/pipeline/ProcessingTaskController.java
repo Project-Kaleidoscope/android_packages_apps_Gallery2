@@ -25,13 +25,13 @@ import android.util.Log;
 import java.util.HashMap;
 
 public class ProcessingTaskController implements Handler.Callback {
-    private static final String LOGTAG = "ProcessingTaskController";
+    private static final String TAG = "ProcessingTaskController";
 
-    private Context mContext;
-    private HandlerThread mHandlerThread = null;
-    private Handler mProcessingHandler = null;
+    private final Context mContext;
+    private final HandlerThread mHandlerThread;
+    private final Handler mProcessingHandler;
     private int mCurrentType;
-    private HashMap<Integer, ProcessingTask> mTasks = new HashMap<Integer, ProcessingTask>();
+    private final HashMap<Integer, ProcessingTask> mTasks = new HashMap<>();
 
     public final static int RESULT = 1;
     public final static int UPDATE = 2;
@@ -46,7 +46,7 @@ public class ProcessingTaskController implements Handler.Callback {
                 } else if (msg.arg1 == UPDATE) {
                     task.onUpdate((ProcessingTask.Update) msg.obj);
                 } else {
-                    Log.w(LOGTAG, "received unknown message! " + msg.arg1);
+                    Log.w(TAG, "received unknown message! " + msg.arg1);
                 }
             }
         }

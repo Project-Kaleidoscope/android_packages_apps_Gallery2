@@ -32,7 +32,6 @@ import com.android.gallery3d.util.FutureListener;
 import com.android.gallery3d.util.ThreadPool;
 import com.android.photos.data.GalleryBitmapPool;
 
-
 public class BitmapJobDrawable extends Drawable implements Runnable {
 
     private ThumbnailLoader mLoader;

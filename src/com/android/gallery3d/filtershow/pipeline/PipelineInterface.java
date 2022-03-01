@@ -22,10 +22,17 @@ import android.renderscript.Allocation;
 import android.renderscript.RenderScript;
 
 public interface PipelineInterface {
-    public String getName();
-    public Resources getResources();
-    public Allocation getInPixelsAllocation();
-    public Allocation getOutPixelsAllocation();
-    public boolean prepareRenderscriptAllocations(Bitmap bitmap);
-    public RenderScript getRSContext();
+
+    String getName();
+
+    Resources getResources();
+
+    Allocation getInPixelsAllocation();
+
+    Allocation getOutPixelsAllocation();
+
+    boolean prepareRenderscriptAllocations(Bitmap bitmap);
+
+    RenderScript getRSContext();
+
 }

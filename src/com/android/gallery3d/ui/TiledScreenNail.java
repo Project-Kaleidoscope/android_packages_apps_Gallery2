@@ -20,9 +20,9 @@ import android.graphics.Bitmap;
 import android.graphics.RectF;
 
 import com.android.gallery3d.common.Utils;
-import com.android.photos.data.GalleryBitmapPool;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.glrenderer.TiledTexture;
+import com.android.photos.data.GalleryBitmapPool;
 
 // This is a ScreenNail wraps a Bitmap. There are some extra functions:
 //
@@ -157,7 +157,7 @@ public class TiledScreenNail implements ScreenNail {
             if (mAnimationStartTime == ANIMATION_NOT_NEEDED) {
                 mAnimationStartTime = ANIMATION_NEEDED;
             }
-            if(mDrawPlaceholder) {
+            if (mDrawPlaceholder) {
                 canvas.fillRect(x, y, width, height, mPlaceholderColor);
             }
             return;

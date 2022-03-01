@@ -17,7 +17,6 @@
 package com.android.photos.views;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -28,7 +27,6 @@ import android.graphics.Paint.Align;
 import android.graphics.RectF;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
@@ -49,10 +47,6 @@ import javax.microedition.khronos.opengles.GL10;
 public class TiledImageView extends FrameLayout {
 
     private static final boolean USE_TEXTURE_VIEW = false;
-    private static final boolean IS_SUPPORTED =
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
-    private static final boolean USE_CHOREOGRAPHER =
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
 
     private BlockingGLTextureView mTextureView;
     private GLSurfaceView mGLSurfaceView;
@@ -80,7 +74,7 @@ public class TiledImageView extends FrameLayout {
     private ImageRendererWrapper mRenderer;
 
     public static boolean isTilingSupported() {
-        return IS_SUPPORTED;
+        return true;
     }
 
     public TiledImageView(Context context) {
@@ -89,10 +83,6 @@ public class TiledImageView extends FrameLayout {
 
     public TiledImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (!IS_SUPPORTED) {
-            return;
-        }
-
         mRenderer = new ImageRendererWrapper();
         mRenderer.image = new TiledImageRenderer(this);
         View view;
@@ -113,9 +103,6 @@ public class TiledImageView extends FrameLayout {
     }
 
     public void destroy() {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         if (USE_TEXTURE_VIEW) {
             mTextureView.destroy();
         } else {
@@ -132,27 +119,18 @@ public class TiledImageView extends FrameLayout {
     };
 
     public void onPause() {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         if (!USE_TEXTURE_VIEW) {
             mGLSurfaceView.onPause();
         }
     }
 
     public void onResume() {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         if (!USE_TEXTURE_VIEW) {
             mGLSurfaceView.onResume();
         }
     }
 
     public void setTileSource(TileSource source, Runnable isReadyCallback) {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         synchronized (mLock) {
             mRenderer.source = source;
             mRenderer.isReadyCallback = isReadyCallback;
@@ -167,11 +145,8 @@ public class TiledImageView extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right,
-            int bottom) {
+                            int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        if (!IS_SUPPORTED) {
-            return;
-        }
         synchronized (mLock) {
             updateScaleIfNecessaryLocked(mRenderer);
         }
@@ -189,9 +164,6 @@ public class TiledImageView extends FrameLayout {
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         if (USE_TEXTURE_VIEW) {
             mTextureView.render();
         }
@@ -201,40 +173,26 @@ public class TiledImageView extends FrameLayout {
     @SuppressLint("NewApi")
     @Override
     public void setTranslationX(float translationX) {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         super.setTranslationX(translationX);
     }
 
     @Override
     public void invalidate() {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         if (USE_TEXTURE_VIEW) {
             super.invalidate();
             mTextureView.invalidate();
         } else {
-            if (USE_CHOREOGRAPHER) {
-                invalOnVsync();
-            } else {
-                mGLSurfaceView.requestRender();
-            }
+            invalOnVsync();
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void invalOnVsync() {
         if (!mInvalPending) {
             mInvalPending = true;
             if (mFrameCallback == null) {
-                mFrameCallback = new FrameCallback() {
-                    @Override
-                    public void doFrame(long frameTimeNanos) {
-                        mInvalPending = false;
-                        mGLSurfaceView.requestRender();
-                    }
+                mFrameCallback = frameTimeNanos -> {
+                    mInvalPending = false;
+                    mGLSurfaceView.requestRender();
                 };
             }
             Choreographer.getInstance().postFrameCallback(mFrameCallback);
@@ -242,10 +200,8 @@ public class TiledImageView extends FrameLayout {
     }
 
     private RectF mTempRectF = new RectF();
+
     public void positionFromMatrix(Matrix matrix) {
-        if (!IS_SUPPORTED) {
-            return;
-        }
         if (mRenderer.source != null) {
             final int rotation = mRenderer.source.getRotation();
             final boolean swap = !(rotation % 180 == 0);
@@ -324,14 +280,14 @@ public class TiledImageView extends FrameLayout {
 
     @SuppressWarnings("unused")
     private static class ColoredTiles implements TileSource {
-        private static final int[] COLORS = new int[] {
-            Color.RED,
-            Color.BLUE,
-            Color.YELLOW,
-            Color.GREEN,
-            Color.CYAN,
-            Color.MAGENTA,
-            Color.WHITE,
+        private static final int[] COLORS = new int[]{
+                Color.RED,
+                Color.BLUE,
+                Color.YELLOW,
+                Color.GREEN,
+                Color.CYAN,
+                Color.MAGENTA,
+                Color.WHITE,
         };
 
         private Paint mPaint = new Paint();

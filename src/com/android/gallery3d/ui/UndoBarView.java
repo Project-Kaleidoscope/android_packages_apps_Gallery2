@@ -19,13 +19,14 @@ package com.android.gallery3d.ui;
 import android.content.Context;
 import android.view.MotionEvent;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.glrenderer.NinePatchTexture;
 import com.android.gallery3d.glrenderer.ResourceTexture;
 import com.android.gallery3d.glrenderer.StringTexture;
 import com.android.gallery3d.util.GalleryUtils;
+
+import org.codeaurora.gallery.R;
 
 public class UndoBarView extends GLView {
     @SuppressWarnings("unused")
@@ -162,7 +163,7 @@ public class UndoBarView extends GLView {
     ////////////////////////////////////////////////////////////////////////////
 
     private static final long NO_ANIMATION = -1;
-    private static long ANIM_TIME = 200;
+    private static final long ANIM_TIME = 200;
     private long mAnimationStartTime = NO_ANIMATION;
     private float mFromAlpha, mToAlpha;
     private float mAlpha;

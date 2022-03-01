@@ -55,7 +55,7 @@ class Shader {
                     + "  gl_FragColor.w = color.w;" //
                     + "}";
 
-    private int shaderId = -1;
+    private final int shaderId;
 
     public Shader() {
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);

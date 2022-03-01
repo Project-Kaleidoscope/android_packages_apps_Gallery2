@@ -19,6 +19,8 @@ package com.android.gallery3d.data;
 import com.android.gallery3d.app.GalleryApp;
 
 public class FilterSource extends MediaSource {
+    public static final String FILTER_EMPTY_ITEM = "/filter/empty_prompt";
+    public static final String FILTER_CAMERA_SHORTCUT = "/filter/camera_shortcut";
     @SuppressWarnings("unused")
     private static final String TAG = "FilterSource";
     private static final int FILTER_BY_MEDIATYPE = 0;
@@ -27,15 +29,12 @@ public class FilterSource extends MediaSource {
     private static final int FILTER_BY_EMPTY_ITEM = 3;
     private static final int FILTER_BY_CAMERA_SHORTCUT = 4;
     private static final int FILTER_BY_CAMERA_SHORTCUT_ITEM = 5;
-
-    public static final String FILTER_EMPTY_ITEM = "/filter/empty_prompt";
-    public static final String FILTER_CAMERA_SHORTCUT = "/filter/camera_shortcut";
     private static final String FILTER_CAMERA_SHORTCUT_ITEM = "/filter/camera_shortcut_item";
 
-    private GalleryApp mApplication;
-    private PathMatcher mMatcher;
-    private MediaItem mEmptyItem;
-    private MediaItem mCameraShortcutItem;
+    private final GalleryApp mApplication;
+    private final PathMatcher mMatcher;
+    private final MediaItem mEmptyItem;
+    private final MediaItem mCameraShortcutItem;
 
     public FilterSource(GalleryApp application) {
         super("filter");

@@ -17,32 +17,22 @@
 package com.android.gallery3d.filtershow.controller;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
-import org.codeaurora.gallery.R;
-import com.android.gallery3d.app.Log;
 import com.android.gallery3d.filtershow.colorpicker.ColorHueView;
 import com.android.gallery3d.filtershow.colorpicker.ColorListener;
-import com.android.gallery3d.filtershow.colorpicker.ColorOpacityView;
 import com.android.gallery3d.filtershow.editors.Editor;
 
+import org.codeaurora.gallery.R;
+
 public class SliderHue implements Control {
-    public static String LOGTAG = "SliderHue";
+    public static String TAG = "SliderHue";
+    Editor mEditor;
     private ColorHueView mColorOpacityView;
     private ParameterHue mParameter;
-    Editor mEditor;
 
     @Override
     public void setUp(ViewGroup container, Parameter parameter, Editor editor) {
@@ -50,19 +40,18 @@ public class SliderHue implements Control {
         mEditor = editor;
         Context context = container.getContext();
         mParameter = (ParameterHue) parameter;
-        LayoutInflater inflater =
-                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        LinearLayout lp = (LinearLayout) inflater.inflate(
-                R.layout.filtershow_hue, container, true);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LinearLayout lp = (LinearLayout) inflater.inflate(R.layout.filtershow_hue, container, true);
 
-        mColorOpacityView =   (ColorHueView) lp.findViewById(R.id.hueView);
+        mColorOpacityView = lp.findViewById(R.id.hueView);
         updateUI();
         mColorOpacityView.addColorListener(new ColorListener() {
             @Override
             public void setColor(float[] hsvo) {
-                mParameter.setValue((int)(360* hsvo[3]));
+                mParameter.setValue((int) (360 * hsvo[3]));
                 mEditor.commitLocalRepresentation();
             }
+
             @Override
             public void addColorListener(ColorListener l) {
             }

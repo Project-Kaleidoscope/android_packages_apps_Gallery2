@@ -19,10 +19,15 @@ package com.android.gallery3d.data;
 import java.util.ArrayList;
 
 public abstract class Clustering {
+
     public abstract void run(MediaSet baseSet);
+
     public abstract int getNumberOfClusters();
+
     public abstract ArrayList<Path> getCluster(int index);
+
     public abstract String getClusterName(int index);
+
     public MediaItem getClusterCover(int index) {
         return null;
     }
@@ -34,4 +39,5 @@ public abstract class Clustering {
     public int getClusterVideoCount(int index) {
         return 0;
     }
+
 }

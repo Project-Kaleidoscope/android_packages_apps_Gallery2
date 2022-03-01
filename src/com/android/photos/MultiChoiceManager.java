@@ -29,33 +29,46 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.AbsListView.MultiChoiceModeListener;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.TrimVideo;
 import com.android.gallery3d.data.MediaObject;
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.crop.CropActivity;
 import com.android.gallery3d.util.GalleryUtils;
 
+import org.codeaurora.gallery.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MultiChoiceManager implements MultiChoiceModeListener,
-    SelectionManager.SelectedUriSource {
+        SelectionManager.SelectedUriSource {
 
     public interface Provider {
-        public MultiChoiceManager getMultiChoiceManager();
+
+        MultiChoiceManager getMultiChoiceManager();
+
     }
 
     public interface Delegate {
-        public SparseBooleanArray getSelectedItemPositions();
-        public int getSelectedItemCount();
-        public int getItemMediaType(Object item);
-        public int getItemSupportedOperations(Object item);
-        public ArrayList<Uri> getSubItemUrisForItem(Object item);
-        public Uri getItemUri(Object item);
-        public Object getItemAtPosition(int position);
-        public Object getPathForItemAtPosition(int position);
-        public void deleteItemWithPath(Object itemPath);
+
+        SparseBooleanArray getSelectedItemPositions();
+
+        int getSelectedItemCount();
+
+        int getItemMediaType(Object item);
+
+        int getItemSupportedOperations(Object item);
+
+        ArrayList<Uri> getSubItemUrisForItem(Object item);
+
+        Uri getItemUri(Object item);
+
+        Object getItemAtPosition(int position);
+
+        Object getPathForItemAtPosition(int position);
+
+        void deleteItemWithPath(Object itemPath);
+
     }
 
     private SelectionManager mSelectionManager;
@@ -63,7 +76,7 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
     private Context mContext;
     private Delegate mDelegate;
 
-    private ArrayList<Uri> mSelectedShareableUrisArray = new ArrayList<Uri>();
+    private ArrayList<Uri> mSelectedShareableUrisArray = new ArrayList<>();
 
     public MultiChoiceManager(Activity activity) {
         mContext = activity;
@@ -87,8 +100,7 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
 
     private void updateSelectedTitle(ActionMode mode) {
         int count = mDelegate.getSelectedItemCount();
-        mode.setTitle(mContext.getResources().getQuantityString(
-                R.plurals.number_of_items_selected, count, count));
+        mode.setTitle(mContext.getResources().getQuantityString(R.plurals.number_of_items_selected, count, count));
     }
 
     private String getItemMimetype(Object item) {
@@ -104,7 +116,7 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
 
     @Override
     public void onItemCheckedStateChanged(ActionMode mode, int position, long id,
-            boolean checked) {
+                                          boolean checked) {
         updateSelectedTitle(mode);
         Object item = mDelegate.getItemAtPosition(position);
 
@@ -153,18 +165,15 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
         inflater.inflate(R.menu.gallery_multiselect, menu);
         MenuItem menuItem = menu.findItem(R.id.menu_share);
         if (menuItem != null) {
-            menuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    mActionMode.finish();
-                    Intent shareIntent = mSelectionManager.getShareIntent();
-                    if (shareIntent != null) {
-                        Intent intent = Intent.createChooser(shareIntent, null);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        mContext.startActivity(intent);
-                    }
-                    return true;
+            menuItem.setOnMenuItemClickListener(item -> {
+                mActionMode.finish();
+                Intent shareIntent = mSelectionManager.getShareIntent();
+                if (shareIntent != null) {
+                    Intent intent = Intent.createChooser(shareIntent, null);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivity(intent);
                 }
+                return true;
             });
         }
         updateSelectedTitle(mode);
@@ -176,7 +185,7 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
         // onDestroyActionMode gets called when the share target was selected,
         // but apparently before the ArrayList is serialized in the intent
         // so we can't clear the old one here.
-        mSelectedShareableUrisArray = new ArrayList<Uri>();
+        mSelectedShareableUrisArray = new ArrayList<>();
         mSelectionManager.onClearSelection();
         mSelectionManager.setSelectedUriSource(null);
         mActionMode = null;
@@ -236,20 +245,20 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
         switch (actionItemId) {
             case R.id.menu_edit:
                 intent.setDataAndType(uri, mime)
-                      .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                      .setAction(Intent.ACTION_EDIT);
+                        .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        .setAction(Intent.ACTION_EDIT);
                 mContext.startActivity(Intent.createChooser(intent, null));
                 return;
             case R.id.menu_crop:
                 intent.setDataAndType(uri, mime)
-                      .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                      .setAction(CropActivity.CROP_ACTION)
-                      .setClass(mContext, FilterShowActivity.class);
+                        .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        .setAction(CropActivity.CROP_ACTION)
+                        .setClass(mContext, FilterShowActivity.class);
                 mContext.startActivity(intent);
                 return;
             case R.id.menu_trim:
                 intent.setData(uri)
-                      .setClass(mContext, TrimVideo.class);
+                        .setClass(mContext, TrimVideo.class);
                 mContext.startActivity(intent);
                 return;
             case R.id.menu_mute:
@@ -261,9 +270,9 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
                 return;
             case R.id.menu_set_as:
                 intent.setDataAndType(uri, mime)
-                      .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                      .setAction(Intent.ACTION_ATTACH_DATA)
-                      .putExtra("mimeType", mime);
+                        .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        .setAction(Intent.ACTION_ATTACH_DATA)
+                        .putExtra("mimeType", mime);
                 mContext.startActivity(Intent.createChooser(
                         intent, mContext.getString(R.string.set_as)));
                 return;
@@ -273,7 +282,7 @@ public class MultiChoiceManager implements MultiChoiceModeListener,
     }
 
     private List<Object> getPathsForSelectedItems() {
-        List<Object> paths = new ArrayList<Object>();
+        List<Object> paths = new ArrayList<>();
         SparseBooleanArray selected = mDelegate.getSelectedItemPositions();
         for (int i = 0; i < selected.size(); i++) {
             if (selected.valueAt(i)) {

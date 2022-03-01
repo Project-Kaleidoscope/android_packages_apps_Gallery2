@@ -15,13 +15,15 @@
  */
 package com.android.gallery3d.app;
 
-import com.android.gallery3d.util.IntentHelper;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-/** Trampoline activity that launches the Gallery activity defined in IntentHelper. */
+import com.android.gallery3d.util.IntentHelper;
+
+/**
+ * Trampoline activity that launches the Gallery activity defined in IntentHelper.
+ */
 public class Gallery extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {

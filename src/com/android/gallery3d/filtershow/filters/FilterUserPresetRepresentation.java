@@ -21,8 +21,8 @@ import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 
 public class FilterUserPresetRepresentation extends FilterRepresentation {
 
-    private ImagePreset mPreset;
-    private int mId;
+    private final ImagePreset mPreset;
+    private final int mId;
 
     public FilterUserPresetRepresentation(String name, ImagePreset preset, int id) {
         super(name);
@@ -41,10 +41,8 @@ public class FilterUserPresetRepresentation extends FilterRepresentation {
         return mId;
     }
 
-    public FilterRepresentation copy(){
-        FilterRepresentation representation = new FilterUserPresetRepresentation(getName(),
-                new ImagePreset(mPreset), mId);
-        return representation;
+    public FilterRepresentation copy() {
+        return new FilterUserPresetRepresentation(getName(), new ImagePreset(mPreset), mId);
     }
 
     @Override

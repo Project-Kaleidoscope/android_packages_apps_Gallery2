@@ -20,10 +20,12 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
+
 import androidx.core.view.MotionEventCompat;
 import androidx.core.view.VelocityTrackerCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.widget.EdgeEffectCompat;
+
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -229,17 +231,17 @@ public class GalleryThumbnailView extends ViewGroup {
      * recycle bin.
      *
      * @param startPosition Logical position in the list to start from
-     * @param x Left or right edge of the view to add
-     * @param forward If true, align left edge to x and increase position.
-     *                If false, align right edge to x and decrease position.
+     * @param x             Left or right edge of the view to add
+     * @param forward       If true, align left edge to x and increase position.
+     *                      If false, align right edge to x and decrease position.
      * @return Number of views added
      */
     private int makeAndAddColumn(int startPosition, int x, boolean forward) {
         int columnWidth = mLargeColumnWidth;
         int addViews = 0;
         for (int remaining = mLargeColumnUnitCount, i = 0;
-                remaining > 0 && startPosition + i >= 0 && startPosition + i < mItemCount;
-                i += forward ? 1 : -1, addViews++) {
+             remaining > 0 && startPosition + i >= 0 && startPosition + i < mItemCount;
+             i += forward ? 1 : -1, addViews++) {
             if (mAdapter.getIntrinsicAspectRatio(startPosition + i) >= 1f) {
                 // landscape
                 remaining -= LAND_UNITS;
@@ -355,7 +357,8 @@ public class GalleryThumbnailView extends ViewGroup {
                         mVelocityTracker.clear();
                     }
                 }
-            } break;
+            }
+            break;
 
             case MotionEvent.ACTION_CANCEL:
                 mTouchMode = TOUCH_MODE_IDLE;
@@ -375,13 +378,13 @@ public class GalleryThumbnailView extends ViewGroup {
                     mTouchMode = TOUCH_MODE_IDLE;
                 }
 
-            } break;
+            }
+            break;
         }
         return true;
     }
 
     /**
-     *
      * @param deltaX Pixels that content should move by
      * @return true if the movement completed, false if it was stopped prematurely.
      */
@@ -440,7 +443,7 @@ public class GalleryThumbnailView extends ViewGroup {
         final int clearBelow = height;
         for (int i = getChildCount() - 1; i >= 0; i--) {
             final View child = getChildAt(i);
-            if (child.getTop() <= clearBelow)  {
+            if (child.getTop() <= clearBelow) {
                 // There may be other offscreen views, but we need to maintain
                 // the invariant documented above.
                 break;
@@ -695,7 +698,7 @@ public class GalleryThumbnailView extends ViewGroup {
     }
 
     public static class LayoutParams extends ViewGroup.LayoutParams {
-        private static final int[] LAYOUT_ATTRS = new int[] {
+        private static final int[] LAYOUT_ATTRS = new int[]{
                 android.R.attr.layout_span
         };
 

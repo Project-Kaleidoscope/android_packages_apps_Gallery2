@@ -45,7 +45,7 @@ class ExifReader {
             IOException {
         ExifParser parser = ExifParser.parse(inputStream, mInterface);
         ExifData exifData = new ExifData(parser.getByteOrder());
-        ExifTag tag = null;
+        ExifTag tag;
 
         int event = parser.next();
         while (event != ExifParser.EVENT_END) {
@@ -69,7 +69,7 @@ class ExifReader {
                     exifData.getIfdData(tag.getIfd()).setTag(tag);
                     break;
                 case ExifParser.EVENT_COMPRESSED_IMAGE:
-                    byte buf[] = new byte[parser.getCompressedImageSize()];
+                    byte[] buf = new byte[parser.getCompressedImageSize()];
                     if (buf.length == parser.read(buf)) {
                         exifData.setCompressedThumbnail(buf);
                     } else {

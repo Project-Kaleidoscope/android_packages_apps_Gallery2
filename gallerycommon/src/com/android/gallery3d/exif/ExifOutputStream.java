@@ -243,7 +243,7 @@ class ExifOutputStream extends FilterOutputStream {
     }
 
     private ArrayList<ExifTag> stripNullValueTags(ExifData data) {
-        ArrayList<ExifTag> nullTags = new ArrayList<ExifTag>();
+        ArrayList<ExifTag> nullTags = new ArrayList<>();
         List<ExifTag> listTags = data.getAllTags();
         if (listTags == null) return null;
         for(ExifTag t : listTags) {
@@ -291,7 +291,7 @@ class ExifOutputStream extends FilterOutputStream {
             dataOutputStream.writeShort(tag.getDataType());
             dataOutputStream.writeInt(tag.getComponentCount());
             if (DEBUG) {
-                Log.v(TAG, "\n" + tag.toString());
+                Log.v(TAG, "\n" + tag);
             }
             if (tag.getDataSize() > 4) {
                 dataOutputStream.writeInt(tag.getOffset());
@@ -485,7 +485,7 @@ class ExifOutputStream extends FilterOutputStream {
             throws IOException {
         switch (tag.getDataType()) {
             case ExifTag.TYPE_ASCII:
-                byte buf[] = tag.getStringByte();
+                byte[] buf = tag.getStringByte();
                 if (buf.length == tag.getComponentCount()) {
                     buf[buf.length - 1] = 0;
                     dataOutputStream.write(buf);

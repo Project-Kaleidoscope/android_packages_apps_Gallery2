@@ -39,8 +39,6 @@ import android.graphics.RectF;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
-
 import com.android.gallery3d.app.GalleryAppImpl;
 import com.android.gallery3d.filtershow.cache.BitmapCache;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
@@ -52,11 +50,13 @@ import com.android.gallery3d.filtershow.pipeline.ImagePreset;
 import com.android.gallery3d.filtershow.tools.TruePortraitNativeEngine;
 import com.android.gallery3d.filtershow.tools.TruePortraitNativeEngine.EffectType;
 
+import org.codeaurora.gallery.R;
+
 public class ImageFilterTruePortrait extends ImageFilter {
     private static final String TAG = "ImageFilterTruePortrait";
 
     private FilterRepresentation mParameters;
-    private Paint mPaint = new Paint();
+    private final Paint mPaint = new Paint();
 
     public void useRepresentation(FilterRepresentation representation) {
         mParameters = representation;
@@ -72,14 +72,14 @@ public class ImageFilterTruePortrait extends ImageFilter {
             return bitmap;
         }
 
-        Bitmap filteredBitmap = null;
-        boolean result = false;
+        Bitmap filteredBitmap;
+        boolean result;
         int orientation = MasterImage.getImage().getOrientation();
         Rect originalBounds = MasterImage.getImage().getOriginalBounds();
         int filteredW;
         int filteredH;
 
-        if(quality == FilterEnvironment.QUALITY_FINAL) {
+        if (quality == FilterEnvironment.QUALITY_FINAL) {
             filteredW = originalBounds.width();
             filteredH = originalBounds.height();
         } else {
@@ -98,14 +98,14 @@ public class ImageFilterTruePortrait extends ImageFilter {
             }
 
             // non even width or height
-            if(filteredW%2 != 0 || filteredH%2 != 0) {
-                float aspect = (float)filteredH / (float)filteredW;
-                if(filteredW >= filteredH) {
+            if (filteredW % 2 != 0 || filteredH % 2 != 0) {
+                float aspect = (float) filteredH / (float) filteredW;
+                if (filteredW >= filteredH) {
                     filteredW = MasterImage.MAX_BITMAP_DIM;
-                    filteredH = (int)(filteredW * aspect);
+                    filteredH = (int) (filteredW * aspect);
                 } else {
                     filteredH = MasterImage.MAX_BITMAP_DIM;
-                    filteredW = (int)(filteredH / aspect);
+                    filteredW = (int) (filteredH / aspect);
                 }
             }
         }
@@ -114,7 +114,7 @@ public class ImageFilterTruePortrait extends ImageFilter {
 
         result = applyEffect(filteredBitmap);
 
-        if(result == false) {
+        if (!result) {
             Log.e(TAG, "Imagelib API failed");
             showToast(GalleryAppImpl.getContext().getString(R.string.no_faces_found),
                     Toast.LENGTH_SHORT);
@@ -123,12 +123,12 @@ public class ImageFilterTruePortrait extends ImageFilter {
 
             mPaint.reset();
             mPaint.setAntiAlias(true);
-            if(quality == FilterEnvironment.QUALITY_FINAL) {
+            if (quality == FilterEnvironment.QUALITY_FINAL) {
                 mPaint.setFilterBitmap(true);
                 mPaint.setDither(true);
             }
 
-            if(needsClear()) {
+            if (needsClear()) {
                 bitmap.setHasAlpha(true);
                 bitmap.eraseColor(Color.TRANSPARENT);
             }
@@ -138,7 +138,7 @@ public class ImageFilterTruePortrait extends ImageFilter {
             int bmWidth = bitmap.getWidth();
             int bmHeight = bitmap.getHeight();
             GeometryHolder holder;
-            if(preset.getDoApplyGeometry()) {
+            if (preset.getDoApplyGeometry()) {
                 holder = GeometryMathUtils.unpackGeometry(preset.getGeometryFilters());
             } else {
                 holder = new GeometryHolder();
@@ -164,19 +164,19 @@ public class ImageFilterTruePortrait extends ImageFilter {
         int value = basicRep.getValue();
 
         boolean result = false;
-        switch(mParameters.getTextId()) {
-        case R.string.blur:
-            result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.BLUR, value, filteredBitmap);
-            break;
-        case R.string.motion_blur:
-            result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.MOTION_BLUR, value, filteredBitmap);
-            break;
-        case R.string.halo:
-            result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.HALO, value, filteredBitmap);
-            break;
-        case R.string.sketch:
-            result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.SKETCH, value, filteredBitmap);
-            break;
+        switch (mParameters.getTextId()) {
+            case R.string.blur:
+                result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.BLUR, value, filteredBitmap);
+                break;
+            case R.string.motion_blur:
+                result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.MOTION_BLUR, value, filteredBitmap);
+                break;
+            case R.string.halo:
+                result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.HALO, value, filteredBitmap);
+                break;
+            case R.string.sketch:
+                result = TruePortraitNativeEngine.getInstance().applyEffect(EffectType.SKETCH, value, filteredBitmap);
+                break;
         }
 
         return result;

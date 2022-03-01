@@ -58,13 +58,8 @@ public abstract class AbstractPermissionPreferenceActivity extends PreferenceAct
     }
 
     protected void requestPermission(String[] permissions, int requestCode) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            permissionGranted = true;
-            return;
-        }
-
         boolean needRequest = false;
-        ArrayList<String> permissionList = new ArrayList<String>();
+        ArrayList<String> permissionList = new ArrayList<>();
         for (String permission : permissions) {
             if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
                 permissionList.add(permission);
@@ -99,13 +94,11 @@ public abstract class AbstractPermissionPreferenceActivity extends PreferenceAct
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
         permissionGranted = checkPermissionGrantResults(grantResults);
-        switch (requestCode) {
-            case PERMISSION_REQUEST_PHONE: {
-                if (permissionGranted) {
-                    onGetPermissionsSuccess();
-                } else {
-                    onGetPermissionsFailure();
-                }
+        if (requestCode == PERMISSION_REQUEST_PHONE) {
+            if (permissionGranted) {
+                onGetPermissionsSuccess();
+            } else {
+                onGetPermissionsFailure();
             }
         }
     }

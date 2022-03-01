@@ -18,6 +18,10 @@ package com.android.gallery3d.filtershow.filters;
 
 public class FilterDirectRepresentation extends FilterRepresentation {
 
+    public FilterDirectRepresentation(String name) {
+        super(name);
+    }
+
     @Override
     public FilterRepresentation copy() {
         FilterDirectRepresentation representation = new FilterDirectRepresentation(getName());
@@ -29,10 +33,6 @@ public class FilterDirectRepresentation extends FilterRepresentation {
     protected void copyAllParameters(FilterRepresentation representation) {
         super.copyAllParameters(representation);
         representation.useParametersFrom(this);
-    }
-
-    public FilterDirectRepresentation(String name) {
-        super(name);
     }
 
 }

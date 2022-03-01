@@ -36,12 +36,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 class Gyro implements SensorEventListener {
-    private final SensorManager mSensorManager;
-    private final Sensor mGyro;
-
     private static final float ALPHA = 0.4f;
     private static final float ALPHA_ORIGIN = 0.95f;
-
+    private final SensorManager mSensorManager;
+    private final Sensor mGyro;
     private long mPrevTimestamp;
     private float mPrevThetaX;
     private float mPrevThetaY;
@@ -51,10 +49,6 @@ class Gyro implements SensorEventListener {
     private float mPrevOmegaY;
 
     private Listener mListener;
-
-    interface Listener {
-        void onGyroChanged(float thetaX, float thetaY);
-    }
 
     Gyro(Context context) {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -111,5 +105,9 @@ class Gyro implements SensorEventListener {
 
     void setListener(Listener listener) {
         mListener = listener;
+    }
+
+    interface Listener {
+        void onGyroChanged(float thetaX, float thetaY);
     }
 }

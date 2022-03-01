@@ -17,5 +17,7 @@
 package com.android.gallery3d.filtershow.colorpicker;
 
 public interface RGBListener {
+
     void setColor(int hsv);
+
 }

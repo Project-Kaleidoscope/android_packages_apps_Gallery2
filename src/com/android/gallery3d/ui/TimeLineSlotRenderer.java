@@ -16,7 +16,6 @@
 
 package com.android.gallery3d.ui;
 
-
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.app.TimeLineDataLoader;
 import com.android.gallery3d.data.MediaItem;
@@ -56,10 +55,11 @@ public class TimeLineSlotRenderer extends AbstractSlotRenderer {
         public int timeLineTitleTextColor;
         public int timeLineNumberTextColor;
         public int timeLineTitleBackgroundColor;
-}
+    }
+
     public TimeLineSlotRenderer(AbstractGalleryActivity activity, TimeLineSlotView slotView,
-                                    SelectionManager selectionManager, LabelSpec labelSpec,
-                                    int placeholderColor) {
+                                SelectionManager selectionManager, LabelSpec labelSpec,
+                                int placeholderColor) {
         super(activity);
         mActivity = activity;
         mSlotView = slotView;
@@ -90,14 +90,11 @@ public class TimeLineSlotRenderer extends AbstractSlotRenderer {
     }
 
     protected static Texture checkContentTexture(Texture texture) {
-        return (texture instanceof TiledTexture)
-                && !((TiledTexture) texture).isReady()
-                ? null
-                : texture;
+        return (texture instanceof TiledTexture) && !((TiledTexture) texture).isReady() ? null : texture;
     }
 
     protected int renderOverlay(GLCanvas canvas, int index,
-            TimeLineSlidingWindow.AlbumEntry entry, int width, int height) {
+                                TimeLineSlidingWindow.AlbumEntry entry, int width, int height) {
         int renderRequestFlags = 0;
         if (mPressedIndex == index) {
             if (mAnimatePressedUp) {

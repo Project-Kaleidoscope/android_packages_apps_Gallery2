@@ -16,7 +16,6 @@
 
 package com.android.gallery3d.ui;
 
-import android.annotation.TargetApi;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 
@@ -24,7 +23,6 @@ import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.glrenderer.ExtTexture;
 import com.android.gallery3d.glrenderer.GLCanvas;
 
-@TargetApi(ApiHelper.VERSION_CODES.HONEYCOMB)
 public abstract class SurfaceTextureScreenNail implements ScreenNail,
         SurfaceTexture.OnFrameAvailableListener {
     @SuppressWarnings("unused")
@@ -36,11 +34,8 @@ public abstract class SurfaceTextureScreenNail implements ScreenNail,
     protected ExtTexture mExtTexture;
     private SurfaceTexture mSurfaceTexture;
     private int mWidth, mHeight;
-    private float[] mTransform = new float[16];
+    private final float[] mTransform = new float[16];
     private boolean mHasTexture = false;
-
-    public SurfaceTextureScreenNail() {
-    }
 
     public void acquireSurfaceTexture(GLCanvas canvas) {
         mExtTexture = new ExtTexture(canvas, GL_TEXTURE_EXTERNAL_OES);
@@ -53,14 +48,12 @@ public abstract class SurfaceTextureScreenNail implements ScreenNail,
         }
     }
 
-    @TargetApi(ApiHelper.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     private static void setDefaultBufferSize(SurfaceTexture st, int width, int height) {
         if (ApiHelper.HAS_SET_DEFALT_BUFFER_SIZE) {
             st.setDefaultBufferSize(width, height);
         }
     }
 
-    @TargetApi(ApiHelper.VERSION_CODES.ICE_CREAM_SANDWICH)
     private static void releaseSurfaceTexture(SurfaceTexture st) {
         st.setOnFrameAvailableListener(null);
         if (ApiHelper.HAS_RELEASE_SURFACE_TEXTURE) {
@@ -129,7 +122,8 @@ public abstract class SurfaceTextureScreenNail implements ScreenNail,
         throw new UnsupportedOperationException();
     }
 
-    protected void updateTransformMatrix(float[] matrix) {}
+    protected void updateTransformMatrix(float[] matrix) {
+    }
 
     @Override
     abstract public void noDraw();

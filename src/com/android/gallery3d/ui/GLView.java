@@ -18,6 +18,7 @@ package com.android.gallery3d.ui;
 
 import android.graphics.Rect;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.android.gallery3d.anim.CanvasAnimation;
@@ -79,7 +80,7 @@ public class GLView {
     protected int mScrollHeight = 0;
     protected int mScrollWidth = 0;
 
-    private float [] mBackgroundColor;
+    private float[] mBackgroundColor;
     private StateTransitionAnimation mTransition;
 
     public void startAnimation(CanvasAnimation animation) {
@@ -143,7 +144,7 @@ public class GLView {
 
         // Build parent-child links
         if (mComponents == null) {
-            mComponents = new ArrayList<GLView>();
+            mComponents = new ArrayList<>();
         }
         mComponents.add(component);
         component.mParent = this;
@@ -246,11 +247,11 @@ public class GLView {
         if (mTransition != null) mTransition.start();
     }
 
-    public float [] getBackgroundColor() {
+    public float[] getBackgroundColor() {
         return mBackgroundColor;
     }
 
-    public void setBackgroundColor(float [] color) {
+    public void setBackgroundColor(float[] color) {
         mBackgroundColor = color;
     }
 
@@ -293,7 +294,7 @@ public class GLView {
     }
 
     protected boolean dispatchTouchEvent(MotionEvent event,
-            int x, int y, GLView component, boolean checkBounds) {
+                                         int x, int y, GLView component, boolean checkBounds) {
         Rect rect = component.mBounds;
         int left = rect.left;
         int top = rect.top;

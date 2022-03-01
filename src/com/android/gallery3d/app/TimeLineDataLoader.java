@@ -19,6 +19,7 @@ package com.android.gallery3d.app;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
+import android.util.Log;
 
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.ContentListener;
@@ -51,9 +52,11 @@ public class TimeLineDataLoader {
     private final long[] mItemVersion;
     private final long[] mSetVersion;
 
-    public static interface DataListener {
-        public void onContentChanged(int index);
-        public void onSizeChanged();
+    public interface DataListener {
+
+        void onContentChanged(int index);
+        void onSizeChanged();
+
     }
 
     private int mActiveStart = 0;
@@ -100,7 +103,6 @@ public class TimeLineDataLoader {
                                     (mFailedVersion != MediaObject.INVALID_DATA_VERSION);
                             mLoadingListener.onLoadingFinished(loadingFailed);
                         }
-                        return;
                 }
             }
         };
@@ -196,14 +198,14 @@ public class TimeLineDataLoader {
             mContentEnd = contentEnd;
         }
         if (contentStart >= end || start >= contentEnd) {
-            for (int i = start, n = end; i < n; ++i) {
+            for (int i = start; i < end; ++i) {
                 clearSlot(i % DATA_CACHE_SIZE);
             }
         } else {
             for (int i = start; i < contentStart; ++i) {
                 clearSlot(i % DATA_CACHE_SIZE);
             }
-            for (int i = contentEnd, n = end; i < n; ++i) {
+            for (int i = contentEnd; i < end; ++i) {
                 clearSlot(i % DATA_CACHE_SIZE);
             }
         }
@@ -252,7 +254,7 @@ public class TimeLineDataLoader {
     }
 
     private <T> T executeAndWait(Callable<T> callable) {
-        FutureTask<T> task = new FutureTask<T>(callable);
+        FutureTask<T> task = new FutureTask<>(callable);
         mMainHandler.sendMessage(
                 mMainHandler.obtainMessage(MSG_RUN_OBJECT, task));
         try {
@@ -287,13 +289,12 @@ public class TimeLineDataLoader {
                 return null;
             }
             UpdateInfo info = new UpdateInfo();
-            long version = mVersion;
             info.version = mSourceVersion;
             info.size = mSize;
-            long setVersion[] = mSetVersion;
+            long[] setVersion = mSetVersion;
             for (int i = mContentStart, n = mContentEnd; i < n; ++i) {
                 int index = i % DATA_CACHE_SIZE;
-                if (setVersion[index] != version) {
+                if (setVersion[index] != mVersion) {
                     info.reloadStart = i;
                     info.reloadCount = Math.min(MAX_LOAD_COUNT, n - i);
                     return info;

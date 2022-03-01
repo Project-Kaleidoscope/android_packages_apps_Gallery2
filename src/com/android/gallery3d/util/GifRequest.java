@@ -37,9 +37,8 @@ import android.util.Log;
 import com.android.gallery3d.util.ThreadPool.Job;
 import com.android.gallery3d.util.ThreadPool.JobContext;
 
-import java.io.InputStream;
 import java.io.IOException;
-
+import java.io.InputStream;
 
 public class GifRequest implements Job<GifDecoder> {
 

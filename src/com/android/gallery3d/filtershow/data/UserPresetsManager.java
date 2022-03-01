@@ -3,7 +3,7 @@ package com.android.gallery3d.filtershow.data;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import org.codeaurora.gallery.R;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FilterUserPresetRepresentation;
 import com.android.gallery3d.filtershow.pipeline.ImagePreset;
@@ -12,19 +12,16 @@ import java.util.ArrayList;
 
 public class UserPresetsManager implements Handler.Callback {
 
-    private static final String LOGTAG = "UserPresetsManager";
-
-    private FilterShowActivity mActivity;
-    private HandlerThread mHandlerThread = null;
-    private Handler mProcessingHandler = null;
-    private FilterStackSource mUserPresets;
-
+    private static final String TAG = "UserPresetsManager";
     private static final int LOAD = 1;
     private static final int LOAD_RESULT = 2;
     private static final int SAVE = 3;
     private static final int DELETE = 4;
     private static final int UPDATE = 5;
-
+    private final FilterShowActivity mActivity;
+    private final HandlerThread mHandlerThread;
+    private final Handler mProcessingHandler;
+    private final FilterStackSource mUserPresets;
     private ArrayList<FilterUserPresetRepresentation> mRepresentations;
 
     private final Handler mResultHandler = new Handler() {
@@ -37,6 +34,16 @@ public class UserPresetsManager implements Handler.Callback {
             }
         }
     };
+
+    public UserPresetsManager(FilterShowActivity context) {
+        mActivity = context;
+        mHandlerThread = new HandlerThread(TAG,
+                android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        mHandlerThread.start();
+        mProcessingHandler = new Handler(mHandlerThread.getLooper(), this);
+        mUserPresets = new FilterStackSource(mActivity);
+        mUserPresets.open();
+    }
 
     @Override
     public boolean handleMessage(Message msg) {
@@ -57,16 +64,6 @@ public class UserPresetsManager implements Handler.Callback {
         return false;
     }
 
-    public UserPresetsManager(FilterShowActivity context) {
-        mActivity = context;
-        mHandlerThread = new HandlerThread(LOGTAG,
-                android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        mHandlerThread.start();
-        mProcessingHandler = new Handler(mHandlerThread.getLooper(), this);
-        mUserPresets = new FilterStackSource(mActivity);
-        mUserPresets.open();
-    }
-
     public ArrayList<FilterUserPresetRepresentation> getRepresentations() {
         return mRepresentations;
     }
@@ -79,11 +76,6 @@ public class UserPresetsManager implements Handler.Callback {
     public void close() {
         mUserPresets.close();
         mHandlerThread.quit();
-    }
-
-    static class SaveOperation {
-        String json;
-        String name;
     }
 
     public void save(ImagePreset preset, String name) {
@@ -99,11 +91,6 @@ public class UserPresetsManager implements Handler.Callback {
         Message msg = mProcessingHandler.obtainMessage(DELETE);
         msg.arg1 = id;
         mProcessingHandler.sendMessage(msg);
-    }
-
-    static class UpdateOperation {
-        int id;
-        String name;
     }
 
     public void update(FilterUserPresetRepresentation representation) {
@@ -144,6 +131,16 @@ public class UserPresetsManager implements Handler.Callback {
         UpdateOperation op = (UpdateOperation) msg.obj;
         mUserPresets.updateStackName(op.id, op.name);
         processLoad();
+    }
+
+    static class SaveOperation {
+        String json;
+        String name;
+    }
+
+    static class UpdateOperation {
+        int id;
+        String name;
     }
 
 }

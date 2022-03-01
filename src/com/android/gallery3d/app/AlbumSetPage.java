@@ -28,6 +28,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -35,13 +36,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.common.Utils;
 import com.android.gallery3d.data.DataManager;
 import com.android.gallery3d.data.MediaDetails;
@@ -51,13 +50,9 @@ import com.android.gallery3d.data.MediaSet;
 import com.android.gallery3d.data.Path;
 import com.android.gallery3d.glrenderer.FadeTexture;
 import com.android.gallery3d.glrenderer.GLCanvas;
-import com.android.gallery3d.picasasource.PicasaSource;
-import com.android.gallery3d.settings.GallerySettings;
 import com.android.gallery3d.ui.ActionModeHandler;
-import com.android.gallery3d.ui.ActionModeHandler.ActionModeListener;
 import com.android.gallery3d.ui.AlbumSetSlotRenderer;
 import com.android.gallery3d.ui.DetailsHelper;
-import com.android.gallery3d.ui.DetailsHelper.CloseListener;
 import com.android.gallery3d.ui.GLRoot;
 import com.android.gallery3d.ui.GLView;
 import com.android.gallery3d.ui.SelectionManager;
@@ -66,6 +61,8 @@ import com.android.gallery3d.ui.SynchronizedHandler;
 import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.GalleryUtils;
 import com.android.gallery3d.util.HelpUtils;
+
+import org.codeaurora.gallery.R;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -134,7 +131,7 @@ public class AlbumSetPage extends ActivityState implements
     }
 
     private final GLView mRootPane = new GLView() {
-        private final float mMatrix[] = new float[16];
+        private final float[] mMatrix = new float[16];
 
         @Override
         protected void onLayout(
@@ -213,7 +210,7 @@ public class AlbumSetPage extends ActivityState implements
         }
     }
 
-    private void getSlotCenter(int slotIndex, int center[]) {
+    private void getSlotCenter(int slotIndex, int[] center) {
         Rect offset = new Rect();
         mRootPane.getBoundsOf(mSlotView, offset);
         Rect r = mSlotView.getSlotRect(slotIndex);
@@ -252,7 +249,7 @@ public class AlbumSetPage extends ActivityState implements
     private void showEmptyAlbumToast(int toastLength) {
         //CRs-Fixed:951767 java.lang.NullPointerException: Attempt to invoke virtual method
         // 'void android.widget.RelativeLayout.addView(android.view.View
-        RelativeLayout galleryRoot = (RelativeLayout) ((Activity) mActivity)
+        RelativeLayout galleryRoot = mActivity
                 .findViewById(R.id.gallery_root);
         if (galleryRoot == null) return ;
         if (tvEmptyAlbum == null) {
@@ -404,19 +401,14 @@ public class AlbumSetPage extends ActivityState implements
 
     private boolean setupCameraButton() {
         if (!GalleryUtils.isCameraAvailable(mActivity)) return false;
-        RelativeLayout galleryRoot = (RelativeLayout) ((Activity) mActivity)
+        RelativeLayout galleryRoot = mActivity
                 .findViewById(R.id.gallery_root);
         if (galleryRoot == null) return false;
 
         mCameraButton = new Button(mActivity);
         mCameraButton.setText(R.string.camera_label);
         mCameraButton.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.frame_overlay_gallery_camera, 0, 0);
-        mCameraButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                GalleryUtils.startCameraActivity(mActivity);
-            }
-        });
+        mCameraButton.setOnClickListener(view -> GalleryUtils.startCameraActivity(mActivity));
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -433,7 +425,7 @@ public class AlbumSetPage extends ActivityState implements
 
     private void cleanupCameraButton() {
         if (mCameraButton == null) return;
-        RelativeLayout galleryRoot = (RelativeLayout) ((Activity) mActivity)
+        RelativeLayout galleryRoot = mActivity
                 .findViewById(R.id.gallery_root);
         if (galleryRoot == null) return;
         galleryRoot.removeView(mCameraButton);
@@ -569,12 +561,7 @@ public class AlbumSetPage extends ActivityState implements
         });
 
         mActionModeHandler = new ActionModeHandler(mActivity, mSelectionManager);
-        mActionModeHandler.setActionModeListener(new ActionModeListener() {
-            @Override
-            public boolean onActionItemClicked(MenuItem item) {
-                return onItemSelected(item);
-            }
-        });
+        mActionModeHandler.setActionModeListener(this::onItemSelected);
         mRootPane.addComponent(mSlotView);
     }
 
@@ -684,10 +671,8 @@ public class AlbumSetPage extends ActivityState implements
         if (data != null && data.getBooleanExtra(AlbumPage.KEY_EMPTY_ALBUM, false)) {
             showEmptyAlbumToast(Toast.LENGTH_SHORT);
         }
-        switch (requestCode) {
-            case REQUEST_DO_ANIMATION: {
-                mSlotView.startRisingAnimation();
-            }
+        if (requestCode == REQUEST_DO_ANIMATION) {
+            mSlotView.startRisingAnimation();
         }
     }
 
@@ -745,12 +730,7 @@ public class AlbumSetPage extends ActivityState implements
         mShowDetails = true;
         if (mDetailsHelper == null) {
             mDetailsHelper = new DetailsHelper(mActivity, mRootPane, mDetailsSource);
-            mDetailsHelper.setCloseListener(new CloseListener() {
-                @Override
-                public void onClose() {
-                    hideDetails();
-                }
-            });
+            mDetailsHelper.setCloseListener(this::hideDetails);
         }
         mDetailsHelper.show();
     }
@@ -761,22 +741,19 @@ public class AlbumSetPage extends ActivityState implements
             Log.d(TAG, "onSyncDone: " + Utils.maskDebugInfo(mediaSet.getName()) + " result="
                     + resultCode);
         }
-        ((Activity) mActivity).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                GLRoot root = mActivity.getGLRoot();
-                root.lockRenderThread();
-                try {
-                    if (resultCode == MediaSet.SYNC_RESULT_SUCCESS) {
-                        mInitialSynced = true;
-                    }
-                    clearLoadingBit(BIT_LOADING_SYNC);
-                    if (resultCode == MediaSet.SYNC_RESULT_ERROR && mIsActive) {
-                        Log.w(TAG, "failed to load album set");
-                    }
-                } finally {
-                    root.unlockRenderThread();
+        mActivity.runOnUiThread(() -> {
+            GLRoot root = mActivity.getGLRoot();
+            root.lockRenderThread();
+            try {
+                if (resultCode == MediaSet.SYNC_RESULT_SUCCESS) {
+                    mInitialSynced = true;
                 }
+                clearLoadingBit(BIT_LOADING_SYNC);
+                if (resultCode == MediaSet.SYNC_RESULT_ERROR && mIsActive) {
+                    Log.w(TAG, "failed to load album set");
+                }
+            } finally {
+                root.unlockRenderThread();
             }
         });
     }

@@ -29,15 +29,12 @@
 
 package com.android.gallery3d.filtershow.tools;
 
-import java.io.File;
-
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.util.Log;
 
 public class FilterGeneratorNativeEngine {
     private static final String TAG = "FilterGeneratorNativeEngine";
+
     static {
         try {
             System.loadLibrary("jni_filtergenerator");
@@ -53,10 +50,11 @@ public class FilterGeneratorNativeEngine {
 
     private static FilterGeneratorNativeEngine mInstance;
 
-    private FilterGeneratorNativeEngine() {}
+    private FilterGeneratorNativeEngine() {
+    }
 
     public static void createInstance() {
-        if(mInstance == null) {
+        if (mInstance == null) {
             mInstance = new FilterGeneratorNativeEngine();
         }
     }
@@ -70,6 +68,6 @@ public class FilterGeneratorNativeEngine {
         return mLibLoaded;
     }
 
-    native public boolean filterGeneratorProcess (Bitmap srcRGBA, Bitmap refRGBA, Bitmap dstRGBA);
+    native public boolean filterGeneratorProcess(Bitmap srcRGBA, Bitmap refRGBA, Bitmap dstRGBA);
 
 }

@@ -19,36 +19,38 @@ package com.android.gallery3d.filtershow.filters;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
-import org.codeaurora.gallery.R;
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.filtershow.controller.BasicParameterInt;
-import com.android.gallery3d.filtershow.controller.Parameter;
 import com.android.gallery3d.filtershow.editors.EditorVignette;
 import com.android.gallery3d.filtershow.imageshow.Oval;
+
+import org.codeaurora.gallery.R;
 
 import java.io.IOException;
 
 public class FilterVignetteRepresentation extends FilterRepresentation implements Oval {
-    private static final String LOGTAG = "FilterVignetteRepresentation";
-
-    private float mCenterX = .5f;
-    private float mCenterY = .5f;
-    private float mRadiusX = .5f;
-    private float mRadiusY = .5f;
     public static final int MODE_VIGNETTE = 0;
     public static final int MODE_EXPOSURE = 1;
     public static final int MODE_SATURATION = 2;
     public static final int MODE_CONTRAST = 3;
     public static final int MODE_FALLOFF = 4;
-    private static int MIN = -100;
-    private static int MAX = 100;
-    private static int MAXFALLOF = 200;
-
-    private BasicParameterInt mParamVignette = new BasicParameterInt(MODE_VIGNETTE, 50, MIN, MAX);
-    private BasicParameterInt mParamExposure = new BasicParameterInt(MODE_EXPOSURE, 0, MIN, MAX);
-    private BasicParameterInt mParamSaturation = new BasicParameterInt(MODE_SATURATION, 0, MIN, MAX);
-    private BasicParameterInt mParamContrast = new BasicParameterInt(MODE_CONTRAST, 0, MIN, MAX);
-    private BasicParameterInt mParamFalloff = new BasicParameterInt(MODE_FALLOFF, 40, 0, MAXFALLOF);
-    private BasicParameterInt[] mAllParam = {
+    private static final String TAG = "FilterVignetteRepresentation";
+    private static final String ELLIPSE = "ellipse";
+    private static final String ARGS = "adjust";
+    private static final int MIN = -100;
+    private static final int MAX = 100;
+    private static final int MAXFALLOF = 200;
+    private float mCenterX = .5f;
+    private float mCenterY = .5f;
+    private float mRadiusX = .5f;
+    private float mRadiusY = .5f;
+    private final BasicParameterInt mParamVignette = new BasicParameterInt(MODE_VIGNETTE, 50, MIN, MAX);
+    private final BasicParameterInt mParamExposure = new BasicParameterInt(MODE_EXPOSURE, 0, MIN, MAX);
+    private final BasicParameterInt mParamSaturation = new BasicParameterInt(MODE_SATURATION, 0, MIN, MAX);
+    private final BasicParameterInt mParamContrast = new BasicParameterInt(MODE_CONTRAST, 0, MIN, MAX);
+    private final BasicParameterInt mParamFalloff = new BasicParameterInt(MODE_FALLOFF, 40, 0, MAXFALLOF);
+    private final BasicParameterInt[] mAllParam = {
             mParamVignette,
             mParamExposure,
             mParamSaturation,
@@ -90,6 +92,7 @@ public class FilterVignetteRepresentation extends FilterRepresentation implement
         mAllParam[mode].setValue(value);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return getName() + " : " + mCenterX + ", " + mCenterY + " radius: " + mRadiusX;
@@ -131,23 +134,23 @@ public class FilterVignetteRepresentation extends FilterRepresentation implement
     }
 
     @Override
-    public void setRadiusX(float radiusX) {
-        mRadiusX = radiusX;
-    }
-
-    @Override
-    public void setRadiusY(float radiusY) {
-        mRadiusY = radiusY;
-    }
-
-    @Override
     public float getRadiusX() {
         return mRadiusX;
     }
 
     @Override
+    public void setRadiusX(float radiusX) {
+        mRadiusX = radiusX;
+    }
+
+    @Override
     public float getRadiusY() {
         return mRadiusY;
+    }
+
+    @Override
+    public void setRadiusY(float radiusY) {
+        mRadiusY = radiusY;
     }
 
     public boolean isCenterSet() {
@@ -170,18 +173,14 @@ public class FilterVignetteRepresentation extends FilterRepresentation implement
                 if (mAllParam[i].getValue() != rep.mAllParam[i].getValue())
                     return false;
             }
-            if (rep.getCenterX() == getCenterX()
+            return rep.getCenterX() == getCenterX()
                     && rep.getCenterY() == getCenterY()
                     && rep.getRadiusX() == getRadiusX()
-                    && rep.getRadiusY() == getRadiusY()) {
-                return true;
-            }
+                    && rep.getRadiusY() == getRadiusY();
         }
         return false;
     }
 
-    private static final String ELLIPSE = "ellipse";
-    private static final String ARGS = "adjust";
     @Override
     public void serializeRepresentation(JsonWriter writer) throws IOException {
         writer.beginObject();
@@ -237,12 +236,13 @@ public class FilterVignetteRepresentation extends FilterRepresentation implement
                 mParamFalloff.setValue(sreader.nextInt());
                 sreader.hasNext();
                 sreader.endArray();
-            } else  {
+            } else {
                 sreader.skipValue();
             }
         }
         sreader.endObject();
     }
+
     public int getParameterMode() {
         return mParameterMode;
     }

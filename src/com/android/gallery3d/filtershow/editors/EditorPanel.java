@@ -17,31 +17,31 @@
 package com.android.gallery3d.filtershow.editors;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import org.codeaurora.gallery.R;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.android.gallery3d.filtershow.FilterShowActivity;
-import com.android.gallery3d.filtershow.history.HistoryManager;
 import com.android.gallery3d.filtershow.category.MainPanel;
+import com.android.gallery3d.filtershow.history.HistoryManager;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.filtershow.state.StatePanel;
 
+import org.codeaurora.gallery.R;
+
 public class EditorPanel extends Fragment {
 
-    private static final String LOGTAG = "EditorPanel";
     public static final String FRAGMENT_TAG = "EditorPanel";
-
+    private static final String TAG = "EditorPanel";
     private LinearLayout mMainView;
     private Editor mEditor;
     private int mEditorID;
@@ -51,14 +51,14 @@ public class EditorPanel extends Fragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        FilterShowActivity filterShowActivity = (FilterShowActivity) activity;
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        FilterShowActivity filterShowActivity = (FilterShowActivity) context;
         mEditor = filterShowActivity.getEditor(mEditorID);
         if (mEditor != null) {
             mEditor.attach();
         }
-        Log.d(LOGTAG, "EditorPanel.onAttach(): mEditorID is " + mEditorID +
+        Log.d(TAG, "EditorPanel.onAttach(): mEditorID is " + mEditorID +
                 ", mEditor is " + mEditor);
     }
 
@@ -68,13 +68,13 @@ public class EditorPanel extends Fragment {
 
         int position = adapter.undo();
         masterImage.onHistoryItemClick(position);
-        ((FilterShowActivity)getActivity()).invalidateViews();
+        ((FilterShowActivity) requireActivity()).invalidateViews();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        FilterShowActivity activity = (FilterShowActivity) getActivity();
+        FilterShowActivity activity = (FilterShowActivity) requireActivity();
         if (mMainView != null) {
             if (mMainView.getParent() != null) {
                 ViewGroup parent = (ViewGroup) mMainView.getParent();
@@ -86,7 +86,7 @@ public class EditorPanel extends Fragment {
         mMainView = (LinearLayout) inflater.inflate(R.layout.filtershow_editor_panel, null);
         //TextView mFilterText = (TextView) mMainView.findViewById(R.id.tvFilterName);
         View editControl = mMainView.findViewById(R.id.controlArea);
-        Button toggleState = (Button) mMainView.findViewById(R.id.toggle_state);
+        Button toggleState = mMainView.findViewById(R.id.toggle_state);
         mEditor = activity.getEditor(mEditorID);
         if (mEditor != null) {
             mEditor.setUpEditorUI(editControl, toggleState);
@@ -114,10 +114,10 @@ public class EditorPanel extends Fragment {
 
     public void showImageStatePanel(boolean show) {
         View container = mMainView.findViewById(R.id.state_panel_container);
-        FragmentTransaction transaction = null;
+        FragmentTransaction transaction;
         boolean child = false;
         if (container == null) {
-            FilterShowActivity activity = (FilterShowActivity) getActivity();
+            FilterShowActivity activity = (FilterShowActivity) requireActivity();
             container = activity.getMainStatePanelContainer(R.id.state_panel_container);
         } else {
             transaction = getChildFragmentManager().beginTransaction();
@@ -128,7 +128,7 @@ public class EditorPanel extends Fragment {
         } else {
             transaction = getFragmentManager().beginTransaction();
         }
-        Fragment panel = getActivity().getSupportFragmentManager().findFragmentByTag(
+        Fragment panel = requireActivity().getSupportFragmentManager().findFragmentByTag(
                 MainPanel.FRAGMENT_TAG);
         if (panel == null || panel instanceof MainPanel) {
             transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);

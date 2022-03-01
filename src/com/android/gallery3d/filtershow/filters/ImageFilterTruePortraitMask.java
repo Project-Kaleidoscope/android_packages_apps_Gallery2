@@ -36,8 +36,7 @@ public class ImageFilterTruePortraitMask extends ImageFilter {
     private FilterBasicRepresentation mParameters;
 
     public void useRepresentation(FilterRepresentation representation) {
-        FilterBasicRepresentation parameters = (FilterBasicRepresentation) representation;
-        mParameters = parameters;
+        mParameters = (FilterBasicRepresentation) representation;
     }
 
     public FilterBasicRepresentation getParameters() {

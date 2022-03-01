@@ -35,15 +35,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+
 import androidx.core.content.FileProvider;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.util.SaveVideoFileInfo;
 import com.android.gallery3d.util.SaveVideoFileUtils;
 
+import org.codeaurora.gallery.R;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 
 public class TrimVideo extends Activity implements
         MediaPlayer.OnErrorListener,
@@ -90,40 +91,21 @@ public class TrimVideo extends Activity implements
         actionBar.setDisplayOptions(displayOptions, displayOptions);
         actionBar.setCustomView(R.layout.trim_menu);
 
-        mExitImageView = (ImageView) findViewById(R.id.exit_trim);
-        mExitImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mExitDialog = new AlertDialog.Builder(TrimVideo.this,
-                        AlertDialog.THEME_DEVICE_DEFAULT_LIGHT).
-                        setTitle(R.string.trim_video_exit_title).
-                        setMessage(R.string.trim_video_exit_msg).
-                        setPositiveButton(R.string.trim_video_exit_discard,
-                                new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                            }
-                        }).
-                        setNegativeButton(R.string.review_cancel,
-                                new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).
-                        create();
-                mExitDialog.show();
-            }
+        mExitImageView = findViewById(R.id.exit_trim);
+        mExitImageView.setOnClickListener(view -> {
+            mExitDialog = new AlertDialog.Builder(TrimVideo.this)
+                    .setTitle(R.string.trim_video_exit_title)
+                    .setMessage(R.string.trim_video_exit_msg)
+                    .setPositiveButton(R.string.trim_video_exit_discard,
+                            (DialogInterface.OnClickListener) (dialog, which) -> finish())
+                    .setNegativeButton(R.string.review_cancel,
+                            (DialogInterface.OnClickListener) (dialog, which) -> dialog.dismiss())
+                    .create();
+            mExitDialog.show();
         });
 
-        mSaveVideoTextView = (TextView) findViewById(R.id.start_trim);
-        mSaveVideoTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                trimVideo();
-            }
-        });
+        mSaveVideoTextView = findViewById(R.id.start_trim);
+        mSaveVideoTextView.setOnClickListener(view -> trimVideo());
         mSaveVideoTextView.setVisibility(View.GONE);
 
         Intent intent = getIntent();
@@ -132,7 +114,7 @@ public class TrimVideo extends Activity implements
         setContentView(R.layout.trim_view);
         View rootView = findViewById(R.id.trim_view_root);
 
-        mVideoView = (VideoView) rootView.findViewById(R.id.surface_view);
+        mVideoView = rootView.findViewById(R.id.surface_view);
 
         mController = new TrimControllerOverlay(mContext);
         ((ViewGroup) rootView).addView(mController.getView());
@@ -256,11 +238,7 @@ public class TrimVideo extends Activity implements
 
         // Considering that we only trim at sync frame, we don't want to trim
         // when the time interval is too short or too close to the origin.
-        if (delta < 100 || Math.abs(mVideoView.getDuration() - delta) < 100) {
-            return false;
-        } else {
-            return true;
-        }
+        return delta >= 100 && Math.abs(mVideoView.getDuration() - delta) >= 100;
     }
 
     private void trimVideo() {
@@ -271,67 +249,55 @@ public class TrimVideo extends Activity implements
 
         showProgressDialog();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                boolean hasError = false;
-                try {
-                    VideoUtils.startTrim(mSrcFile, mDstFileInfo.mFile,
-                            mTrimStartTime, mTrimEndTime);
-                    // Update the database for adding a new video file.
-                    SaveVideoFileUtils.insertContent(mDstFileInfo,
-                            getContentResolver(), mUri);
-                } catch (IOException e) {
-                    hasError = true;
-                    e.printStackTrace();
-                } catch (IllegalStateException e) {
-                    hasError = true;
-                    e.printStackTrace();
-                }
-                //If the exception happens,just notify the UI and avoid the crash.
-                if (hasError){
-                    mHandler.post(new Runnable(){
-                        @Override
-                        public void run(){
-                            Toast.makeText(getApplicationContext(),
-                                getString(R.string.fail_trim),
-                                Toast.LENGTH_SHORT)
-                                .show();
-                            if (mProgress != null) {
-                                mProgress.dismiss();
-                                mProgress = null;
-                            }
-                        }
-                    });
-                    return;
-                }
-                // After trimming is done, trigger the UI changed.
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(),
-                            getString(R.string.save_into, mDstFileInfo.mFolderName),
-                            Toast.LENGTH_SHORT)
-                            .show();
-                        // TODO: change trimming into a service to avoid
-                        // this progressDialog and add notification properly.
-                        if (mProgress != null) {
-                            mProgress.dismiss();
-                            mProgress = null;
-                            // Show the result only when the activity not stopped.
-                            Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-                            intent.setDataAndType(
-                                    FileProvider.getUriForFile(mContext,
-                                            "com.android.gallery3d.fileprovider",
-                                            mDstFileInfo.mFile), "video/*");
-                            intent.putExtra(MediaStore.EXTRA_FINISH_ON_COMPLETION, false);
-                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            startActivity(intent);
-                            finish();
-                        }
+        new Thread(() -> {
+            boolean hasError = false;
+            try {
+                VideoUtils.startTrim(mSrcFile, mDstFileInfo.mFile,
+                        mTrimStartTime, mTrimEndTime);
+                // Update the database for adding a new video file.
+                SaveVideoFileUtils.insertContent(mDstFileInfo,
+                        getContentResolver(), mUri);
+            } catch (IOException | IllegalStateException e) {
+                hasError = true;
+                e.printStackTrace();
+            }
+            //If the exception happens,just notify the UI and avoid the crash.
+            if (hasError){
+                mHandler.post(() -> {
+                    Toast.makeText(getApplicationContext(),
+                        getString(R.string.fail_trim),
+                        Toast.LENGTH_SHORT)
+                        .show();
+                    if (mProgress != null) {
+                        mProgress.dismiss();
+                        mProgress = null;
                     }
                 });
+                return;
             }
+            // After trimming is done, trigger the UI changed.
+            mHandler.post(() -> {
+                Toast.makeText(getApplicationContext(),
+                    getString(R.string.save_into, mDstFileInfo.mFolderName),
+                    Toast.LENGTH_SHORT)
+                    .show();
+                // TODO: change trimming into a service to avoid
+                // this progressDialog and add notification properly.
+                if (mProgress != null) {
+                    mProgress.dismiss();
+                    mProgress = null;
+                    // Show the result only when the activity not stopped.
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(
+                            FileProvider.getUriForFile(mContext,
+                                    "com.android.gallery3d.fileprovider",
+                                    mDstFileInfo.mFile), "video/*");
+                    intent.putExtra(MediaStore.EXTRA_FINISH_ON_COMPLETION, false);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(intent);
+                    finish();
+                }
+            });
         }).start();
     }
 

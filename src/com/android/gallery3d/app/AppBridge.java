@@ -53,18 +53,20 @@ public abstract class AppBridge implements Parcelable {
     //////////////////////////////////////////////////////////////////////////
 
     public interface Server {
+
         // Set the camera frame relative to GLRootView.
-        public void setCameraRelativeFrame(Rect frame);
+        void setCameraRelativeFrame(Rect frame);
         // Switch to the previous or next picture using the capture animation.
         // The offset is -1 to switch to the previous picture, 1 to switch to
         // the next picture.
-        public boolean switchWithCaptureAnimation(int offset);
+        boolean switchWithCaptureAnimation(int offset);
         // Enable or disable the swiping gestures (the default is enabled).
-        public void setSwipingEnabled(boolean enabled);
+        void setSwipingEnabled(boolean enabled);
         // Notify that the ScreenNail is changed.
-        public void notifyScreenNailChanged();
+        void notifyScreenNailChanged();
         // Add a new media item to the secure album.
-        public void addSecureAlbumItem(boolean isVideo, int id);
+        void addSecureAlbumItem(boolean isVideo, int id);
+
     }
 
     // If server is null, the services are not available.

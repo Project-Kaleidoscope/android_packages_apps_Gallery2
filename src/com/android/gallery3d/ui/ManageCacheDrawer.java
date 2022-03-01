@@ -18,7 +18,6 @@ package com.android.gallery3d.ui;
 
 import android.content.Context;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.data.DataSourceType;
 import com.android.gallery3d.data.MediaSet;
@@ -27,6 +26,8 @@ import com.android.gallery3d.glrenderer.GLCanvas;
 import com.android.gallery3d.glrenderer.ResourceTexture;
 import com.android.gallery3d.glrenderer.StringTexture;
 import com.android.gallery3d.ui.AlbumSetSlidingWindow.AlbumSetEntry;
+
+import org.codeaurora.gallery.R;
 
 public class ManageCacheDrawer extends AlbumSetSlotRenderer {
     private final ResourceTexture mCheckedItem;
@@ -40,16 +41,12 @@ public class ManageCacheDrawer extends AlbumSetSlotRenderer {
     private final int mCachePinMargin;
 
     public ManageCacheDrawer(AbstractGalleryActivity activity, SelectionManager selectionManager,
-            SlotView slotView, LabelSpec labelSpec, int cachePinSize, int cachePinMargin) {
-        super(activity, selectionManager, slotView, labelSpec,
-                activity.getResources().getColor(R.color.cache_placeholder));
-        Context context = activity;
-        mCheckedItem = new ResourceTexture(
-                context, R.drawable.btn_make_offline_normal_on_holo_dark);
-        mUnCheckedItem = new ResourceTexture(
-                context, R.drawable.btn_make_offline_normal_off_holo_dark);
-        mLocalAlbumIcon = new ResourceTexture(
-                context, R.drawable.btn_make_offline_disabled_on_holo_dark);
+                             SlotView slotView, LabelSpec labelSpec, int cachePinSize, int cachePinMargin) {
+        super(activity, selectionManager, slotView, labelSpec, activity.getColor(R.color.cache_placeholder));
+        Context context = activity.getAndroidContext();
+        mCheckedItem = new ResourceTexture(context, R.drawable.btn_make_offline_normal_on_holo_dark);
+        mUnCheckedItem = new ResourceTexture(context, R.drawable.btn_make_offline_normal_off_holo_dark);
+        mLocalAlbumIcon = new ResourceTexture(context, R.drawable.btn_make_offline_disabled_on_holo_dark);
         String cachingLabel = context.getString(R.string.caching_label);
         mCachingText = StringTexture.newInstance(cachingLabel, 12, 0xffffffff);
         mSelectionManager = selectionManager;
@@ -66,8 +63,7 @@ public class ManageCacheDrawer extends AlbumSetSlotRenderer {
         AlbumSetEntry entry = mDataWindow.get(index);
 
         boolean wantCache = entry.cacheFlag == MediaSet.CACHE_FLAG_FULL;
-        boolean isCaching = wantCache && (
-                entry.cacheStatus != MediaSet.CACHE_STATUS_CACHED_FULL);
+        boolean isCaching = wantCache && (entry.cacheStatus != MediaSet.CACHE_STATUS_CACHED_FULL);
         boolean selected = mSelectionManager.isItemSelected(entry.setPath);
         boolean chooseToCache = wantCache ^ selected;
         boolean available = isLocal(entry.sourceType) || chooseToCache;
@@ -83,15 +79,14 @@ public class ManageCacheDrawer extends AlbumSetSlotRenderer {
 
         renderRequestFlags |= renderLabel(canvas, entry, width, height);
 
-        drawCachingPin(canvas, entry.setPath,
-                entry.sourceType, isCaching, chooseToCache, width, height);
+        drawCachingPin(canvas, entry.setPath, entry.sourceType, isCaching, chooseToCache, width, height);
 
         renderRequestFlags |= renderOverlay(canvas, index, entry, width, height);
         return renderRequestFlags;
     }
 
     private void drawCachingPin(GLCanvas canvas, Path path, int dataSourceType,
-            boolean isCaching, boolean chooseToCache, int width, int height) {
+                                boolean isCaching, boolean chooseToCache, int width, int height) {
         ResourceTexture icon;
         if (isLocal(dataSourceType)) {
             icon = mLocalAlbumIcon;

@@ -28,30 +28,31 @@ import com.android.gallery3d.app.StitchingChangeListener;
 import com.android.gallery3d.util.MediaSetUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 // This class lists all media items added by the client.
 public class SecureAlbum extends MediaSet implements StitchingChangeListener {
     @SuppressWarnings("unused")
     private static final String TAG = "SecureAlbum";
     private static final String[] PROJECTION = {MediaColumns._ID};
+    private static final Uri[] mWatchUris =
+            {Images.Media.EXTERNAL_CONTENT_URI, Video.Media.EXTERNAL_CONTENT_URI};
+    private final ChangeNotifier mNotifier;
     private int mMinImageId = Integer.MAX_VALUE; // the smallest id of images
     private int mMaxImageId = Integer.MIN_VALUE; // the biggest id in images
     private int mMinVideoId = Integer.MAX_VALUE; // the smallest id of videos
     private int mMaxVideoId = Integer.MIN_VALUE; // the biggest id of videos
     // All the media items added by the client.
-    private ArrayList<Path> mAllItems = new ArrayList<Path>();
+    private final ArrayList<Path> mAllItems = new ArrayList<>();
     // The types of items in mAllItems. True is video and false is image.
-    private ArrayList<Boolean> mAllItemTypes = new ArrayList<Boolean>();
-    private ArrayList<Path> mExistingItems = new ArrayList<Path>();
-    private Context mContext;
-    private DataManager mDataManager;
-    private static final Uri[] mWatchUris =
-        {Images.Media.EXTERNAL_CONTENT_URI, Video.Media.EXTERNAL_CONTENT_URI};
-    private final ChangeNotifier mNotifier;
+    private final ArrayList<Boolean> mAllItemTypes = new ArrayList<>();
+    private final ArrayList<Path> mExistingItems = new ArrayList<>();
+    private final Context mContext;
+    private final DataManager mDataManager;
     // A placeholder image in the end of secure album. When it is tapped, it
     // will take the user to the lock screen.
-    private MediaItem mUnlockItem;
-    private boolean mShowUnlockItem;
+    private final MediaItem mUnlockItem;
+    private final boolean mShowUnlockItem;
 
     public SecureAlbum(Path path, GalleryApp application, MediaItem unlock) {
         super(path, nextVersionNumber());
@@ -87,26 +88,19 @@ public class SecureAlbum extends MediaSet implements StitchingChangeListener {
     public ArrayList<MediaItem> getMediaItem(int start, int count) {
         int existingCount = mExistingItems.size();
         if (start >= existingCount + 1) {
-            return new ArrayList<MediaItem>();
+            return new ArrayList<>();
         }
 
         // Add paths of requested stitching items.
         int end = Math.min(start + count, existingCount);
-        ArrayList<Path> subset = new ArrayList<Path>(mExistingItems.subList(start, end));
+        ArrayList<Path> subset = new ArrayList<>(mExistingItems.subList(start, end));
 
         // Convert paths to media items.
         final MediaItem[] buf = new MediaItem[end - start];
-        ItemConsumer consumer = new ItemConsumer() {
-            @Override
-            public void consume(int index, MediaItem item) {
-                buf[index] = item;
-            }
-        };
+        ItemConsumer consumer = (index, item) -> buf[index] = item;
         mDataManager.mapMediaItems(subset, consumer, 0);
-        ArrayList<MediaItem> result = new ArrayList<MediaItem>(end - start);
-        for (int i = 0; i < buf.length; i++) {
-            result.add(buf[i]);
-        }
+        ArrayList<MediaItem> result = new ArrayList<>(end - start);
+        Collections.addAll(result, buf);
         if (mShowUnlockItem) result.add(mUnlockItem);
         return result;
     }
@@ -131,7 +125,7 @@ public class SecureAlbum extends MediaSet implements StitchingChangeListener {
     }
 
     private ArrayList<Integer> queryExistingIds(Uri uri, int minId, int maxId) {
-        ArrayList<Integer> ids = new ArrayList<Integer>();
+        ArrayList<Integer> ids = new ArrayList<>();
         if (minId == Integer.MAX_VALUE || maxId == Integer.MIN_VALUE) return ids;
 
         String[] selectionArgs = {String.valueOf(minId), String.valueOf(maxId)};

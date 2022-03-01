@@ -23,6 +23,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.common.Entry.Table;
 
 import java.io.Closeable;
@@ -43,14 +45,14 @@ public class FileCache implements Closeable {
     private static final String ID_WHERE = FileEntry.Columns.ID + "=?";
     private static final String[] PROJECTION_SIZE_SUM =
             {String.format("sum(%s)", FileEntry.Columns.SIZE)};
-    private static final String FREESPACE_PROJECTION[] = {
+    private static final String[] FREESPACE_PROJECTION = {
             FileEntry.Columns.ID, FileEntry.Columns.FILENAME,
             FileEntry.Columns.CONTENT_URL, FileEntry.Columns.SIZE};
     private static final String FREESPACE_ORDER_BY =
             String.format("%s ASC", FileEntry.Columns.LAST_ACCESS);
 
     private final LruCache<String, CacheEntry> mEntryMap =
-            new LruCache<String, CacheEntry>(LRU_CAPACITY);
+            new LruCache<>(LRU_CAPACITY);
 
     private File mRootDir;
     private long mCapacity;
@@ -164,18 +166,15 @@ public class FileCache implements Closeable {
 
     private FileEntry queryDatabase(String downloadUrl) {
         long hash = Utils.crc64Long(downloadUrl);
-        String whereArgs[] = new String[] {String.valueOf(hash), downloadUrl};
-        Cursor cursor = mDbHelper.getReadableDatabase().query(TABLE_NAME,
+        String[] whereArgs = new String[] {String.valueOf(hash), downloadUrl};
+        try (Cursor cursor = mDbHelper.getReadableDatabase().query(TABLE_NAME,
                 FileEntry.SCHEMA.getProjection(),
-                QUERY_WHERE, whereArgs, null, null, null);
-        try {
+                QUERY_WHERE, whereArgs, null, null, null)) {
             if (!cursor.moveToNext()) return null;
             FileEntry entry = new FileEntry();
             FileEntry.SCHEMA.cursorToObject(cursor, entry);
             updateLastAccess(entry.id);
             return entry;
-        } finally {
-            cursor.close();
         }
     }
 
@@ -200,13 +199,10 @@ public class FileCache implements Closeable {
             }
         }
 
-        Cursor cursor = mDbHelper.getReadableDatabase().query(
+        try (Cursor cursor = mDbHelper.getReadableDatabase().query(
                 TABLE_NAME, PROJECTION_SIZE_SUM,
-                null, null, null, null, null);
-        try {
+                null, null, null, null, null)) {
             if (cursor.moveToNext()) mTotalBytes = cursor.getLong(0);
-        } finally {
-            cursor.close();
         }
         if (mTotalBytes > mCapacity) freeSomeSpaceIfNeed(MAX_DELETE_COUNT);
 
@@ -216,10 +212,9 @@ public class FileCache implements Closeable {
     }
 
     private void freeSomeSpaceIfNeed(int maxDeleteFileCount) {
-        Cursor cursor = mDbHelper.getReadableDatabase().query(
+        try (Cursor cursor = mDbHelper.getReadableDatabase().query(
                 TABLE_NAME, FREESPACE_PROJECTION,
-                null, null, null, null, FREESPACE_ORDER_BY);
-        try {
+                null, null, null, null, FREESPACE_ORDER_BY)) {
             while (maxDeleteFileCount > 0
                     && mTotalBytes > mCapacity && cursor.moveToNext()) {
                 long id = cursor.getLong(0);
@@ -241,8 +236,6 @@ public class FileCache implements Closeable {
                     Log.w(TAG, "unable to delete file: " + path);
                 }
             }
-        } finally {
-            cursor.close();
         }
     }
 
@@ -251,11 +244,11 @@ public class FileCache implements Closeable {
         public static final EntrySchema SCHEMA = new EntrySchema(FileEntry.class);
 
         public interface Columns extends Entry.Columns {
-            public static final String HASH_CODE = "hash_code";
-            public static final String CONTENT_URL = "content_url";
-            public static final String FILENAME = "filename";
-            public static final String SIZE = "size";
-            public static final String LAST_ACCESS = "last_access";
+            String HASH_CODE = "hash_code";
+            String CONTENT_URL = "content_url";
+            String FILENAME = "filename";
+            String SIZE = "size";
+            String LAST_ACCESS = "last_access";
         }
 
         @Column(value = Columns.HASH_CODE, indexed = true)
@@ -273,13 +266,13 @@ public class FileCache implements Closeable {
         @Column(value = Columns.LAST_ACCESS, indexed = true)
         public long lastAccess;
 
+        @NonNull
         @Override
         public String toString() {
-            return new StringBuilder()
-                    .append("hash_code: ").append(hashCode).append(", ")
-                    .append("content_url").append(contentUrl).append(", ")
-                    .append("last_access").append(lastAccess).append(", ")
-                    .append("filename").append(filename).toString();
+            return "hash_code: " + hashCode + ", " +
+                    "content_url" + contentUrl + ", " +
+                    "last_access" + lastAccess + ", " +
+                    "filename" + filename;
         }
     }
 

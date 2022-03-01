@@ -22,10 +22,17 @@ import android.net.Uri;
 import com.android.gallery3d.data.ContentListener;
 
 public interface WidgetSource {
-    public int size();
-    public Bitmap getImage(int index);
-    public Uri getContentUri(int index);
-    public void setContentListener(ContentListener listener);
-    public void reload();
-    public void close();
+
+    int size();
+
+    Bitmap getImage(int index);
+
+    Uri getContentUri(int index);
+
+    void setContentListener(ContentListener listener);
+
+    void reload();
+
+    void close();
+
 }

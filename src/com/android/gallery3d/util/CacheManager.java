@@ -19,6 +19,7 @@ package com.android.gallery3d.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.android.gallery3d.common.BlobCache;
 
@@ -29,15 +30,15 @@ import java.util.HashMap;
 public class CacheManager {
     private static final String TAG = "CacheManager";
     private static final String KEY_CACHE_UP_TO_DATE = "cache-up-to-date";
-    private static HashMap<String, BlobCache> sCacheMap =
-            new HashMap<String, BlobCache>();
+    private static final HashMap<String, BlobCache> sCacheMap =
+            new HashMap<>();
     private static boolean sOldCheckDone = false;
 
     // Return null when we cannot instantiate a BlobCache, e.g.:
     // there is no SD card found.
     // This can only be called from data thread.
     public static BlobCache getCache(Context context, String filename,
-            int maxEntries, int maxBytes, int version) {
+                                     int maxEntries, int maxBytes, int version) {
         synchronized (sCacheMap) {
             if (!sOldCheckDone) {
                 removeOldFilesIfNecessary(context);
@@ -72,7 +73,7 @@ public class CacheManager {
             // ignore.
         }
         if (n != 0) return;
-        pref.edit().putInt(KEY_CACHE_UP_TO_DATE, 1).commit();
+        pref.edit().putInt(KEY_CACHE_UP_TO_DATE, 1).apply();
 
         File cacheDir = context.getCacheDir();
         if (cacheDir != null) {

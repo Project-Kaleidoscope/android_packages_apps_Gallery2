@@ -34,37 +34,13 @@ public class FilterDeleteSet extends MediaSet implements ContentListener {
     private static final int REQUEST_ADD = 1;
     private static final int REQUEST_REMOVE = 2;
     private static final int REQUEST_CLEAR = 3;
-
-    private boolean mIsLoading;
-
-    private static class Request {
-        int type;  // one of the REQUEST_* constants
-        Path path;
-        int indexHint;
-        public Request(int type, Path path, int indexHint) {
-            this.type = type;
-            this.path = path;
-            this.indexHint = indexHint;
-        }
-    }
-
-    private static class Deletion {
-        Path path;
-        int index;
-        public Deletion(Path path, int index) {
-            this.path = path;
-            this.index = index;
-        }
-    }
-
     // The underlying MediaSet
     private final MediaSet mBaseSet;
-
+    private boolean mIsLoading;
     // Pending Requests
-    private ArrayList<Request> mRequests = new ArrayList<Request>();
-
+    private final ArrayList<Request> mRequests = new ArrayList<>();
     // Deletions currently in effect, ordered by index
-    private ArrayList<Deletion> mCurrent = new ArrayList<Deletion>();
+    private ArrayList<Deletion> mCurrent = new ArrayList<>();
 
     public FilterDeleteSet(Path path, MediaSet baseSet) {
         super(path, INVALID_DATA_VERSION);
@@ -113,13 +89,13 @@ public class FilterDeleteSet extends MediaSet implements ContentListener {
     //
     @Override
     public ArrayList<MediaItem> getMediaItem(int start, int count) {
-        if (count <= 0) return new ArrayList<MediaItem>();
+        if (count <= 0) return new ArrayList<>();
 
         int end = start + count - 1;
         int n = mCurrent.size();
         // Find the segment that "start" falls into. Count the number of items
         // not yet deleted until it reaches "start".
-        int i = 0;
+        int i;
         for (i = 0; i < n; i++) {
             Deletion d = mCurrent.get(i);
             if (d.index - i > start) break;
@@ -213,7 +189,7 @@ public class FilterDeleteSet extends MediaSet implements ContentListener {
             int from = Math.max(minIndex - 5, 0);
             int to = Math.min(maxIndex + 5, n);
             ArrayList<MediaItem> items = mBaseSet.getMediaItem(from, to - from);
-            ArrayList<Deletion> result = new ArrayList<Deletion>();
+            ArrayList<Deletion> result = new ArrayList<>();
             for (int i = 0; i < items.size(); i++) {
                 MediaItem item = items.get(i);
                 if (item == null) continue;
@@ -266,13 +242,35 @@ public class FilterDeleteSet extends MediaSet implements ContentListener {
     }
 
     public void clearDeletion() {
-        sendRequest(REQUEST_CLEAR, null /* unused */ , 0 /* unused */);
+        sendRequest(REQUEST_CLEAR, null /* unused */, 0 /* unused */);
     }
 
     // Returns number of deletions _in effect_ (the number will only gets
     // updated after a reload()).
     public int getNumberOfDeletions() {
         return mCurrent.size();
+    }
+
+    private static class Request {
+        int type;  // one of the REQUEST_* constants
+        Path path;
+        int indexHint;
+
+        public Request(int type, Path path, int indexHint) {
+            this.type = type;
+            this.path = path;
+            this.indexHint = indexHint;
+        }
+    }
+
+    private static class Deletion {
+        Path path;
+        int index;
+
+        public Deletion(Path path, int index) {
+            this.path = path;
+            this.index = index;
+        }
     }
 
 }

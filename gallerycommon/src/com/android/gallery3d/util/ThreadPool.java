@@ -42,7 +42,9 @@ public class ThreadPool {
 
     // A Job is like a Callable, but it has an addition JobContext parameter.
     public interface Job<T> {
-        public T run(JobContext jc);
+
+        T run(JobContext jc);
+
     }
 
     public interface JobContext {
@@ -68,7 +70,9 @@ public class ThreadPool {
     }
 
     public interface CancelListener {
-        public void onCancel();
+
+        void onCancel();
+
     }
 
     private static class ResourceCounter {
@@ -87,7 +91,7 @@ public class ThreadPool {
     public ThreadPool(int initPoolSize, int maxPoolSize) {
         mExecutor = new ThreadPoolExecutor(
                 initPoolSize, maxPoolSize, KEEP_ALIVE_TIME,
-                TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+                TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
                 new PriorityThreadFactory("thread-pool",
                 android.os.Process.THREAD_PRIORITY_BACKGROUND));
     }
@@ -95,7 +99,7 @@ public class ThreadPool {
     // Submit a job to the thread pool. The listener will be called when the
     // job is finished (or cancelled).
     public <T> Future<T> submit(Job<T> job, FutureListener<T> listener) {
-        Worker<T> w = new Worker<T>(job, listener);
+        Worker<T> w = new Worker<>(job, listener);
         mExecutor.execute(w);
         return w;
     }

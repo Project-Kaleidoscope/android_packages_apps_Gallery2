@@ -36,9 +36,15 @@ package com.android.gallery3d.glrenderer;
 //          -- StringTexture
 //
 public interface Texture {
-    public int getWidth();
-    public int getHeight();
-    public void draw(GLCanvas canvas, int x, int y);
-    public void draw(GLCanvas canvas, int x, int y, int w, int h);
-    public boolean isOpaque();
+
+    int getWidth();
+
+    int getHeight();
+
+    void draw(GLCanvas canvas, int x, int y);
+
+    void draw(GLCanvas canvas, int x, int y, int w, int h);
+
+    boolean isOpaque();
+
 }

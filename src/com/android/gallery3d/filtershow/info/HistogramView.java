@@ -31,11 +31,11 @@ import android.view.View;
 public class HistogramView extends View {
 
     private Bitmap mBitmap;
-    private Paint mPaint = new Paint();
-    private int[] redHistogram = new int[256];
-    private int[] greenHistogram = new int[256];
-    private int[] blueHistogram = new int[256];
-    private Path mHistoPath = new Path();
+    private final Paint mPaint = new Paint();
+    private final int[] redHistogram = new int[256];
+    private final int[] greenHistogram = new int[256];
+    private final int[] blueHistogram = new int[256];
+    private final Path mHistoPath = new Path();
 
     class ComputeHistogramTask extends AsyncTask<Bitmap, Void, int[]> {
         @Override
@@ -80,9 +80,9 @@ public class HistogramView extends View {
 
     private void drawHistogram(Canvas canvas, int[] histogram, int color, PorterDuff.Mode mode) {
         int max = 0;
-        for (int i = 0; i < histogram.length; i++) {
-            if (histogram[i] > max) {
-                max = histogram[i];
+        for (int j : histogram) {
+            if (j > max) {
+                max = j;
             }
         }
         float w = getWidth(); // - Spline.curveHandleSize();

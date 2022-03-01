@@ -21,13 +21,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.colorpicker.ColorListener;
 import com.android.gallery3d.filtershow.colorpicker.ColorOpacityView;
 import com.android.gallery3d.filtershow.editors.Editor;
+
+import org.codeaurora.gallery.R;
 
 public class SliderOpacity implements Control {
     private ColorOpacityView mColorOpacityView;
@@ -45,7 +44,7 @@ public class SliderOpacity implements Control {
         LinearLayout lp = (LinearLayout) inflater.inflate(
                 R.layout.filtershow_opacity, container, true);
 
-        mColorOpacityView = (ColorOpacityView) lp.findViewById(R.id.opacityView);
+        mColorOpacityView = lp.findViewById(R.id.opacityView);
         updateUI();
         mColorOpacityView.addColorListener(new ColorListener() {
             @Override
@@ -53,6 +52,7 @@ public class SliderOpacity implements Control {
                 mParameter.setValue((int) (255 * hsvo[3]));
                 mEditor.commitLocalRepresentation();
             }
+
             @Override
             public void addColorListener(ColorListener l) {
             }

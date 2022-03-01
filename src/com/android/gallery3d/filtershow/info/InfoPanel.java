@@ -29,18 +29,22 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import org.codeaurora.gallery.R;
+
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.exif.ExifInterface;
 import com.android.gallery3d.exif.ExifTag;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
 import com.android.gallery3d.filtershow.imageshow.MasterImage;
 import com.android.gallery3d.ui.BaseDialogFragment;
 
+import org.codeaurora.gallery.R;
+
 import java.util.List;
 
 public class InfoPanel extends BaseDialogFragment {
     public static final String FRAGMENT_TAG = "InfoPanel";
-    private static final String LOGTAG = FRAGMENT_TAG;
+    private static final String TAG = FRAGMENT_TAG;
     private LinearLayout mMainView;
     private ImageView mImageThumbnail;
     private TextView mImageName;
@@ -60,7 +64,7 @@ public class InfoPanel extends BaseDialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (getDialog() != null) {
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -69,16 +73,16 @@ public class InfoPanel extends BaseDialogFragment {
         mMainView = (LinearLayout) inflater.inflate(
                 R.layout.filtershow_info_panel, null, false);
 
-        mImageThumbnail = (ImageView) mMainView.findViewById(R.id.imageThumbnail);
+        mImageThumbnail = mMainView.findViewById(R.id.imageThumbnail);
         Bitmap bitmap = MasterImage.getImage().getFilteredImage();
         mImageThumbnail.setImageBitmap(bitmap);
 
-        mImageName = (TextView) mMainView.findViewById(R.id.imageName);
-        mImageSize = (TextView) mMainView.findViewById(R.id.imageSize);
-        mExifData = (TextView) mMainView.findViewById(R.id.exifData);
-        TextView exifLabel = (TextView) mMainView.findViewById(R.id.exifLabel);
+        mImageName = mMainView.findViewById(R.id.imageName);
+        mImageSize = mMainView.findViewById(R.id.imageSize);
+        mExifData = mMainView.findViewById(R.id.exifData);
+        TextView exifLabel = mMainView.findViewById(R.id.exifLabel);
 
-        HistogramView histogramView = (HistogramView) mMainView.findViewById(R.id.histogramView);
+        HistogramView histogramView = mMainView.findViewById(R.id.histogramView);
         histogramView.setBitmap(bitmap);
         histogramView.setBackgroundColor(Color.DKGRAY);
 
@@ -93,46 +97,37 @@ public class InfoPanel extends BaseDialogFragment {
             mImageName.setText(localUri.getLastPathSegment());
         }
         Rect originalBounds = MasterImage.getImage().getOriginalBounds();
-        mImageSize.setText("" + originalBounds.width() + " x " + originalBounds.height());
+        mImageSize.setText(originalBounds.width() + " x " + originalBounds.height());
 
         List<ExifTag> exif = MasterImage.getImage().getEXIF();
-        String exifString = "";
+        StringBuilder exifString = new StringBuilder();
         boolean hasExifData = false;
         if (exif != null) {
             for (ExifTag tag : exif) {
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_MODEL,
-                        R.string.filtershow_exif_model);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_APERTURE_VALUE,
-                        R.string.filtershow_exif_aperture);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_FOCAL_LENGTH,
-                        R.string.filtershow_exif_focal_length);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_ISO_SPEED_RATINGS,
-                        R.string.filtershow_exif_iso);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_SUBJECT_DISTANCE,
-                        R.string.filtershow_exif_subject_distance);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_DATE_TIME_ORIGINAL,
-                        R.string.filtershow_exif_date);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_F_NUMBER,
-                        R.string.filtershow_exif_f_stop);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_EXPOSURE_TIME,
-                        R.string.filtershow_exif_exposure_time);
-                exifString += createStringFromIfFound(tag,
-                        ExifInterface.TAG_COPYRIGHT,
-                        R.string.filtershow_exif_copyright);
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_MODEL,
+                        R.string.filtershow_exif_model));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_APERTURE_VALUE,
+                        R.string.filtershow_exif_aperture));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_FOCAL_LENGTH,
+                        R.string.filtershow_exif_focal_length));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_ISO_SPEED_RATINGS,
+                        R.string.filtershow_exif_iso));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_SUBJECT_DISTANCE,
+                        R.string.filtershow_exif_subject_distance));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_DATE_TIME_ORIGINAL,
+                        R.string.filtershow_exif_date));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_F_NUMBER,
+                        R.string.filtershow_exif_f_stop));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_EXPOSURE_TIME,
+                        R.string.filtershow_exif_exposure_time));
+                exifString.append(createStringFromIfFound(tag, ExifInterface.TAG_COPYRIGHT,
+                        R.string.filtershow_exif_copyright));
                 hasExifData = true;
             }
         }
         if (hasExifData) {
             exifLabel.setVisibility(View.VISIBLE);
-            mExifData.setText(Html.fromHtml(exifString));
+            mExifData.setText(Html.fromHtml(exifString.toString(), Html.FROM_HTML_MODE_LEGACY));
         } else {
             exifLabel.setVisibility(View.GONE);
         }

@@ -89,7 +89,7 @@ public class ImageLoaderConfig {
         }
         if (imageCacheMap == null) {
             icmSize = 0;
-            imageCacheMap = new LinkedHashMap<String, Bitmap>(0, 0.75f, true);
+            imageCacheMap = new LinkedHashMap<>(0, 0.75f, true);
         }
         if (defaultOptions == null) {
             defaultOptions = new ImageLoaderOptions();
@@ -182,12 +182,12 @@ public class ImageLoaderConfig {
     }
 
     public static String generateKey(String imageUri, int w, int h) {
-        return new StringBuilder(imageUri).append(URI_AND_SIZE_SEPARATOR).append(w)
-                .append(WIDTH_AND_HEIGHT_SEPARATOR).append(h).toString();
+        return imageUri + URI_AND_SIZE_SEPARATOR + w +
+                WIDTH_AND_HEIGHT_SEPARATOR + h;
     }
 
     public static Executor createExecutor(int threadPoolSize, int threadPriority) {
-        BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
+        BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
         return new ThreadPoolExecutor(threadPoolSize, threadPoolSize, 0L, TimeUnit.MILLISECONDS,
                 taskQueue, new ThreadFactoryImpl(threadPriority));
     }

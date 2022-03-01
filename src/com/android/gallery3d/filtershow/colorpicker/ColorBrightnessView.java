@@ -37,32 +37,28 @@ import java.util.Arrays;
 
 public class ColorBrightnessView extends View implements ColorListener {
 
+    public final static float BORDER_SIZE = 20;
+    private final static float DOT_SIZE = ColorRectView.DOT_SIZE;
     private float mRadius;
     private float mWidth;
-    private Paint mBarPaint1;
-    private Paint mLinePaint1;
-    private Paint mLinePaint2;
-    private Paint mCheckPaint;
-
+    private final Paint mBarPaint1;
+    private final Paint mLinePaint1;
+    private final Paint mLinePaint2;
+    private final Paint mCheckPaint;
     private float mHeight;
-    private Paint mDotPaint;
-    private int mBgcolor = 0;
-
-    private float mDotRadius;
+    private final Paint mDotPaint;
+    private final int mBgcolor = 0;
+    private final float mDotRadius;
     private float mBorder;
-
-    private float[] mHSVO = new float[4];
-    private int mSliderColor;
+    private final float[] mHSVO = new float[4];
+    private final int mSliderColor;
     private float mDotX = mBorder;
     private float mDotY = mBorder;
-    private final static float DOT_SIZE = ColorRectView.DOT_SIZE;
-    public final static float BORDER_SIZE = 20;;
+    private final ArrayList<ColorListener> mColorListeners = new ArrayList<>();
 
-    private ArrayList<ColorListener> mColorListeners = new ArrayList<ColorListener>();
-
-    public ColorBrightnessView(Context ctx, AttributeSet attrs) {
-        super(ctx, attrs);
-        DisplayMetrics metrics = ctx.getResources().getDisplayMetrics();
+    public ColorBrightnessView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         float mDpToPix = metrics.density;
         mDotRadius = DOT_SIZE * mDpToPix;
         mBorder = BORDER_SIZE * mDpToPix;
@@ -71,8 +67,8 @@ public class ColorBrightnessView extends View implements ColorListener {
         mDotPaint = new Paint();
 
         mDotPaint.setStyle(Paint.Style.FILL);
-        mDotPaint.setColor(ctx.getResources().getColor(R.color.slider_dot_color));
-        mSliderColor = ctx.getResources().getColor(R.color.slider_line_color);
+        mDotPaint.setColor(context.getColor(R.color.slider_dot_color));
+        mSliderColor = context.getColor(R.color.slider_line_color);
 
         mBarPaint1.setStyle(Paint.Style.FILL);
 
@@ -131,10 +127,9 @@ public class ColorBrightnessView extends View implements ColorListener {
         float pos = mHSVO[3] * (mWidth - mBorder * 2);
         mDotX = pos + mBorder;
 
-        int[] colors3 = new int[] {
-        mSliderColor, mSliderColor, 0x66000000, 0 };
-        RadialGradient g = new RadialGradient(mDotX, mDotY, mDotRadius, colors3, new float[] {
-        0, .3f, .31f, 1 }, Shader.TileMode.CLAMP);
+        int[] colors3 = new int[]{mSliderColor, mSliderColor, 0x66000000, 0};
+        RadialGradient g = new RadialGradient(mDotX, mDotY, mDotRadius, colors3,
+                new float[]{0, .3f, .31f, 1}, Shader.TileMode.CLAMP);
         mDotPaint.setShader(g);
     }
 

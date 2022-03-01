@@ -21,25 +21,20 @@ import android.content.ContentUris;
 import android.content.UriMatcher;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.android.gallery3d.app.GalleryActivity;
 import com.android.gallery3d.app.GalleryApp;
 import com.android.gallery3d.data.MediaSet.ItemConsumer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 class LocalSource extends MediaSource {
 
     public static final String KEY_BUCKET_ID = "bucketId";
-
-    private GalleryApp mApplication;
-    private PathMatcher mMatcher;
-    private static final int NO_MATCH = -1;
-    private final UriMatcher mUriMatcher = new UriMatcher(NO_MATCH);
     public static final Comparator<PathId> sIdComparator = new IdComparator();
-
+    private static final int NO_MATCH = -1;
     private static final int LOCAL_IMAGE_ALBUMSET = 0;
     private static final int LOCAL_VIDEO_ALBUMSET = 1;
     private static final int LOCAL_IMAGE_ALBUM = 2;
@@ -48,9 +43,14 @@ class LocalSource extends MediaSource {
     private static final int LOCAL_VIDEO_ITEM = 5;
     private static final int LOCAL_ALL_ALBUMSET = 6;
     private static final int LOCAL_ALL_ALBUM = 7;
-
     private static final String TAG = "LocalSource";
-
+    // The media type bit passed by the intent
+    private static final int MEDIA_TYPE_ALL = 0;
+    private static final int MEDIA_TYPE_IMAGE = 1;
+    private static final int MEDIA_TYPE_VIDEO = 4;
+    private final UriMatcher mUriMatcher = new UriMatcher(NO_MATCH);
+    private final GalleryApp mApplication;
+    private final PathMatcher mMatcher;
     private ContentProviderClient mClient;
 
     public LocalSource(GalleryApp context) {
@@ -79,6 +79,18 @@ class LocalSource extends MediaSource {
                 "external/file", LOCAL_ALL_ALBUM);
     }
 
+    private static int getMediaType(String type, int defaultType) {
+        if (type == null) return defaultType;
+        try {
+            int value = Integer.parseInt(type);
+            if ((value & (MEDIA_TYPE_IMAGE
+                    | MEDIA_TYPE_VIDEO)) != 0) return value;
+        } catch (NumberFormatException e) {
+            Log.w(TAG, "invalid type: " + type, e);
+        }
+        return defaultType;
+    }
+
     @Override
     public MediaObject createMediaObject(Path path) {
         GalleryApp app = mApplication;
@@ -100,7 +112,7 @@ class LocalSource extends MediaSource {
                         LocalAlbumSet.PATH_VIDEO.getChild(bucketId));
                 Comparator<MediaItem> comp = DataManager.sDateTakenComparator;
                 return new LocalMergeAlbum(
-                        path, comp, new MediaSet[] {imageSet, videoSet}, bucketId);
+                        path, comp, new MediaSet[]{imageSet, videoSet}, bucketId);
             }
             case LOCAL_IMAGE_ITEM:
                 return new LocalImage(path, mApplication, mMatcher.getIntVar(0));
@@ -111,29 +123,12 @@ class LocalSource extends MediaSource {
         }
     }
 
-    private static int getMediaType(String type, int defaultType) {
-        if (type == null) return defaultType;
-        try {
-            int value = Integer.parseInt(type);
-            if ((value & (MEDIA_TYPE_IMAGE
-                    | MEDIA_TYPE_VIDEO)) != 0) return value;
-        } catch (NumberFormatException e) {
-            Log.w(TAG, "invalid type: " + type, e);
-        }
-        return defaultType;
-    }
-
-    // The media type bit passed by the intent
-    private static final int MEDIA_TYPE_ALL = 0;
-    private static final int MEDIA_TYPE_IMAGE = 1;
-    private static final int MEDIA_TYPE_VIDEO = 4;
-
     private Path getAlbumPath(Uri uri, int defaultType) {
         int mediaType = getMediaType(
                 uri.getQueryParameter(GalleryActivity.KEY_MEDIA_TYPES),
                 defaultType);
         String bucketId = uri.getQueryParameter(KEY_BUCKET_ID);
-        int id = 0;
+        int id;
         try {
             id = Integer.parseInt(bucketId);
         } catch (NumberFormatException e) {
@@ -190,8 +185,8 @@ class LocalSource extends MediaSource {
 
     @Override
     public void mapMediaItems(ArrayList<PathId> list, ItemConsumer consumer) {
-        ArrayList<PathId> imageList = new ArrayList<PathId>();
-        ArrayList<PathId> videoList = new ArrayList<PathId>();
+        ArrayList<PathId> imageList = new ArrayList<>();
+        ArrayList<PathId> videoList = new ArrayList<>();
         int n = list.size();
         for (int i = 0; i < n; i++) {
             PathId pid = list.get(i);
@@ -210,15 +205,15 @@ class LocalSource extends MediaSource {
     }
 
     private void processMapMediaItems(ArrayList<PathId> list,
-            ItemConsumer consumer, boolean isImage) {
+                                      ItemConsumer consumer, boolean isImage) {
         // Sort path by path id
-        Collections.sort(list, sIdComparator);
+        list.sort(sIdComparator);
         int n = list.size();
         for (int i = 0; i < n; ) {
             PathId pid = list.get(i);
 
             // Find a range of items.
-            ArrayList<Integer> ids = new ArrayList<Integer>();
+            ArrayList<Integer> ids = new ArrayList<>();
             int startId = Integer.parseInt(pid.path.getSuffix());
             ids.add(startId);
 
@@ -234,13 +229,25 @@ class LocalSource extends MediaSource {
 
             MediaItem[] items = LocalAlbum.getMediaItemById(
                     mApplication, isImage, ids);
-            for(int k = i ; k < j; k++) {
+            for (int k = i; k < j; k++) {
                 PathId pid2 = list.get(k);
                 consumer.consume(pid2.id, items[k - i]);
             }
 
             i = j;
         }
+    }
+
+    @Override
+    public void resume() {
+        mClient = mApplication.getContentResolver()
+                .acquireContentProviderClient(MediaStore.AUTHORITY);
+    }
+
+    @Override
+    public void pause() {
+        mClient.close();
+        mClient = null;
     }
 
     // This is a comparator which compares the suffix number in two Paths.
@@ -259,17 +266,5 @@ class LocalSource extends MediaSource {
                 return s1.compareTo(s2);
             }
         }
-    }
-
-    @Override
-    public void resume() {
-        mClient = mApplication.getContentResolver()
-                .acquireContentProviderClient(MediaStore.AUTHORITY);
-    }
-
-    @Override
-    public void pause() {
-        mClient.release();
-        mClient = null;
     }
 }

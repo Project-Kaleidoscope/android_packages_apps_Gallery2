@@ -16,10 +16,6 @@
 
 package com.android.gallery3d.filtershow.cache;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -28,15 +24,11 @@ import android.util.Log;
 import com.android.gallery3d.filtershow.pipeline.Buffer;
 import com.android.gallery3d.filtershow.pipeline.CacheProcessing;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class BitmapCache {
-    private static final String LOGTAG = "BitmapCache";
-    private HashMap<Long, ArrayList<WeakReference<Bitmap>>>
-            mBitmapCache = new HashMap<Long, ArrayList<WeakReference<Bitmap>>>();
-    private final int mMaxItemsPerKey = 4;
-
-    private static final boolean DEBUG = false;
-    private CacheProcessing mCacheProcessing;
-
     public final static int PREVIEW_CACHE = 1;
     public final static int NEW_LOOK = 2;
     public final static int ICON = 3;
@@ -51,34 +43,33 @@ public class BitmapCache {
     public final static int PREVIEW_CACHE_NO_ROOT = 12;
     public static final int PREVIEW_CACHE_NO_APPLY = 13;
     public final static int TRACKING_COUNT = 14;
-    private int[] mTracking = new int[TRACKING_COUNT];
-
-    class BitmapTracking {
-        Bitmap bitmap;
-        int type;
-    }
-
-    private ArrayList<BitmapTracking> mBitmapTracking = new ArrayList<BitmapTracking>();
+    private static final String TAG = "BitmapCache";
+    private static final boolean DEBUG = false;
+    private final int mMaxItemsPerKey = 4;
+    private final HashMap<Long, ArrayList<WeakReference<Bitmap>>> mBitmapCache = new HashMap<>();
+    private final int[] mTracking = new int[TRACKING_COUNT];
+    private final ArrayList<BitmapTracking> mBitmapTracking = new ArrayList<>();
+    private CacheProcessing mCacheProcessing;
 
     private void track(Bitmap bitmap, int type) {
         for (int i = 0; i < mBitmapTracking.size(); i++) {
             BitmapTracking tracking = mBitmapTracking.get(i);
             if (tracking.bitmap == bitmap) {
-                Log.e(LOGTAG, "giving a bitmap already given!!!");
+                Log.e(TAG, "giving a bitmap already given!!!");
             }
         }
         BitmapTracking tracking = new BitmapTracking();
         tracking.bitmap = bitmap;
         tracking.type = type;
         mBitmapTracking.add(tracking);
-        mTracking[tracking.type] ++;
+        mTracking[tracking.type]++;
     }
 
     private void untrack(Bitmap bitmap) {
         for (int i = 0; i < mBitmapTracking.size(); i++) {
             BitmapTracking tracking = mBitmapTracking.get(i);
             if (tracking.bitmap == bitmap) {
-                mTracking[tracking.type] --;
+                mTracking[tracking.type]--;
                 mBitmapTracking.remove(i);
                 return;
             }
@@ -87,19 +78,32 @@ public class BitmapCache {
 
     public String getTrackingName(int i) {
         switch (i) {
-            case PREVIEW_CACHE: return "PREVIEW_CACHE";
-            case PREVIEW_CACHE_NO_FILTERS: return "PREVIEW_CACHE_NO_FILTERS";
-            case PREVIEW_CACHE_NO_ROOT: return "PREVIEW_CACHE_NO_ROOT";
-            case PREVIEW_CACHE_NO_APPLY: return "PREVIEW_CACHE_NO_APPLY";
-            case NEW_LOOK: return "NEW_LOOK";
-            case ICON: return "ICON";
-            case FILTERS: return "FILTERS";
-            case GEOMETRY: return "GEOMETRY";
-            case HIGHRES: return "HIGHRES";
-            case UTIL_GEOMETRY: return "UTIL_GEOMETRY";
-            case RENDERING_REQUEST: return "RENDERING_REQUEST";
-            case REGION: return "REGION";
-            case TINY_PLANET: return "TINY_PLANET";
+            case PREVIEW_CACHE:
+                return "PREVIEW_CACHE";
+            case PREVIEW_CACHE_NO_FILTERS:
+                return "PREVIEW_CACHE_NO_FILTERS";
+            case PREVIEW_CACHE_NO_ROOT:
+                return "PREVIEW_CACHE_NO_ROOT";
+            case PREVIEW_CACHE_NO_APPLY:
+                return "PREVIEW_CACHE_NO_APPLY";
+            case NEW_LOOK:
+                return "NEW_LOOK";
+            case ICON:
+                return "ICON";
+            case FILTERS:
+                return "FILTERS";
+            case GEOMETRY:
+                return "GEOMETRY";
+            case HIGHRES:
+                return "HIGHRES";
+            case UTIL_GEOMETRY:
+                return "UTIL_GEOMETRY";
+            case RENDERING_REQUEST:
+                return "RENDERING_REQUEST";
+            case REGION:
+                return "REGION";
+            case TINY_PLANET:
+                return "TINY_PLANET";
         }
         return "UNKNOWN";
     }
@@ -108,10 +112,10 @@ public class BitmapCache {
         if (!DEBUG) {
             return;
         }
-        Log.v(LOGTAG, "\n--- showBitmap --- ");
+        Log.v(TAG, "\n--- showBitmap --- ");
         for (int i = 0; i < TRACKING_COUNT; i++) {
             if (mTracking[i] != 0) {
-                Log.v(LOGTAG, getTrackingName(i) + " => " + mTracking[i]);
+                Log.v(TAG, getTrackingName(i) + " => " + mTracking[i]);
             }
         }
     }
@@ -133,22 +137,18 @@ public class BitmapCache {
             return true;
         }
         if (mCacheProcessing != null && mCacheProcessing.contains(bitmap)) {
-            Log.e(LOGTAG, "Trying to cache a bitmap still used in the pipeline");
+            Log.e(TAG, "Trying to cache a bitmap still used in the pipeline");
             return false;
         }
         if (DEBUG) {
             untrack(bitmap);
         }
         if (!bitmap.isMutable()) {
-            Log.e(LOGTAG, "Trying to cache a non mutable bitmap");
+            Log.e(TAG, "Trying to cache a non mutable bitmap");
             return true;
         }
         Long key = calcKey(bitmap.getWidth(), bitmap.getHeight());
-        ArrayList<WeakReference<Bitmap>> list = mBitmapCache.get(key);
-        if (list == null) {
-            list = new ArrayList<WeakReference<Bitmap>>();
-            mBitmapCache.put(key, list);
-        }
+        ArrayList<WeakReference<Bitmap>> list = mBitmapCache.computeIfAbsent(key, k -> new ArrayList<>());
         int i = 0;
         while (i < list.size()) {
             if (list.get(i).get() == null) {
@@ -169,7 +169,7 @@ public class BitmapCache {
                     return true; // bitmap already in the cache
                 }
             }
-            list.add(new WeakReference<Bitmap>(bitmap));
+            list.add(new WeakReference<>(bitmap));
         }
         return true;
     }
@@ -199,7 +199,7 @@ public class BitmapCache {
         if (DEBUG) {
             track(bitmap, type);
             if (mCacheProcessing != null && mCacheProcessing.contains(bitmap)) {
-                Log.e(LOGTAG, "Trying to give a bitmap used in the pipeline");
+                Log.e(TAG, "Trying to give a bitmap used in the pipeline");
             }
         }
         return bitmap;
@@ -219,5 +219,10 @@ public class BitmapCache {
 
     public synchronized void clear() {
         mBitmapCache.clear();
+    }
+
+    class BitmapTracking {
+        Bitmap bitmap;
+        int type;
     }
 }

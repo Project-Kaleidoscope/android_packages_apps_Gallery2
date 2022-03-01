@@ -22,10 +22,10 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 
-import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.ui.OrientationSource;
 
 public class OrientationManager implements OrientationSource {
@@ -72,11 +72,7 @@ public class OrientationManager implements OrientationSource {
     public void lockOrientation() {
         if (mOrientationLocked) return;
         mOrientationLocked = true;
-        if (ApiHelper.HAS_ORIENTATION_LOCK) {
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
-        } else {
-            mActivity.setRequestedOrientation(calculateCurrentScreenOrientation());
-        }
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
     }
 
     // Unlock the framework orientation, so it can change when the device
@@ -138,7 +134,7 @@ public class OrientationManager implements OrientationSource {
     }
 
     private static int roundOrientation(int orientation, int orientationHistory) {
-        boolean changeOrientation = false;
+        boolean changeOrientation;
         if (orientationHistory == OrientationEventListener.ORIENTATION_UNKNOWN) {
             changeOrientation = true;
         } else {

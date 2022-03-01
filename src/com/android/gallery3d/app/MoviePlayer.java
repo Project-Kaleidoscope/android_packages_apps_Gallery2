@@ -16,15 +16,10 @@
 
 package com.android.gallery3d.app;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface.OnDismissListener;
-import android.content.DialogInterface.OnShowListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -33,22 +28,23 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.audiofx.Virtualizer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
+import androidx.annotation.NonNull;
+
 import com.android.gallery3d.common.ApiHelper;
 import com.android.gallery3d.common.BlobCache;
 import com.android.gallery3d.util.CacheManager;
 import com.android.gallery3d.util.GalleryUtils;
 
+import org.codeaurora.gallery.R;
 import org.codeaurora.gallery3d.ext.IContrllerOverlayExt;
 import org.codeaurora.gallery3d.ext.IMovieItem;
 import org.codeaurora.gallery3d.ext.IMoviePlayer;
@@ -67,7 +63,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 
 public class MoviePlayer implements
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener,
@@ -199,12 +194,9 @@ public class MoviePlayer implements
         void startTimer();
     }
 
-    private TimerProgress mTimerController = new TimerProgress() {
-        @Override
-        public void startTimer() {
-            mHandler.removeCallbacks(mProgressChecker);
-            mHandler.post(mProgressChecker);
-        }
+    private TimerProgress mTimerController = () -> {
+        mHandler.removeCallbacks(mProgressChecker);
+        mHandler.post(mProgressChecker);
     };
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -231,7 +223,7 @@ public class MoviePlayer implements
             IMovieItem info, Bundle savedInstance, boolean canReplay) {
         mContext = movieActivity.getApplicationContext();
         mRootView = rootView;
-        mVideoView = (CodeauroraVideoView) rootView.findViewById(R.id.surface_view);
+        mVideoView = rootView.findViewById(R.id.surface_view);
         mCoverView = rootView.findViewById(R.id.surface_view_cover);
         mBookmarker = new Bookmarker(movieActivity);
 
@@ -267,23 +259,13 @@ public class MoviePlayer implements
                 Log.w(TAG, "no audio session to virtualize");
             }
         }
-        mVideoView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                mController.show();
-                return true;
-            }
+        mVideoView.setOnTouchListener((v, event) -> {
+            mController.show();
+            return true;
         });
-        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer player) {
-                if (!mVideoView.canSeekForward() || !mVideoView.canSeekBackward()) {
-                    mController.setSeekable(false);
-                } else {
-                    mController.setSeekable(true);
-                }
-                setProgress();
-            }
+        mVideoView.setOnPreparedListener(player -> {
+            mController.setSeekable(mVideoView.canSeekForward() && mVideoView.canSeekBackward());
+            setProgress();
         });
 
         setOnSystemUiVisibilityChangeListener();
@@ -332,35 +314,29 @@ public class MoviePlayer implements
         mVideoSnapshotExt.init(mController, mVideoView, isLocalFile());
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void setOnSystemUiVisibilityChangeListener() {
         if (!ApiHelper.HAS_VIEW_SYSTEM_UI_FLAG_HIDE_NAVIGATION) return;
 
         // When the user touches the screen or uses some hard key, the framework
         // will change system ui visibility from invisible to visible. We show
         // the media control and enable system UI (e.g. ActionBar) to be visible at this point
-        mVideoView.setOnSystemUiVisibilityChangeListener(
-                new View.OnSystemUiVisibilityChangeListener() {
-            @Override
-            public void onSystemUiVisibilityChange(int visibility) {
-                boolean finish = (mActivityContext == null ? true : mActivityContext.isFinishing());
-                int diff = mLastSystemUiVis ^ visibility;
-                mLastSystemUiVis = visibility;
-                if ((diff & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0
-                        && (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
-                    mController.show();
-                    mRootView.setBackgroundColor(Color.BLACK);
-                }
+        mVideoView.setOnSystemUiVisibilityChangeListener(visibility -> {
+            boolean finish = (mActivityContext == null || mActivityContext.isFinishing());
+            int diff = mLastSystemUiVis ^ visibility;
+            mLastSystemUiVis = visibility;
+            if ((diff & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0
+                    && (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+                mController.show();
+                mRootView.setBackgroundColor(Color.BLACK);
+            }
 
-                if (LOG) {
-                    Log.v(TAG, "onSystemUiVisibilityChange(" + visibility + ") finishing()=" + finish);
-                }
+            if (LOG) {
+                Log.v(TAG, "onSystemUiVisibilityChange(" + visibility + ") finishing()=" + finish);
             }
         });
     }
 
     @SuppressWarnings("deprecation")
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void showSystemUi(boolean visible) {
         if (!ApiHelper.HAS_VIEW_SYSTEM_UI_FLAG_LAYOUT_STABLE) return;
 
@@ -388,41 +364,16 @@ public class MoviePlayer implements
         builder.setMessage(String.format(
                 context.getString(R.string.resume_playing_message),
                 GalleryUtils.formatDuration(context, bookmark.mBookmark / 1000)));
-        builder.setOnCancelListener(new OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                onCompletion();
-            }
+        builder.setOnCancelListener(dialog -> onCompletion());
+        builder.setPositiveButton(R.string.resume_playing_resume, (dialog, which) -> {
+            // here try to seek for bookmark
+            mVideoCanSeek = true;
+            doStartVideo(true, bookmark.mBookmark, bookmark.mDuration);
         });
-        builder.setPositiveButton(
-                R.string.resume_playing_resume, new OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // here try to seek for bookmark
-                mVideoCanSeek = true;
-                doStartVideo(true, bookmark.mBookmark, bookmark.mDuration);
-            }
-        });
-        builder.setNegativeButton(
-                R.string.resume_playing_restart, new OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                doStartVideo(true, 0, bookmark.mDuration);
-            }
-        });
+        builder.setNegativeButton(R.string.resume_playing_restart, (dialog, which) -> doStartVideo(true, 0, bookmark.mDuration));
         AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(new OnShowListener() {
-            @Override
-            public void onShow(DialogInterface arg0) {
-                mIsShowResumingDialog = true;
-            }
-        });
-        dialog.setOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface arg0) {
-                mIsShowResumingDialog = false;
-            }
-        });
+        dialog.setOnShowListener(dialog1 -> mIsShowResumingDialog = true);
+        dialog.setOnDismissListener(dialog1 -> mIsShowResumingDialog = false);
         dialog.show();
     }
 
@@ -435,7 +386,7 @@ public class MoviePlayer implements
         if (LOG) {
             Log.v(TAG, "onPause() isLiveStreaming()=" + isLiveStreaming());
         }
-        boolean pause = false;
+        boolean pause;
         if (isLiveStreaming()) {
             pause = false;
         } else {
@@ -607,7 +558,7 @@ public class MoviePlayer implements
         //we may start video from stopVideo,
         //this case, we should reset canReplay flag according canReplay and loop
         boolean loop = mPlayerExt.getLoop();
-        boolean canReplay = loop ? loop : mCanReplay;
+        boolean canReplay = loop || mCanReplay;
         mController.setCanReplay(canReplay);
         if (position > 0 && (mVideoCanSeek || mVideoView.canSeek())) {
             mVideoView.seekTo(position);
@@ -919,12 +870,9 @@ public class MoviePlayer implements
         mVideoView.setOnPreparedListener(this);
         mVideoView.setOnBufferingUpdateListener(this);
         mVideoView.setOnVideoSizeChangedListener(this);
-        mRootView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                mController.show();
-                return true;
-            }
+        mRootView.setOnTouchListener((v, event) -> {
+            mController.show();
+            return true;
         });
         mOverlayExt = mController.getOverlayExt();
         mControllerRewindAndForwardExt = mController.getControllerRewindAndForwardExt();
@@ -960,18 +908,12 @@ public class MoviePlayer implements
     }
 
     public boolean isFullBuffer() {
-        if (mStreamingType == STREAMING_RTSP || mStreamingType == STREAMING_SDP
-                || mStreamingType == STREAMING_HTTP) {
-            return false;
-        }
-        return true;
+        return mStreamingType != STREAMING_RTSP && mStreamingType != STREAMING_SDP
+                && mStreamingType != STREAMING_HTTP;
     }
 
     public boolean isLocalFile() {
-        if (mStreamingType == STREAMING_LOCAL) {
-            return true;
-        }
-        return false;
+        return mStreamingType == STREAMING_LOCAL;
     }
 
     private void getVideoInfo(MediaPlayer mp) {
@@ -1016,10 +958,7 @@ public class MoviePlayer implements
     }
 
     public boolean isLiveStreaming() {
-        boolean isLive = false;
-        if (mStreamingType == STREAMING_SDP) {
-            isLive = true;
-        }
+        boolean isLive = mStreamingType == STREAMING_SDP;
         if (LOG) {
             Log.v(TAG, "isLiveStreaming() return " + isLive);
         }
@@ -1028,11 +967,7 @@ public class MoviePlayer implements
 
     public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
         // reget the audio type
-        if (width != 0 && height != 0) {
-            mIsOnlyAudio = false;
-        } else {
-            mIsOnlyAudio = true;
-        }
+        mIsOnlyAudio = width == 0 || height == 0;
         mOverlayExt.setBottomPanel(mIsOnlyAudio, true);
         if (LOG) {
             Log.v(TAG, "onVideoSizeChanged(" + width + ", " + height + ") mIsOnlyAudio="
@@ -1114,15 +1049,14 @@ public class MoviePlayer implements
 
         @Override
         public void startNextVideo(IMovieItem item) {
-            IMovieItem next = item;
-            if (next != null && next != mMovieItem) {
+            if (item != null && item != mMovieItem) {
                 int position = mVideoView.getCurrentPosition();
                 int duration = mVideoView.getDuration();
                 mBookmarker.setBookmark(mMovieItem.getUri(), position, duration);
                 mVideoView.stopPlayback();
                 mVideoView.setVisibility(View.INVISIBLE);
                 clearVideoInfo();
-                mMovieItem = next;
+                mMovieItem = item;
                 mActivityContext.refreshMovieInfo(mMovieItem);
                 doStartVideo(false, 0, 0);
                 mVideoView.setVisibility(View.VISIBLE);
@@ -1166,10 +1100,8 @@ public class MoviePlayer implements
 
         @Override
         public boolean canStop() {
-            boolean stopped = false;
-            if (mController != null) {
-                stopped = mOverlayExt.isPlayingEnd();
-            }
+            boolean stopped;
+            stopped = mOverlayExt.isPlayingEnd();
             if (LOG) {
                 Log.v(TAG, "canStop() stopped=" + stopped);
             }
@@ -1192,7 +1124,7 @@ public class MoviePlayer implements
                         .show();
             }
         }
-    };
+    }
 
     private class RetryExtension implements Restorable, MediaPlayer.OnErrorListener,
             MediaPlayer.OnInfoListener {
@@ -1220,10 +1152,7 @@ public class MoviePlayer implements
             if (LOG) {
                 Log.v(TAG, "reachRetryCount() mRetryCount=" + mRetryCount);
             }
-            if (mRetryCount > 3) {
-                return true;
-            }
-            return false;
+            return mRetryCount > 3;
         }
 
         public int getRetryCount() {
@@ -1234,10 +1163,7 @@ public class MoviePlayer implements
         }
 
         public boolean isRetrying() {
-            boolean retry = false;
-            if (mRetryCount > 0) {
-                retry = true;
-            }
+            boolean retry = mRetryCount > 0;
             if (LOG) {
                 Log.v(TAG, "isRetrying() mRetryCount=" + mRetryCount);
             }
@@ -1341,58 +1267,40 @@ public class MoviePlayer implements
                 AlertDialog.Builder builder = new AlertDialog.Builder(mActivityContext);
                 mServerTimeoutDialog = builder.setTitle(R.string.server_timeout_title)
                         .setMessage(R.string.server_timeout_message)
-                        .setNegativeButton(android.R.string.cancel, new OnClickListener() {
-
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (LOG) {
-                                    Log.v(TAG, "NegativeButton.onClick() mIsShowDialog="
-                                            + mIsShowDialog);
-                                }
-                                mController.showEnded();
-                                onCompletion();
+                        .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+                            if (LOG) {
+                                Log.v(TAG, "NegativeButton.onClick() mIsShowDialog="
+                                        + mIsShowDialog);
                             }
-
+                            mController.showEnded();
+                            onCompletion();
                         })
-                        .setPositiveButton(R.string.resume_playing_resume, new OnClickListener() {
-
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (LOG) {
-                                    Log.v(TAG, "PositiveButton.onClick() mIsShowDialog="
-                                            + mIsShowDialog);
-                                }
-                                mVideoView.setDialogShowState(false);
-                                doStartVideo(true, mVideoPosition, mVideoLastDuration);
+                        .setPositiveButton(R.string.resume_playing_resume, (OnClickListener) (dialog, which) -> {
+                            if (LOG) {
+                                Log.v(TAG, "PositiveButton.onClick() mIsShowDialog="
+                                        + mIsShowDialog);
                             }
-
+                            mVideoView.setDialogShowState(false);
+                            doStartVideo(true, mVideoPosition, mVideoLastDuration);
                         })
-                        .setOnCancelListener(new OnCancelListener() {
-                            public void onCancel(DialogInterface dialog) {
-                                mController.showEnded();
-                                onCompletion();
-                            }
+                        .setOnCancelListener(dialog -> {
+                            mController.showEnded();
+                            onCompletion();
                         })
                         .create();
-                mServerTimeoutDialog.setOnDismissListener(new OnDismissListener() {
-
-                    public void onDismiss(DialogInterface dialog) {
-                        if (LOG) {
-                            Log.v(TAG, "mServerTimeoutDialog.onDismiss()");
-                        }
-                        mVideoView.setDialogShowState(false);
-                        mIsShowDialog = false;
+                mServerTimeoutDialog.setOnDismissListener(dialog -> {
+                    if (LOG) {
+                        Log.v(TAG, "mServerTimeoutDialog.onDismiss()");
                     }
-
+                    mVideoView.setDialogShowState(false);
+                    mIsShowDialog = false;
                 });
-                mServerTimeoutDialog.setOnShowListener(new OnShowListener() {
-
-                    public void onShow(DialogInterface dialog) {
-                        if (LOG) {
-                            Log.v(TAG, "mServerTimeoutDialog.onShow()");
-                        }
-                        mVideoView.setDialogShowState(true);
-                        mIsShowDialog = true;
+                mServerTimeoutDialog.setOnShowListener(dialog -> {
+                    if (LOG) {
+                        Log.v(TAG, "mServerTimeoutDialog.onShow()");
                     }
-
+                    mVideoView.setDialogShowState(true);
+                    mIsShowDialog = true;
                 });
             }
             mServerTimeoutDialog.show();
@@ -1420,10 +1328,7 @@ public class MoviePlayer implements
                 // wait for user's operation
                 return true;
             }
-            if (!passDisconnectCheck()) {
-                return true;
-            }
-            return false;
+            return !passDisconnectCheck();
         }
 
         public void setVideoInfo(ApiHelper.Metadata data) {
@@ -1443,10 +1348,7 @@ public class MoviePlayer implements
         @Override
         public boolean onError(MediaPlayer mp, int what, int extra) {
             // if we are showing a dialog, cancel the error dialog
-            if (mIsShowDialog) {
-                return true;
-            }
-            return false;
+            return mIsShowDialog;
         }
 
         public void setTimeout(int timeout) {
@@ -1553,9 +1455,7 @@ public class MoviePlayer implements
                         .canStop(),
                         false, false);
                 int stepValue = getStepOptionValue();
-                int targetDuration = mVideoView.getCurrentPosition()
-                        - stepValue < 0 ? 0 : mVideoView.getCurrentPosition()
-                        - stepValue;
+                int targetDuration = Math.max(mVideoView.getCurrentPosition() - stepValue, 0);
                 if (LOG) {
                     Log.v(TAG, "onRewind targetDuration " + targetDuration);
                 }
@@ -1736,14 +1636,13 @@ class BookmarkerInfo {
         this.mDuration = duration;
     }
 
+    @NonNull
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("BookmarkInfo(bookmark=")
-                .append(mBookmark)
-                .append(", duration=")
-                .append(mDuration)
-                .append(")")
-                .toString();
+        return "BookmarkInfo(bookmark=" +
+                mBookmark +
+                ", duration=" +
+                mDuration +
+                ")";
     }
 }

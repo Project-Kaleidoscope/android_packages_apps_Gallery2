@@ -24,8 +24,10 @@ import java.lang.annotation.Target;
 public abstract class Entry {
     public static final String[] ID_PROJECTION = { "_id" };
 
-    public static interface Columns {
-        public static final String ID = "_id";
+    public interface Columns {
+
+        String ID = "_id";
+
     }
 
     // The primary key of the entry.

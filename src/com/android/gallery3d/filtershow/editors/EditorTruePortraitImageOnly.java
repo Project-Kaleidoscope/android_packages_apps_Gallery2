@@ -33,18 +33,18 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.FilterShowActivity;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.imageshow.ImageShow;
 
-public class EditorTruePortraitImageOnly extends Editor  {
-    private static final String LOGTAG = "EditorTruePortraitImageOnly";
+import org.codeaurora.gallery.R;
+
+public class EditorTruePortraitImageOnly extends Editor {
     public static final int ID = R.id.editorTruePortraitImageOnly;
+    private static final String TAG = "EditorTruePortraitImageOnly";
 
     public EditorTruePortraitImageOnly() {
         super(ID);
@@ -75,13 +75,10 @@ public class EditorTruePortraitImageOnly extends Editor  {
         inflater.inflate(R.layout.filtershow_actionbar_trueportrait, accessoryViewList);
 
         View editMask = accessoryViewList.findViewById(R.id.editMask);
-        editMask.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FilterRepresentation representation = new FilterRepresentation("");
-                representation.setEditorId(EditorTruePortraitMask.ID);
-                ((FilterShowActivity)mContext).loadEditorPanel(representation);
-            }
+        editMask.setOnClickListener(view -> {
+            FilterRepresentation representation = new FilterRepresentation("");
+            representation.setEditorId(EditorTruePortraitMask.ID);
+            ((FilterShowActivity) mContext).loadEditorPanel(representation);
         });
     }
 

@@ -16,9 +16,6 @@
 
 package com.android.gallery3d.filtershow.imageshow;
 
-import java.util.List;
-import java.util.Vector;
-
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -30,7 +27,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.util.Log;
-import android.util.Size;
 
 import com.android.gallery3d.exif.ExifTag;
 import com.android.gallery3d.filtershow.FilterShowActivity;
@@ -56,9 +52,12 @@ import com.android.gallery3d.filtershow.state.StateAdapter;
 import com.android.gallery3d.filtershow.tools.DualCameraEffect;
 import com.android.gallery3d.util.GDepth;
 
+import java.util.List;
+import java.util.Vector;
+
 public class MasterImage implements RenderingRequestCaller {
     private static final String TAG = "MasterImage";
-    private boolean DEBUG  = false;
+    private final boolean DEBUG = false;
     private static final boolean DISABLEZOOM = false;
     public static final int SMALL_BITMAP_DIM = 160;
     public static final int MAX_BITMAP_DIM = 1280;
@@ -72,8 +71,8 @@ public class MasterImage implements RenderingRequestCaller {
     private ImagePreset mGeometryOnlyPreset = null;
     private ImagePreset mFiltersOnlyPreset = null;
 
-    private SharedBuffer mPreviewBuffer = new SharedBuffer();
-    private SharedPreset mPreviewPreset = new SharedPreset();
+    private final SharedBuffer mPreviewBuffer = new SharedBuffer();
+    private final SharedPreset mPreviewPreset = new SharedPreset();
 
     private Bitmap mOriginalBitmapSmall = null;
     private Bitmap mOriginalBitmapLarge = null;
@@ -82,7 +81,7 @@ public class MasterImage implements RenderingRequestCaller {
 
     private int mOrientation;
     private Rect mOriginalBounds;
-    private final Vector<ImageShow> mLoadListeners = new Vector<ImageShow>();
+    private final Vector<ImageShow> mLoadListeners = new Vector<>();
     private Uri mUri = null;
     private int mZoomOrientation = ImageLoader.ORI_NORMAL;
 
@@ -91,8 +90,8 @@ public class MasterImage implements RenderingRequestCaller {
     private Bitmap mPartialBitmap = null;
     private Bitmap mHighresBitmap = null;
     private Bitmap mPreviousImage = null;
-    private int mShadowMargin = 15; // not scaled, fixed in the asset
-    private Rect mPartialBounds = new Rect();
+    private final int mShadowMargin = 15; // not scaled, fixed in the asset
+    private final Rect mPartialBounds = new Rect();
 
     private Bitmap mFusionUnderlay = null;
     private Rect mImageBounds = null;
@@ -114,27 +113,27 @@ public class MasterImage implements RenderingRequestCaller {
 
     private FilterShowActivity mActivity = null;
 
-    private Vector<ImageShow> mObservers = new Vector<ImageShow>();
+    private final Vector<ImageShow> mObservers = new Vector<>();
     private WaterMarkView mWaterMark = null;
     private FilterRepresentation mCurrentFilterRepresentation;
 
     private float mScaleFactor = 1.0f;
     private float mMaxScaleFactor = 3.0f; // TODO: base this on the current view / image
-    private Point mTranslation = new Point();
-    private Point mOriginalTranslation = new Point();
+    private final Point mTranslation = new Point();
+    private final Point mOriginalTranslation = new Point();
 
-    private Point mImageShowSize = new Point();
+    private final Point mImageShowSize = new Point();
 
     private boolean mShowsOriginal;
     private List<ExifTag> mEXIF;
-    private BitmapCache mBitmapCache = new BitmapCache();
+    private final BitmapCache mBitmapCache = new BitmapCache();
 
     private MasterImage() {
     }
 
     // TODO: remove singleton
     public static void setMaster(MasterImage master) {
-        if((master == null || master != sMasterImage)
+        if ((master == null || master != sMasterImage)
                 && sMasterImage != null) {
             // clearing singleton, clean up resources
             // in old instance
@@ -151,57 +150,57 @@ public class MasterImage implements RenderingRequestCaller {
     }
 
     private void freeResources() {
-        if(mOriginalBitmapSmall != null) {
+        if (mOriginalBitmapSmall != null) {
             mOriginalBitmapSmall.recycle();
         }
         mOriginalBitmapSmall = null;
 
-        if(mOriginalBitmapLarge != null) {
+        if (mOriginalBitmapLarge != null) {
             mOriginalBitmapLarge.recycle();
         }
         mOriginalBitmapLarge = null;
 
-        if(mOriginalBitmapHighres != null) {
+        if (mOriginalBitmapHighres != null) {
             mOriginalBitmapHighres.recycle();
         }
         mOriginalBitmapHighres = null;
 
-        if(mTemporaryThumbnail != null) {
+        if (mTemporaryThumbnail != null) {
             mTemporaryThumbnail.recycle();
         }
         mTemporaryThumbnail = null;
 
-        if(mGeometryOnlyBitmap != null) {
+        if (mGeometryOnlyBitmap != null) {
             mGeometryOnlyBitmap.recycle();
         }
         mGeometryOnlyBitmap = null;
 
-        if(mFiltersOnlyBitmap != null) {
+        if (mFiltersOnlyBitmap != null) {
             mFiltersOnlyBitmap.recycle();
         }
         mFiltersOnlyBitmap = null;
 
-        if(mPartialBitmap != null) {
+        if (mPartialBitmap != null) {
             mPartialBitmap.recycle();
         }
         mPartialBitmap = null;
 
-        if(mHighresBitmap != null) {
+        if (mHighresBitmap != null) {
             mHighresBitmap.recycle();
         }
         mHighresBitmap = null;
 
-        if(mPreviousImage != null) {
+        if (mPreviousImage != null) {
             mPreviousImage.recycle();
         }
         mPreviousImage = null;
 
-        if(mFusionUnderlay != null) {
+        if (mFusionUnderlay != null) {
             mFusionUnderlay.recycle();
         }
         mFusionUnderlay = null;
 
-        if(mBitmapCache != null) {
+        if (mBitmapCache != null) {
             mBitmapCache.clear();
         }
 
@@ -270,15 +269,12 @@ public class MasterImage implements RenderingRequestCaller {
         mActivity.runOnUiThread(mWarnListenersRunnable);
     }
 
-    private Runnable mWarnListenersRunnable = new Runnable() {
-        @Override
-        public void run() {
-            for (int i = 0; i < mLoadListeners.size(); i++) {
-                ImageShow imageShow = mLoadListeners.elementAt(i);
-                imageShow.imageLoaded();
-            }
-            invalidatePreview();
+    private final Runnable mWarnListenersRunnable = () -> {
+        for (int i = 0; i < mLoadListeners.size(); i++) {
+            ImageShow imageShow = mLoadListeners.elementAt(i);
+            imageShow.imageLoaded();
         }
+        invalidatePreview();
     };
 
     public static Bitmap convertToEvenNumberWidthImage(Bitmap bmp) {
@@ -288,12 +284,12 @@ public class MasterImage implements RenderingRequestCaller {
             int h = bmp.getHeight();
             boolean bWidthIsEven = (w & 0x01) == 0;
             boolean bHeightIsEven = (h & 0x01) == 0;
-            Log.v(TAG, "ori bitmap w="+w+" h="+h);
-            if( !bWidthIsEven || !bHeightIsEven){
+            Log.v(TAG, "ori bitmap w=" + w + " h=" + h);
+            if (!bWidthIsEven || !bHeightIsEven) {
                 w = w - (w & 0x01);
                 h = h - (h & 0x01);
                 retBmp = Bitmap.createBitmap(bmp, 0, 0, w, h);
-                Log.v(TAG, "new bitmap w="+retBmp.getWidth()+" h="+retBmp.getHeight());
+                Log.v(TAG, "new bitmap w=" + retBmp.getWidth() + " h=" + retBmp.getHeight());
             }
         }
         return retBmp;
@@ -309,8 +305,8 @@ public class MasterImage implements RenderingRequestCaller {
                 mOrientation, originalBounds);
         // Force bitmap width and height to even number for beautification algo.
         Bitmap tempBmp = convertToEvenNumberWidthImage(mOriginalBitmapLarge);
-        if(tempBmp != null && mOriginalBitmapLarge != null) {
-            if(!mOriginalBitmapLarge.isRecycled() && mOriginalBitmapLarge != tempBmp) {
+        if (tempBmp != null && mOriginalBitmapLarge != null) {
+            if (!mOriginalBitmapLarge.isRecycled() && mOriginalBitmapLarge != tempBmp) {
                 mOriginalBitmapLarge.recycle();
             }
             mOriginalBitmapLarge = tempBmp;
@@ -325,7 +321,7 @@ public class MasterImage implements RenderingRequestCaller {
         mOriginalBitmapSmall = Bitmap.createScaledBitmap(mOriginalBitmapLarge, sw, sh, true);
         Log.d(TAG, "MasterImage.loadBitmap(): OriginalBitmapLarge.WH is (" + mOriginalBitmapLarge.getWidth() + ", "
                 + mOriginalBitmapLarge.getHeight() + "), OriginalBitmapSmall.WH is (" + sw + ", " + sh + "), originalBounds is "
-                + originalBounds.toString());
+                + originalBounds);
         mZoomOrientation = mOrientation;
         warnListeners();
         return true;
@@ -464,11 +460,8 @@ public class MasterImage implements RenderingRequestCaller {
                 mPreset.getFilterWithSerializationName(FilterDualCamFusionRepresentation.SERIALIZATION_NAME);
         FilterRepresentation tpRepresentation =
                 mPreset.getFilterWithSerializationName(FilterTruePortraitFusionRepresentation.SERIALIZATION_NAME);
-        if(dcRepresentation instanceof FilterDualCamFusionRepresentation ||
-                tpRepresentation instanceof FilterTruePortraitFusionRepresentation) {
-            return true;
-        }
-        return false;
+        return dcRepresentation instanceof FilterDualCamFusionRepresentation ||
+                tpRepresentation instanceof FilterTruePortraitFusionRepresentation;
     }
 
     public SharedBuffer getPreviewBuffer() {
@@ -586,16 +579,13 @@ public class MasterImage implements RenderingRequestCaller {
             mAnimator = ValueAnimator.ofFloat(1, 0, -1);
             mAnimator.setDuration(500);
         }
-        mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                if (mCurrentLookAnimation == CIRCLE_ANIMATION) {
-                    setMaskScale((Float) animation.getAnimatedValue());
-                } else if (mCurrentLookAnimation == ROTATE_ANIMATION
-                        || mCurrentLookAnimation == MIRROR_ANIMATION) {
-                    setAnimRotation((Float) animation.getAnimatedValue());
-                    setAnimFraction(animation.getAnimatedFraction());
-                }
+        mAnimator.addUpdateListener(animation -> {
+            if (mCurrentLookAnimation == CIRCLE_ANIMATION) {
+                setMaskScale((Float) animation.getAnimatedValue());
+            } else if (mCurrentLookAnimation == ROTATE_ANIMATION
+                    || mCurrentLookAnimation == MIRROR_ANIMATION) {
+                setAnimRotation((Float) animation.getAnimatedValue());
+                setAnimFraction(animation.getAnimatedFraction());
             }
         });
         mAnimator.addListener(new Animator.AnimatorListener() {
@@ -637,6 +627,7 @@ public class MasterImage implements RenderingRequestCaller {
             mWaterMark.update();
         }
     }
+
     public void resetGeometryImages(boolean force) {
         if (mPreset == null) {
             return;
@@ -732,7 +723,7 @@ public class MasterImage implements RenderingRequestCaller {
             return null;
         }
 
-        Matrix m = null;
+        Matrix m;
         float scale = 1f;
         float translateX = 0;
         float translateY = 0;
@@ -750,8 +741,8 @@ public class MasterImage implements RenderingRequestCaller {
                     bitmapToDraw.getHeight());
             scale = mImageShowSize.x / size.width();
             float tmp = mImageShowSize.y / size.height();
-            // Choose the smaller one to avoid master image beyound the screen.
-            scale = scale < tmp ? scale : tmp;
+            // Choose the smaller one to avoid master image beyond the screen.
+            scale = Math.min(scale, tmp);
             translateX = (mImageShowSize.x - (size.width() * scale)) / 2.0f;
             translateY = (mImageShowSize.y - (size.height() * scale)) / 2.0f;
         } else {
@@ -992,7 +983,7 @@ public class MasterImage implements RenderingRequestCaller {
     }
 
     public void setFusionBounds(Canvas canvas, RectF bounds) {
-        if(mFusionBounds == null) mFusionBounds = new Rect();
+        if (mFusionBounds == null) mFusionBounds = new Rect();
         bounds.roundOut(mFusionBounds);
     }
 

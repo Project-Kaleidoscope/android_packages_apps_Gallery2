@@ -29,7 +29,7 @@ import com.android.gallery3d.filtershow.filters.FilterPoint;
 import com.android.gallery3d.filtershow.filters.RedEyeCandidate;
 
 public class ImageRedEye extends ImagePoint {
-    private static final String LOGTAG = "ImageRedEyes";
+    private static final String TAG = "ImageRedEyes";
     private RectF mCurrentRect = null;
 
     public ImageRedEye(Context context) {
@@ -107,7 +107,7 @@ public class ImageRedEye extends ImagePoint {
 
     @Override
     protected void drawPoint(FilterPoint point, Canvas canvas, Matrix originalToScreen,
-            Matrix originalRotateToScreen, Paint paint) {
+                             Matrix originalRotateToScreen, Paint paint) {
         RedEyeCandidate candidate = (RedEyeCandidate) point;
         RectF rect = candidate.getRect();
         RectF drawRect = new RectF();

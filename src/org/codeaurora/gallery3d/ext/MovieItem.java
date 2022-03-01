@@ -1,7 +1,8 @@
 package org.codeaurora.gallery3d.ext;
 
 import android.net.Uri;
-import android.provider.MediaStore;
+
+import androidx.annotation.NonNull;
 
 public class MovieItem implements IMovieItem {
     private static final String TAG = "MovieItem";
@@ -95,21 +96,16 @@ public class MovieItem implements IMovieItem {
         mOriginal = uri;
     }
 
+    @NonNull
     @Override
     public String toString() {
-        return new StringBuilder().append("MovieItem(uri=")
-                .append(mUri)
-                .append(", mime=")
-                .append(mMimeType)
-                .append(", title=")
-                .append(mTitle)
-                .append(", error=")
-                .append(mError)
+        return "MovieItem(uri=" + mUri +
+                ", mime=" + mMimeType +
+                ", title=" + mTitle +
+                ", error=" + mError +
                 // .append(", support3D=")
                 // .append(mStereoType)
-                .append(", mOriginal=")
-                .append(mOriginal)
-                .append(")")
-                .toString();
+                ", mOriginal=" + mOriginal +
+                ")";
     }
 }

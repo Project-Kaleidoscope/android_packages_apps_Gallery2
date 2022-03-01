@@ -17,7 +17,9 @@
 package com.android.gallery3d.filtershow.controller;
 
 public interface ParameterSet {
+
     int getNumberOfParameters();
 
     Parameter getFilterParameter(int index);
+
 }

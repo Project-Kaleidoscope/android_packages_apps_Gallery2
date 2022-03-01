@@ -21,9 +21,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.util.GalleryUtils;
 import com.android.gallery3d.util.ReverseGeocoder;
+
+import org.codeaurora.gallery.R;
 
 import java.util.ArrayList;
 
@@ -37,25 +38,11 @@ class LocationClustering extends Clustering {
 
     // If the total distance change is less than this ratio, stop iterating.
     private static final float STOP_CHANGE_RATIO = 0.01f;
-    private Context mContext;
+    private final Context mContext;
     private ArrayList<ArrayList<SmallItem>> mClusters;
     private ArrayList<String> mNames;
-    private String mNoLocationString;
-    private Handler mHandler;
-
-    private static class Point {
-        public Point(double lat, double lng) {
-            latRad = Math.toRadians(lat);
-            lngRad = Math.toRadians(lng);
-        }
-        public Point() {}
-        public double latRad, lngRad;
-    }
-
-    private static class SmallItem {
-        Path path;
-        double lat, lng;
-    }
+    private final String mNoLocationString;
+    private final Handler mHandler;
 
     public LocationClustering(Context context) {
         mContext = context;
@@ -63,92 +50,8 @@ class LocationClustering extends Clustering {
         mHandler = new Handler(Looper.getMainLooper());
     }
 
-    @Override
-    public void run(MediaSet baseSet) {
-        final int total = baseSet.getTotalMediaItemCount();
-        final SmallItem[] buf = new SmallItem[total];
-        // Separate items to two sets: with or without lat-long.
-        final double[] latLong = new double[2];
-        baseSet.enumerateTotalMediaItems(new MediaSet.ItemConsumer() {
-            @Override
-            public void consume(int index, MediaItem item) {
-                if (index < 0 || index >= total) return;
-                SmallItem s = new SmallItem();
-                s.path = item.getPath();
-                item.getLatLong(latLong);
-                s.lat = latLong[0];
-                s.lng = latLong[1];
-                buf[index] = s;
-            }
-        });
-
-        final ArrayList<SmallItem> withLatLong = new ArrayList<SmallItem>();
-        final ArrayList<SmallItem> withoutLatLong = new ArrayList<SmallItem>();
-        final ArrayList<Point> points = new ArrayList<Point>();
-        for (int i = 0; i < total; i++) {
-            SmallItem s = buf[i];
-            if (s == null) continue;
-            if (GalleryUtils.isValidLocation(s.lat, s.lng)) {
-                withLatLong.add(s);
-                points.add(new Point(s.lat, s.lng));
-            } else {
-                withoutLatLong.add(s);
-            }
-        }
-
-        ArrayList<ArrayList<SmallItem>> clusters = new ArrayList<ArrayList<SmallItem>>();
-
-        int m = withLatLong.size();
-        if (m > 0) {
-            // cluster the items with lat-long
-            Point[] pointsArray = new Point[m];
-            pointsArray = points.toArray(pointsArray);
-            int[] bestK = new int[1];
-            int[] index = kMeans(pointsArray, bestK);
-
-            for (int i = 0; i < bestK[0]; i++) {
-                clusters.add(new ArrayList<SmallItem>());
-            }
-
-            for (int i = 0; i < m; i++) {
-                clusters.get(index[i]).add(withLatLong.get(i));
-            }
-        }
-
-        ReverseGeocoder geocoder = new ReverseGeocoder(mContext);
-        mNames = new ArrayList<String>();
-        boolean hasUnresolvedAddress = false;
-        mClusters = new ArrayList<ArrayList<SmallItem>>();
-        for (ArrayList<SmallItem> cluster : clusters) {
-            String name = generateName(cluster, geocoder);
-            if (name != null) {
-                mNames.add(name);
-                mClusters.add(cluster);
-            } else {
-                // move cluster-i to no location cluster
-                withoutLatLong.addAll(cluster);
-                hasUnresolvedAddress = true;
-            }
-        }
-
-        if (withoutLatLong.size() > 0) {
-            mNames.add(mNoLocationString);
-            mClusters.add(withoutLatLong);
-        }
-
-        if (hasUnresolvedAddress) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mContext, R.string.no_connectivity,
-                            Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    }
-
     private static String generateName(ArrayList<SmallItem> items,
-            ReverseGeocoder geocoder) {
+                                       ReverseGeocoder geocoder) {
         ReverseGeocoder.SetLatLong set = new ReverseGeocoder.SetLatLong();
 
         int n = items.size();
@@ -178,30 +81,10 @@ class LocationClustering extends Clustering {
         return geocoder.computeAddress(set);
     }
 
-    @Override
-    public int getNumberOfClusters() {
-        return mClusters.size();
-    }
-
-    @Override
-    public ArrayList<Path> getCluster(int index) {
-        ArrayList<SmallItem> items = mClusters.get(index);
-        ArrayList<Path> result = new ArrayList<Path>(items.size());
-        for (int i = 0, n = items.size(); i < n; i++) {
-            result.add(items.get(i).path);
-        }
-        return result;
-    }
-
-    @Override
-    public String getClusterName(int index) {
-        return mNames.get(index);
-    }
-
     // Input: n points
     // Output: the best k is stored in bestK[0], and the return value is the
     // an array which specifies the group that each point belongs (0 to k - 1).
-    private static int[] kMeans(Point points[], int[] bestK) {
+    private static int[] kMeans(Point[] points, int[] bestK) {
         int n = points.length;
 
         // min and max number of groups wanted
@@ -288,7 +171,7 @@ class LocationClustering extends Clustering {
             }
 
             // step 4: remove empty groups and reassign group number
-            int reassign[] = new int[k];
+            int[] reassign = new int[k];
             int realK = 0;
             for (int i = 0; i < k; i++) {
                 if (groupCount[i] > 0) {
@@ -311,5 +194,118 @@ class LocationClustering extends Clustering {
             }
         }
         return bestGrouping;
+    }
+
+    @Override
+    public void run(MediaSet baseSet) {
+        final int total = baseSet.getTotalMediaItemCount();
+        final SmallItem[] buf = new SmallItem[total];
+        // Separate items to two sets: with or without lat-long.
+        final double[] latLong = new double[2];
+        baseSet.enumerateTotalMediaItems((index, item) -> {
+            if (index < 0 || index >= total) return;
+            SmallItem s = new SmallItem();
+            s.path = item.getPath();
+            item.getLatLong(latLong);
+            s.lat = latLong[0];
+            s.lng = latLong[1];
+            buf[index] = s;
+        });
+
+        final ArrayList<SmallItem> withLatLong = new ArrayList<>();
+        final ArrayList<SmallItem> withoutLatLong = new ArrayList<>();
+        final ArrayList<Point> points = new ArrayList<>();
+        for (int i = 0; i < total; i++) {
+            SmallItem s = buf[i];
+            if (s == null) continue;
+            if (GalleryUtils.isValidLocation(s.lat, s.lng)) {
+                withLatLong.add(s);
+                points.add(new Point(s.lat, s.lng));
+            } else {
+                withoutLatLong.add(s);
+            }
+        }
+
+        ArrayList<ArrayList<SmallItem>> clusters = new ArrayList<>();
+
+        int m = withLatLong.size();
+        if (m > 0) {
+            // cluster the items with lat-long
+            Point[] pointsArray = new Point[m];
+            pointsArray = points.toArray(pointsArray);
+            int[] bestK = new int[1];
+            int[] index = kMeans(pointsArray, bestK);
+
+            for (int i = 0; i < bestK[0]; i++) {
+                clusters.add(new ArrayList<>());
+            }
+
+            for (int i = 0; i < m; i++) {
+                clusters.get(index[i]).add(withLatLong.get(i));
+            }
+        }
+
+        ReverseGeocoder geocoder = new ReverseGeocoder(mContext);
+        mNames = new ArrayList<>();
+        boolean hasUnresolvedAddress = false;
+        mClusters = new ArrayList<>();
+        for (ArrayList<SmallItem> cluster : clusters) {
+            String name = generateName(cluster, geocoder);
+            if (name != null) {
+                mNames.add(name);
+                mClusters.add(cluster);
+            } else {
+                // move cluster-i to no location cluster
+                withoutLatLong.addAll(cluster);
+                hasUnresolvedAddress = true;
+            }
+        }
+
+        if (withoutLatLong.size() > 0) {
+            mNames.add(mNoLocationString);
+            mClusters.add(withoutLatLong);
+        }
+
+        if (hasUnresolvedAddress) {
+            mHandler.post(() -> Toast.makeText(mContext, R.string.no_connectivity,
+                    Toast.LENGTH_LONG).show());
+        }
+    }
+
+    @Override
+    public int getNumberOfClusters() {
+        return mClusters.size();
+    }
+
+    @Override
+    public ArrayList<Path> getCluster(int index) {
+        ArrayList<SmallItem> items = mClusters.get(index);
+        ArrayList<Path> result = new ArrayList<>(items.size());
+        for (int i = 0, n = items.size(); i < n; i++) {
+            result.add(items.get(i).path);
+        }
+        return result;
+    }
+
+    @Override
+    public String getClusterName(int index) {
+        return mNames.get(index);
+    }
+
+    private static class Point {
+        public double latRad, lngRad;
+
+        public Point(double lat, double lng) {
+            latRad = Math.toRadians(lat);
+            lngRad = Math.toRadians(lng);
+        }
+
+        public Point() {
+        }
+    }
+
+    private static class SmallItem {
+        Path path;
+        double lat, lng;
     }
 }

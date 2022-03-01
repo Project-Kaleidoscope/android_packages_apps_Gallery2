@@ -33,11 +33,8 @@ public class RedEyeCandidate implements FilterPoint {
     }
 
     public boolean equals(RedEyeCandidate candidate) {
-        if (candidate.mRect.equals(mRect)
-                && candidate.mBounds.equals(mBounds)) {
-            return true;
-        }
-        return false;
+        return candidate.mRect.equals(mRect)
+                && candidate.mBounds.equals(mBounds);
     }
 
     public boolean intersect(RectF rect) {

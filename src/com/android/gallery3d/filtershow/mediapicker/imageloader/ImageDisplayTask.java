@@ -51,8 +51,8 @@ final class ImageDisplayTask implements Runnable {
 
     @Override
     public void run() {
-        if (imageView.isRecyled()) {
-            Log.d(TAG, "Image was recyled by GC. Task is cancelled. " + memoryCacheKey);
+        if (imageView.isRecycled()) {
+            Log.d(TAG, "Image was recycled by GC. Task is cancelled. " + memoryCacheKey);
         } else if (isViewWasReused()) {
             Log.d(TAG, "Image is reused for another image. Task is cancelled. " + memoryCacheKey);
         } else {

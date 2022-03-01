@@ -18,11 +18,10 @@ package com.android.gallery3d.filtershow.pipeline;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
+import android.util.Log;
 
 import com.android.gallery3d.app.GalleryActivity;
-import com.android.gallery3d.app.Log;
 import com.android.gallery3d.filtershow.cache.ImageLoader;
 import com.android.gallery3d.filtershow.filters.FilterRepresentation;
 import com.android.gallery3d.filtershow.filters.FiltersManager;
@@ -31,7 +30,7 @@ import com.android.gallery3d.filtershow.tools.SaveImage;
 import java.io.File;
 
 public class ImageSavingTask extends ProcessingTask {
-    private ProcessingService mProcessingService;
+    private final ProcessingService mProcessingService;
 
     static class SaveRequest implements Request {
         Uri sourceUri;
@@ -106,7 +105,7 @@ public class ImageSavingTask extends ProcessingTask {
                 selectedUri, destinationFile, previewImage,
                 new SaveImage.Callback() {
                     @Override
-                    public void onPreviewSaved(Uri uri){
+                    public void onPreviewSaved(Uri uri) {
                         UpdatePreviewSaved previewSaved = new UpdatePreviewSaved();
                         previewSaved.uri = uri;
                         previewSaved.exit = exit;

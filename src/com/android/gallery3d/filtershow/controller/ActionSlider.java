@@ -16,19 +16,18 @@
 
 package com.android.gallery3d.filtershow.controller;
 
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.filtershow.editors.Editor;
 
+import org.codeaurora.gallery.R;
+
 public class ActionSlider extends TitledSlider {
-    private static final String LOGTAG = "ActionSlider";
+    private static final String TAG = "ActionSlider";
     ImageButton mLeftButton;
     ImageButton mRightButton;
+
     public ActionSlider() {
         mLayoutID = R.layout.filtershow_control_action_slider;
     }
@@ -36,23 +35,11 @@ public class ActionSlider extends TitledSlider {
     @Override
     public void setUp(ViewGroup container, Parameter parameter, Editor editor) {
         super.setUp(container, parameter, editor);
-        mLeftButton = (ImageButton) mTopView.findViewById(R.id.leftActionButton);
-        mLeftButton.setOnClickListener(new OnClickListener() {
+        mLeftButton = mTopView.findViewById(R.id.leftActionButton);
+        mLeftButton.setOnClickListener(view -> ((ParameterActionAndInt) mParameter).fireLeftAction());
 
-            @Override
-            public void onClick(View v) {
-                ((ParameterActionAndInt) mParameter).fireLeftAction();
-            }
-        });
-
-        mRightButton = (ImageButton) mTopView.findViewById(R.id.rightActionButton);
-        mRightButton.setOnClickListener(new OnClickListener() {
-
-                @Override
-            public void onClick(View v) {
-                ((ParameterActionAndInt) mParameter).fireRightAction();
-            }
-        });
+        mRightButton = mTopView.findViewById(R.id.rightActionButton);
+        mRightButton.setOnClickListener(view -> ((ParameterActionAndInt) mParameter).fireRightAction());
         updateUI();
     }
 

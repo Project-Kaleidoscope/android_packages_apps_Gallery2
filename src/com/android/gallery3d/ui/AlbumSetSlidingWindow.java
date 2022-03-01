@@ -18,8 +18,8 @@ package com.android.gallery3d.ui;
 
 import android.graphics.Bitmap;
 import android.os.Message;
+import android.util.Log;
 
-import org.codeaurora.gallery.R;
 import com.android.gallery3d.app.AbstractGalleryActivity;
 import com.android.gallery3d.app.AlbumSetDataLoader;
 import com.android.gallery3d.common.Utils;
@@ -36,14 +36,19 @@ import com.android.gallery3d.util.Future;
 import com.android.gallery3d.util.FutureListener;
 import com.android.gallery3d.util.ThreadPool;
 
+import org.codeaurora.gallery.R;
+
 public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
     private static final String TAG = "AlbumSetSlidingWindow";
     private static final int MSG_UPDATE_ALBUM_ENTRY = 1;
     public static final String KEY_ALBUM = "AlbumSet";
 
-    public static interface Listener {
-        public void onSizeChanged(int size);
-        public void onContentChanged();
+    public interface Listener {
+
+        void onSizeChanged(int size);
+
+        void onContentChanged();
+
     }
 
     private final AlbumSetDataLoader mSource;
@@ -57,7 +62,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
 
     private Listener mListener;
 
-    private final AlbumSetEntry mData[];
+    private final AlbumSetEntry[] mData;
     private final SynchronizedHandler mHandler;
     private final ThreadPool mThreadPool;
     private final AlbumLabelMaker mLabelMaker;
@@ -93,7 +98,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
     }
 
     public AlbumSetSlidingWindow(AbstractGalleryActivity activity,
-            AlbumSetDataLoader source, AlbumSetSlotRenderer.LabelSpec labelSpec, int cacheSize) {
+                                 AlbumSetDataLoader source, AlbumSetSlotRenderer.LabelSpec labelSpec, int cacheSize) {
         source.setModelListener(this);
         mSource = source;
         mData = new AlbumSetEntry[cacheSize];
@@ -171,7 +176,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
                     start, end, mData.length, mSize);
         }
 
-        AlbumSetEntry data[] = mData;
+        AlbumSetEntry[] data = mData;
         mActiveStart = start;
         mActiveEnd = end;
         int contentStart = Utils.clamp((start + end) / 2 - data.length / 2,
@@ -193,7 +198,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
     private void requestNonactiveImages() {
         int range = Math.max(
                 mContentEnd - mActiveEnd, mActiveStart - mContentStart);
-        for (int i = 0 ;i < range; ++i) {
+        for (int i = 0; i < range; ++i) {
             requestImagesInSlot(mActiveEnd + i);
             requestImagesInSlot(mActiveStart - 1 - i);
         }
@@ -202,7 +207,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
     private void cancelNonactiveImages() {
         int range = Math.max(
                 mContentEnd - mActiveEnd, mActiveStart - mContentStart);
-        for (int i = 0 ;i < range; ++i) {
+        for (int i = 0; i < range; ++i) {
             cancelImagesInSlot(mActiveEnd + i);
             cancelImagesInSlot(mActiveStart - 1 - i);
         }
@@ -371,7 +376,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
         if (index < mContentStart || index >= mContentEnd) {
             Log.w(TAG, String.format(
                     "invalid update: %s is outside (%s, %s)",
-                    index, mContentStart, mContentEnd) );
+                    index, mContentStart, mContentEnd));
             return;
         }
 
@@ -387,7 +392,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
     public BitmapTexture getLoadingTexture() {
         if (mLoadingLabel == null) {
             Bitmap bitmap = mLabelMaker.requestLabel(
-                    mLoadingText, "", DataSourceType.TYPE_NOT_CATEGORIZED)
+                            mLoadingText, "", DataSourceType.TYPE_NOT_CATEGORIZED)
                     .run(ThreadPool.JOB_CONTEXT_STUB);
             mLoadingLabel = new BitmapTexture(bitmap);
             mLoadingLabel.setOpaque(false);
@@ -414,12 +419,12 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
         updateAllImageRequests();
     }
 
-    private static interface EntryUpdater {
-        public void updateEntry();
+    private interface EntryUpdater {
+        void updateEntry();
     }
 
     private class AlbumCoverLoader extends BitmapLoader implements EntryUpdater {
-        private MediaItem mMediaItem;
+        private final MediaItem mMediaItem;
         private final int mSlotIndex;
 
         public AlbumCoverLoader(int slotIndex, MediaItem item) {
@@ -528,7 +533,7 @@ public class AlbumSetSlidingWindow implements AlbumSetDataLoader.DataListener {
 
         mSlotWidth = width;
         mLoadingLabel = null;
-        mLabelMaker.setLabelWidth(mSlotWidth,KEY_ALBUM);
+        mLabelMaker.setLabelWidth(mSlotWidth, KEY_ALBUM);
 
         if (!mIsActive) return;
 

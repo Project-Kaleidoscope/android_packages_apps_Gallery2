@@ -42,8 +42,6 @@ import android.provider.MediaStore.Images.ImageColumns;
 import android.util.Log;
 import android.webkit.URLUtil;
 
-import org.codeaurora.gallery.R;
-
 import com.android.gallery3d.app.GalleryActivity;
 import com.android.gallery3d.app.MovieControllerOverlay;
 import com.android.gallery3d.app.MovieControllerOverlayNew;
