@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+Copyright (C) 2014-2016 The CyanogenMod Project
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+    * Neither the name of The Linux Foundation nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="setp_option_name">步驟</string>
+    <string name="step_option_desc">Customize fast forward/rewind step</string>
+    <string name="setp_option_three_second">3 秒鐘</string>
+    <string name="setp_option_six_second">6 秒鐘</string>
+    <string name="loop">"環繞音效"</string>
+    <string name="single">"單聲道"</string>
+    <string name="stereo">"立體聲"</string>
+    <string name="speaker_on">開啟喇叭</string>
+    <string name="speaker_off">關閉喇叭</string>
+    <string name="speaker_need_headset">插入耳機以使用此功能</string>
+    <string name="single_track">"Single track"</string>
+    <string name="input_url">"輸入網址"</string>
+    <string name="streaming_settings">"串流媒體設定"</string>
+    <string name="next">"下一個"</string>
+    <string name="previous">"上一個"</string>
+    <string name="buffer_size">緩衝區大小</string>
+    <string name="apn">偏好 APN</string>
+    <string name="rtp_min_port">最小 port</string>
+    <string name="rtp_max_port">最大 port</string>
+    <string name="set_rtp_min_port">設定最小 port</string>
+    <string name="set_rtp_max_port">設定最大 port</string>
+    <string name="set_buffer_size">設定緩衝區大小</string>
+    <string name="set_apn">設定偏好 APN</string>
+    <string name="setting">設定</string>
+    <string name="server_timeout_title">"伺服器連線超時"</string>
+    <string name="server_timeout_message">"重新連線到伺服器以播放影片"</string>
+    <string name="videoview_error_text_cannot_connect_retry">"連線失敗，嘗試重新連線到 %1$d\u2026"</string>
+    <string name="media_controller_live">Live</string>
+    <string name="media_controller_playing">正在播放中</string>
+    <string name="media_controller_connecting">正在連接中\u2026</string>
+    <string name="bookmark_add">"新增書籤"</string>
+    <string name="bookmark_display">"顯示書籤"</string>
+    <string name="bookmark_empty">"沒有書籤"</string>
+    <string name="bookmark_exist">"書籤已經存在"</string>
+    <string name="bookmark_add_success">"書籤已新增"</string>
+    <string name="bookmark_list">"書籤"</string>
+    <string name="bookmark_title">"標題"</string>
+    <string name="bookmark_location">"位置"</string>
+    <string name="delete_all">"刪除全部"</string>
+    <string name="default_title">"刪除標題"</string>
+    <string name="more_image">更多圖像</string>
+    <string name="mute_nosupport">無法靜音：影片不支援</string>
+    <string name="map_activity_not_found_err">沒有安裝地圖應用程式來顯示位置</string>
+    <plurals name="number_of_videos">
+        <item quantity="other">%1$d 影片</item>
+    </plurals>
+    <string name="cannot_share_items">分享的最大選定項目為 300</string>
+    <string name="share_dialogue_title">分享透過</string>
+    <string name="no_faces">No faces</string>
+    <string name="fail_trim">抱歉，無法剪輯此影片</string>
+    <string name="can_not_trim">只有 MP4 以及 3GP 檔案可以被剪輯</string>
+    <string name="drm_license_info">DRM 證書資訊</string>
+    <string name="timeline_title">時間軸</string>
+    <string name="albums_title">相簿</string>
+    <string name="videos_title">影片</string>
+    <string name="action_viewtype_list">清單顯示</string>
+    <string name="tvEmptyAlbum">找不到照片</string>
+    <string name="tvEmptyVideos">找不到影片</string>
+    <string name="text_makeup_whiten">美肌</string>
+    <string name="text_makeup_Soften">柔化</string>
+    <string name="text_makeup_trimface">磨皮</string>
+    <string name="text_makeup_bigeye">大眼</string>
+    <string name="truescanner_normal">預設</string>
+    <string name="truescanner_white">白板</string>
+    <string name="truescanner">TrueScanner</string>
+    <string name="truescanner_remove_glare">消除眩光</string>
+    <string name="hazebuster_acts">霧霾剋星</string>
+    <string name="seestraight_acts">看仔細</string>
+    <string name="seestraight_input_image_is_small">圖片尺寸過小，無法處理</string>
+    <string name="seestraight_process_fail">無法處理圖片</string>
+    <string name="trim_video_exit_title">放棄變更？</string>
+    <string name="trim_video_exit_msg">要放棄對此影片所做的更改嗎？</string>
+    <string name="trim_video_exit_discard">放棄更改</string>
+</resources>
