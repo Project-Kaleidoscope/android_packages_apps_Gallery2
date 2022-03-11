@@ -29,8 +29,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="setp_option_name">步驟</string>
-    <string name="step_option_desc">Customize fast forward/rewind step</string>
+    <string name="setp_option_name">倍</string>
+    <string name="step_option_desc">自定義快轉 / 回退 倍率</string>
     <string name="setp_option_three_second">3 秒鐘</string>
     <string name="setp_option_six_second">6 秒鐘</string>
     <string name="loop">"環繞音效"</string>
