@@ -29,7 +29,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="setp_option_name">倍</string>
+    <string name="setp_option_name">倍率</string>
     <string name="step_option_desc">自定義快轉 / 回退 倍率</string>
     <string name="setp_option_three_second">3 秒鐘</string>
     <string name="setp_option_six_second">6 秒鐘</string>
@@ -69,7 +69,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="bookmark_location">"位置"</string>
     <string name="delete_all">"刪除全部"</string>
     <string name="default_title">"刪除標題"</string>
-    <string name="more_image">更多圖像</string>
+    <string name="more_image">更多圖片</string>
     <string name="mute_nosupport">無法靜音：影片不支援</string>
     <string name="map_activity_not_found_err">沒有安裝地圖應用程式來顯示位置</string>
     <plurals name="number_of_videos">
@@ -77,7 +77,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </plurals>
     <string name="cannot_share_items">分享的最大選定項目為 300</string>
     <string name="share_dialogue_title">分享透過</string>
-    <string name="no_faces">No faces</string>
+    <string name="no_faces">沒有臉部</string>
     <string name="fail_trim">抱歉，無法剪輯此影片</string>
     <string name="can_not_trim">只有 MP4 以及 3GP 檔案可以被剪輯</string>
     <string name="drm_license_info">DRM 證書資訊</string>
